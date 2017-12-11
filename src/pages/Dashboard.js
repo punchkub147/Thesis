@@ -9,7 +9,7 @@ class Dashboard extends Component {
   render() {
 
     return (
-      <Layout location={this.props.location}>
+      <Layout route={this.props.route}>
         <Style>
           <div id="Dashboard">
             Dashboard

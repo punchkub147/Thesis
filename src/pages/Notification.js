@@ -24,13 +24,10 @@ class Notification extends Component {
   render() {
 
     return (
-      <Layout location={this.props.location}>
+      <Layout route={this.props.route}>
         <Style>
           <div id="Notification">
-            Notification
-            <button onClick={this.handleSendNoti}>
-              SEND NOTI
-            </button>
+            <button className="mui-btn" onClick={this.handleSendNoti}>SEND NOTI</button>
           </div>
         </Style>
       </Layout>

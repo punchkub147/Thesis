@@ -1,0 +1,29 @@
+body{
+  background: #e0eaea;
+}
+
+.content{
+  padding: 0 16px;
+  box-sizing: border-box;
+  margin-top: 20px;
+}
+
+.inLeft{
+  animation-name: 'fadeInLeft';
+  animation-duration: 0.2s;
+}
+
+.backLeft{
+  animation-name: 'fadeBackLeft';
+  animation-duration: 0.2s;
+}
+
+.inRight{
+  animation-name: 'fadeInRight';
+  animation-duration: 0.2s;
+}
+
+.backRight{
+  animation-name: 'fadeOutRight';
+  animation-duration: 0.2s;
+}

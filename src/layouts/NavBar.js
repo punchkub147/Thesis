@@ -54,6 +54,7 @@ class NavBar extends Component {
               )}
             </div>
         </div>
+        <div style={{height: '50px'}}/>
       </Style>
     );
   }
@@ -64,10 +65,12 @@ export default NavBar;
 const Style = Styled.div`
   #Navbar{
     height: 50px;
-    background: ${AppStyle.color.main};
+    background: ${AppStyle.color.card};
     ${AppStyle.shadow.lv1}
-    position: relative;
+    position: fixed;
     z-index: 99;
+    width: 100%;
+    box-sizing: border-box;
     .menu{
       width: 100%;
       background: red;
@@ -89,8 +92,8 @@ const Style = Styled.div`
       }
     }
     .effect{
-      animation-name: pulse;
-      animation-duration: 0.3s;
+      // animation-name: pulse;
+      // animation-duration: 0.3s;
     }
   }
 

@@ -49,7 +49,8 @@ export const setUpNoti = () => {
     if (currentToken) {
       // sendTokenToServer(currentToken);
       // updateUIForPushEnabled(currentToken);
-      console.log('TOKEN : ', currentToken);
+      // console.log('TOKEN : ', currentToken);
+      localStorage.setItem("currentToken", currentToken)
     } else {
       // Show permission request.
       console.log('No Instance ID token available. Request permission to generate one.');

@@ -8,7 +8,7 @@ class Tasks extends Component {
 
   render() {
     return (
-      <Layout location={this.props.location}>
+      <Layout route={this.props.route}>
         <Style>
           <div id="Tasks">
             Tasks
@@ -25,5 +25,4 @@ const Style = Styled.div`
   #Tasks{
     color: ${AppStyle.color.main}
   }
-
 `
