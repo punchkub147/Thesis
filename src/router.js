@@ -12,6 +12,14 @@ import Notification from './pages/Notification'
 import Profile from './pages/Profile'
 
 
+import Web from './WEB/Web'
+import WebAddWork from './WEB/pages/AddWork' 
+import WebLogin from './WEB/pages/Login'
+import WebRegister from './WEB/pages/Register' 
+import WebWorks from './WEB/pages/Works'
+import WebWorkOnHome from './WEB/pages/WorkOnHome'
+import WebNeedWork from './WEB/pages/NeedWork'
+
 class AppRouter extends Component {
 
 
@@ -66,6 +74,44 @@ class AppRouter extends Component {
         exact: true,
         page: Profile,
         title: "ข้อมูลส่วนตัว",
+      },
+
+      /////////////////////////////// WEB ////////////////////////////////////
+
+      { path: '/web',
+        exact: true,
+        page: WebLogin,
+        title: "เข้าสู่ระบบ",
+      },
+      { path: '/web/login',
+        exact: true,
+        page: WebLogin,
+        title: "เข้าสู่ระบบ",
+      },
+      { path: '/web/register',
+        exact: true,
+        page: WebRegister,
+        title: "ลงทะเบียน",
+      },
+      { path: '/web/works',
+        exact: true,
+        page: WebWorks,
+        title: "งาน",
+      },
+      { path: '/web/workonhome',
+        exact: true,
+        page: WebWorkOnHome,
+        title: "งาน",
+      },
+      { path: '/web/needwork',
+        exact: true,
+        page: WebNeedWork,
+        title: "งาน",
+      },
+      { path: '/web/addwork',
+        exact: true,
+        page: WebAddWork,
+        title: "เพิ่มงาน",
       },
     ]
 

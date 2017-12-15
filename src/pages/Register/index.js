@@ -4,7 +4,7 @@ import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
 
-import { register } from '../../api/firebase'
+import { register, auth, createUser } from '../../api/firebase'
 import { getToken } from '../../api/notification'
 
 import Layout from '../../layouts'
@@ -21,11 +21,16 @@ class Register extends Component {
     const password = this.password.value
     const password2 = this.password2.value
 
-    if(password === password2){
-      await register(email, password, data, collection, e => {
-        console.log('ERROR : ', e)
+    if(password === password2 && password != ''){
+      const user = await auth.createUserWithEmailAndPassword(email, password)
+      .catch( e => {
+        console.log(e.message);
+        //openNotificationWithIcon('error',error.message,'');
+      });
+      if(user){
+        await createUser(user, data, collection)
         browserHistory.push({pathname: '/register2', state: { goNext: true }})
-      })
+      }
     }
   }
 
@@ -38,7 +43,8 @@ class Register extends Component {
           <ToolBar
             title={this.props.route.title} 
             left={() => browserHistory.push({pathname: '/login', state: { goNext: false }})} 
-            right={e => this.handleRegister(e)}/>
+            // right={e => this.handleRegister(e)}
+            />
           <div className='content'>
             <form onSubmit={e => this.handleRegister(e)}>
 
@@ -56,6 +62,8 @@ class Register extends Component {
                 <input type="password" ref={r => this.password2 = r }/>
                 <label>Confirm Password</label>
               </div>
+ 
+              <button className="mui-btn" type="submit" onSubmit={e => this.handleRegister(e)}>ต่อไป</button>
 
             </form>
           </div>
@@ -70,8 +78,12 @@ export default Register;
 const Style = Styled.div`
   #Register{
     .content{
-      animation-name: ${props => props.moveNext === true?'fadeInRight':'fadeInLeft'};
+      //animation-name: ${props => props.moveNext === true?'fadeInRight':'fadeInLeft'};
+      animation-name: 'fadeInRight';
       animation-duration: 0.2s;
+    }
+    button{
+      width: 100%;
     }
   }
 

@@ -22,10 +22,13 @@ export const config = {
 
 firebase.initializeApp(config)
 
+const offlineEnable = firebase.firestore().enablePersistence()
 export const db = firebase.firestore();
+
 export const storage = firebase.storage().ref();
 export const auth = firebase.auth();
 export const messaging = firebase.messaging();
+
 
 /////////////////// DATABASE ////////////////////////
 
@@ -53,14 +56,14 @@ export const getUser = async (collection, callback) => {
   // const auth = await firebase.auth()
   await auth.onAuthStateChanged(async (user) => {
     const docRef = await db.collection(collection).doc(user.uid)
-    docRef.get().then(doc =>
+    docRef.get().then(doc => {
       doc.exists
         ?callback({
           uid: user.uid,
           data: doc.data(),
         })
         :callback(undefined)
-    ).catch(error => 
+    }).catch(error => 
         console.log("Error getting document:", error)
     )
   });

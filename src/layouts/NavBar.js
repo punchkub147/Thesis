@@ -3,29 +3,33 @@ import { Router, browserHistory, Route, Link } from 'react-router';
 import AppStyle from '../config/style'
 import Styled from 'styled-components'
 
-import logo from '../logo.svg'
+import search from '../img/search.png'
+import tasks from '../img/tasks.png'
+import dashboard from '../img/dashboard.png'
+import notification from '../img/notification.png'
+import profile from '../img/profile.png'
 
 const menuList = [
   {
     name: "Search",
     path: "/search",
-    icon: logo,
+    icon: search,
   },{
     name: "Tasks",
     path: "/tasks",
-    icon: "https://image.flaticon.com/icons/svg/149/149347.svg",
+    icon: tasks,
   },{
     name: "Dashboard",
     path: "/dashboard",
-    icon: "https://image.flaticon.com/icons/png/128/271/271888.png",
+    icon: dashboard,
   },{
     name: "Notification",
     path: "/notification",
-    icon: "https://image.flaticon.com/icons/png/128/61/61073.png",
+    icon: notification,
   },{
     name: "Profile",
     path: "/profile",
-    icon: "https://image.flaticon.com/icons/png/128/149/149452.png",
+    icon: profile,
   },
 ]
 

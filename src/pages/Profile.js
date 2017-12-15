@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Router, browserHistory, Route, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
@@ -22,6 +23,11 @@ class Profile extends Component {
     })
   }
 
+  logout = () => {
+    auth.signOut()
+    browserHistory.push('/login')
+  }
+
   render() {
     console.log(this.state)
     const { data } = this.state.user
@@ -40,6 +46,7 @@ class Profile extends Component {
             {_.get(data.address,'district')}
             {_.get(data.address,'province')}
             {_.get(data.address,'postcode')}
+            <button onClick={this.logout}>LOGOUT</button>
           </div>
         </Style>
       </Layout>

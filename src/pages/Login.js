@@ -1,22 +1,36 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router'
+import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 
 import Layout from '../layouts'
 
-import { loginWithEmail } from '../api/firebase'
+import { loginWithEmail, auth, db } from '../api/firebase'
 
 class Login extends Component {
 
   componentDidMount() {
-
+    auth.onAuthStateChanged(user => {
+      if (user) browserHistory.push('/search')
+    })
   }
 
   handleLogin = (e) => {
     e.preventDefault()
-    loginWithEmail(this.email.value, this.password.value, res => {
-      console.log('login', res)
+    auth.signInWithEmailAndPassword(this.email.value, this.password.value)
+    .then(async user => {
+      const employerRef = await db.collection('employer').doc(user.uid)
+      const employeeRef = await db.collection('employee').doc(user.uid)
+      employerRef.get().then(doc => {
+        doc.exists
+          ?browserHistory.push('/web/works')
+          :employeeRef.get().then(doc => {
+            doc.exists&&browserHistory.push('/search')
+          })
+      })
+    })
+    .catch(e => {
+      console.log('ERROR : ', e)
     })
   }
 
@@ -34,14 +48,13 @@ class Login extends Component {
               </div>
 
               <div className="mui-textfield mui-textfield--float-label">
-                <input type="text" ref={r => this.password = r }/>
+                <input type="password" ref={r => this.password = r }/>
                 <label>Password</label>
               </div>
 
-              <button type="submit" className="mui-btn mui-btn--raised">Login</button>
+              <button type="submit" onSubmit={(e) => this.handleLogin(e)} className="mui-btn mui-btn--raised">Login</button>
 
             </form>
-
 
             <Link to="/register"> <button type="submit" className="mui-btn mui-btn--flat">Register</button> </Link>
           </div>

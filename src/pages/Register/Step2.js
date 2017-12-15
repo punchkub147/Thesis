@@ -24,21 +24,22 @@ class Register2 extends Component {
         lname: '',
         phone: '',
         personId: '',
-        address: {
+        //address
           area: '',
           district: '',
           homeNo: '',
           postCode: '',
           province: '',
           road: '',
-        }
       }
     }
   }
 
   async componentDidMount() {
     getUser('employee', user => {
-      this.setState({user})
+      this.setState({
+        user: user
+      })
     })
   }
 
@@ -67,35 +68,35 @@ class Register2 extends Component {
       }
     })
   }
-  handleChangeAddress = (e, ref) => {
-    const { user } = this.state
-    const { data } = user
-    const { address } = data
-    this.setState({
-      user: {
-        ...user,
-        data: {
-          ...data,
-          address: {
-            ...address,
-            [ref]: e.target.value
-          }
-        }
-      }
-    })
-  }
+  // handleChangeAddress = (e, ref) => {
+  //   const { user } = this.state
+  //   const { data } = user
+  //   const { address } = data
+  //   this.setState({
+  //     user: {
+  //       ...user,
+  //       data: {
+  //         ...data,
+  //         address: {
+  //           ...address,
+  //           [ref]: e.target.value
+  //         }
+  //       }
+  //     }
+  //   })
+  // }
 
   render() {
     const moveNext = _.get(this.props.location.state,'goNext')
-    const user = this.state.user.data
-    const { address } = user
+    const user = _.clone(this.state.user.data)
     return (
       <Style moveNext={moveNext}>
         <div id="Register2">
           <ToolBar
             title={this.props.route.title} 
-            //left={() => browserHistory.push({pathname: '/register', state: { goNext: false }})} 
-            right={e => this.handleProfile(e)}/>
+            // left={() => browserHistory.push({pathname: '/register', state: { goNext: false }})} 
+            // right={e => this.handleProfile(e)}
+            />
           <div className="content">
             <form className="mui-form" onSubmit={e => this.handleProfile(e)}>
         
@@ -131,40 +132,42 @@ class Register2 extends Component {
 
               <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
-                  value={address['homeNo']} 
-                  onChange={e => this.handleChangeAddress(e, 'homeNo')}/>
+                  value={user['homeNo']} 
+                  onChange={e => this.handleChangeUser(e, 'homeNo')}/>
                 <label>เลขที่บ้าน</label>
               </div>
               <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
-                  value={address['road']} 
-                  onChange={e => this.handleChangeAddress(e, 'road')}/>
+                  value={user['road']} 
+                  onChange={e => this.handleChangeUser(e, 'road')}/>
                 <label>ถนน</label>
               </div>
               <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
-                  value={address['area']} 
-                  onChange={e => this.handleChangeAddress(e, 'area')}/>
+                  value={user['area']} 
+                  onChange={e => this.handleChangeUser(e, 'area')}/>
                 <label>เขต</label>
               </div>
               <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
-                  value={address['district']} 
-                  onChange={e => this.handleChangeAddress(e, 'district')}/>
+                  value={user['district']} 
+                  onChange={e => this.handleChangeUser(e, 'district')}/>
                 <label>แขวง</label>
               </div>
               <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
-                  value={address['province']} 
-                  onChange={e => this.handleChangeAddress(e, 'province')}/>
+                  value={user['province']} 
+                  onChange={e => this.handleChangeUser(e, 'province')}/>
                 <label>จังหวัด</label>
               </div>
               <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
-                  value={address['postcode']} 
-                  onChange={e => this.handleChangeAddress(e, 'postcode')}/>
+                  value={user['postcode']} 
+                  onChange={e => this.handleChangeUser(e, 'postcode')}/>
                 <label>ไปรษณีย์</label>
               </div>
+
+              <button className="mui-btn" type="submit" onSubmit={e => this.handleProfile(e)}>ต่อไป</button>
             
             </form>
           </div>
@@ -186,6 +189,9 @@ const Style = Styled.div`
       // width: 45%;
       // float: left;
       // margin-right: 10px;
+    }
+    button{
+      width: 100%;
     }
   }
 `
