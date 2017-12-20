@@ -55,17 +55,21 @@ export const getUser = async (collection, callback) => {
   // const firebase = await connect()
   // const auth = await firebase.auth()
   await auth.onAuthStateChanged(async (user) => {
-    const docRef = await db.collection(collection).doc(user.uid)
-    docRef.get().then(doc => {
-      doc.exists
-        ?callback({
-          uid: user.uid,
-          data: doc.data(),
-        })
-        :callback(undefined)
-    }).catch(error => 
-        console.log("Error getting document:", error)
-    )
+    if(user){
+      const docRef = await db.collection(collection).doc(user.uid)
+      docRef.get()
+      .then(doc => {
+        doc.exists
+          ?callback({
+            uid: user.uid,
+            data: doc.data(),
+          })
+          :callback(undefined)
+      })
+      .catch(error => 
+          console.log("Error getting document:", error)
+      )
+    }
   });
 }
 

@@ -10,8 +10,10 @@ import { loginWithEmail, auth, db } from '../api/firebase'
 class Login extends Component {
 
   componentDidMount() {
-    auth.onAuthStateChanged(user => {
-      if (user) browserHistory.push('/search')
+    auth.onAuthStateChanged(async user => {
+      if(user){
+        this.navigateUser(user)
+      }
     })
   }
 
@@ -19,18 +21,25 @@ class Login extends Component {
     e.preventDefault()
     auth.signInWithEmailAndPassword(this.email.value, this.password.value)
     .then(async user => {
-      const employerRef = await db.collection('employer').doc(user.uid)
-      const employeeRef = await db.collection('employee').doc(user.uid)
-      employerRef.get().then(doc => {
-        doc.exists
-          ?browserHistory.push('/web/works')
-          :employeeRef.get().then(doc => {
-            doc.exists&&browserHistory.push('/search')
-          })
-      })
+      if(user){
+        this.navigateUser(user)
+      }
     })
     .catch(e => {
       console.log('ERROR : ', e)
+    })
+  }
+
+  navigateUser = async (user) => {
+    const employerRef = await db.collection('employer').doc(user.uid)
+    const employeeRef = await db.collection('employee').doc(user.uid)
+    employerRef.get().then(doc => {
+      doc.exists
+        ?browserHistory.push('/web/works')
+        :employeeRef.get().then(doc => {
+          // doc.exists
+          //   &&browserHistory.push('/search')
+        })
     })
   }
 

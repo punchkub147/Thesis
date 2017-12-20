@@ -1,17 +1,54 @@
 import React, { Component } from 'react';
+import { Router, browserHistory, Route, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
+import _ from 'lodash'
+import moment from 'moment'
+
+import { getUser, auth, db } from '../api/firebase'
 
 import Layout from '../layouts'
 
 class Tasks extends Component {
 
+  state = {
+    workingList: {}
+  }
+
+  componentDidMount() {
+    auth.onAuthStateChanged(user => {
+      user
+        ?getUser('employee', user => {
+          this.setState({user})
+          this.getWorking(user)
+        })
+        :browserHistory.push('/login')
+    })  
+  }
+
+  getWorking = (user) => {
+    db.collection('working').where('employee_id', '==', user.uid)
+    .onSnapshot(snap => {
+      const workingList = []
+      snap.forEach(doc => {
+        workingList.push(Object.assign(doc.data(),{working_id: doc.id}))
+      })
+      this.setState({workingList})
+    })
+  }
+
   render() {
+    const { workingList } = this.state
+
     return (
       <Layout route={this.props.route}>
         <Style>
           <div id="Tasks">
-            Tasks
+            {_.map(workingList, working => 
+              <div>
+                {working.work_name} {working.total_piece} {working.startAt}
+              </div>
+            )}
           </div>
         </Style>
       </Layout>

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
@@ -10,28 +11,31 @@ import { db } from '../api/firebase'
 class Search extends Component {
   
   state = {
-    itemsList: {},
+    worksList: {},
   }
 
   componentDidMount() {
     db.collection('works').get()
     .then(snapshot => {
-      let itemsList = []
+      let worksList = []
       snapshot.forEach(doc => {
-        itemsList.push(Object.assign(doc.data(),{item_id: doc.id}))
+        worksList.push(Object.assign(doc.data(),{work_id: doc.id}))
       })
-      this.setState({itemsList})
+      this.setState({worksList})
     })
   }
 
   render() {
-    const { itemsList } = this.state
+    const { worksList } = this.state
     return (
       <Layout route={this.props.route}>
         <Style>
           <div id="Search">
-            {_.map(itemsList, item => 
-              <div>{item.name}</div>
+            {_.map(worksList, work => 
+              <div>
+                {work.name}
+                <Link to={`/work/${work.work_id}`}>View</Link>
+              </div>
             )}
           </div>
         </Style>

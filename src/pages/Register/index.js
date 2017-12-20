@@ -9,6 +9,7 @@ import { getToken } from '../../api/notification'
 
 import Layout from '../../layouts'
 import ToolBar from '../../layouts/ToolBar'
+import Step from '../../components/Step'
 
 class Register extends Component {
   handleRegister = async (e) => {
@@ -29,22 +30,24 @@ class Register extends Component {
       });
       if(user){
         await createUser(user, data, collection)
-        browserHistory.push({pathname: '/register2', state: { goNext: true }})
+        browserHistory.push('/register2')
       }
     }
   }
 
   render() {
-    const moveNext = _.get(this.props.location.state,'goNext')
 
     return (
-      <Style moveNext={moveNext}>
+      <Style>
         <div id="Register">
           <ToolBar
             title={this.props.route.title} 
-            left={() => browserHistory.push({pathname: '/login', state: { goNext: false }})} 
+            left={() => browserHistory.push('/login')} 
             // right={e => this.handleRegister(e)}
             />
+
+          <Step/>
+          
           <div className='content'>
             <form onSubmit={e => this.handleRegister(e)}>
 
@@ -78,8 +81,7 @@ export default Register;
 const Style = Styled.div`
   #Register{
     .content{
-      //animation-name: ${props => props.moveNext === true?'fadeInRight':'fadeInLeft'};
-      animation-name: 'fadeInRight';
+      animation-name: fadeInRight;
       animation-duration: 0.2s;
     }
     button{

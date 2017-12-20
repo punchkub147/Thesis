@@ -29,7 +29,6 @@ class Profile extends Component {
   }
 
   render() {
-    console.log(this.state)
     const { data } = this.state.user
     return (
       <Layout route={this.props.route}>

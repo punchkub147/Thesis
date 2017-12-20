@@ -4,11 +4,12 @@ import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
 
-import { register, getUser, updateAt, db } from '../../api/firebase'
+import { register, getUser, updateAt, db, auth } from '../../api/firebase'
 import { getToken } from '../../api/notification'
 
 import Layout from '../../layouts'
 import ToolBar from '../../layouts/ToolBar'
+import Step from '../../components/Step'
 
 const isEmpty = (data) => {
   return data === ""?true:false
@@ -36,7 +37,7 @@ class Register2 extends Component {
   }
 
   async componentDidMount() {
-    getUser('employee', user => {
+    await getUser('employee', user => {
       this.setState({
         user: user
       })
@@ -51,7 +52,7 @@ class Register2 extends Component {
       console.log('ERRORRRR')
     }else{
       await updateAt('employee', user.uid, user.data)
-      browserHistory.push({pathname: '/register3', state: { goNext: true }})
+      browserHistory.push('/register3')
     }
   }
 
@@ -87,87 +88,65 @@ class Register2 extends Component {
   // }
 
   render() {
-    const moveNext = _.get(this.props.location.state,'goNext')
-    const user = _.clone(this.state.user.data)
+    const user =this.state.user.data
     return (
-      <Style moveNext={moveNext}>
+      <Style >
         <div id="Register2">
           <ToolBar
             title={this.props.route.title} 
             // left={() => browserHistory.push({pathname: '/register', state: { goNext: false }})} 
             // right={e => this.handleProfile(e)}
             />
+
+          <Step/>
           <div className="content">
-            <form className="mui-form" onSubmit={e => this.handleProfile(e)}>
-        
-              <div className="mui-textfield mui-textfield--float-label haft">
+            <form className="" onSubmit={e => this.handleProfile(e)}>
+
                 <input type="text" 
                   value={user['fname']?user['fname']:''} 
+                  placeholder="ชื่อจริง"
                   onChange={e => this.handleChangeUser(e, 'fname')}/>
-                <label>ชื่อจริง</label>
-              </div>
-          
-              <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
                   value={user['lname']} 
+                  placeholder="นามสกุล"
                   onChange={e => this.handleChangeUser(e, 'lname')}/>
-                <label>นามสกุล</label>
-              </div>
-          
-              <div className="mui-textfield mui-textfield--float-label">
                 <input type="text" 
                   value={user['phone']} 
+                  placeholder="เบอร์โทรศัพท์"
                   onChange={e => this.handleChangeUser(e, 'phone')}/>
-                <label>เบอร์ติดต่อ</label>
-              </div>
-
-              <div className="mui-textfield mui-textfield--float-label">
                 <input type="text" 
                   value={user['personId']} 
+                  placeholder="รหัสประจำตัวประชาชน"
                   onChange={e => this.handleChangeUser(e, 'personId')}/>
-                <label>รหัสประจำตัวประชาชน</label>
-              </div>
 
-              <legend>สถานที่รับงาน</legend>
-
-              <div className="mui-textfield mui-textfield--float-label haft">
+                <div>สถานที่รับงาน</div>
+                
                 <input type="text" 
                   value={user['homeNo']} 
+                  placeholder="บ้านเลขที่"
                   onChange={e => this.handleChangeUser(e, 'homeNo')}/>
-                <label>เลขที่บ้าน</label>
-              </div>
-              <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
                   value={user['road']} 
+                  placeholder="ถนน"
                   onChange={e => this.handleChangeUser(e, 'road')}/>
-                <label>ถนน</label>
-              </div>
-              <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
                   value={user['area']} 
+                  placeholder="เขต"
                   onChange={e => this.handleChangeUser(e, 'area')}/>
-                <label>เขต</label>
-              </div>
-              <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
                   value={user['district']} 
+                  placeholder="แขวง"
                   onChange={e => this.handleChangeUser(e, 'district')}/>
-                <label>แขวง</label>
-              </div>
-              <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
                   value={user['province']} 
+                  placeholder="จังหวัด"
                   onChange={e => this.handleChangeUser(e, 'province')}/>
-                <label>จังหวัด</label>
-              </div>
-              <div className="mui-textfield mui-textfield--float-label haft">
                 <input type="text" 
                   value={user['postcode']} 
+                  placeholder="รหัสไปรษณีย์"
                   onChange={e => this.handleChangeUser(e, 'postcode')}/>
-                <label>ไปรษณีย์</label>
-              </div>
 
-              <button className="mui-btn" type="submit" onSubmit={e => this.handleProfile(e)}>ต่อไป</button>
+              <button type="submit" onSubmit={e => this.handleProfile(e)}>ต่อไป</button>
             
             </form>
           </div>
@@ -182,7 +161,7 @@ export default Register2;
 const Style = Styled.div`
   #Register2{
     .content{
-      animation-name: ${props => props.moveNext === true?'fadeInRight':'fadeInLeft'};
+      animation-name: fadeInRight;
       animation-duration: 0.2s;
     }
     .haft{
