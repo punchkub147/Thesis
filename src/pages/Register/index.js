@@ -46,7 +46,7 @@ class Register extends Component {
             // right={e => this.handleRegister(e)}
             />
 
-          <Step/>
+          <Step step='1'/>
           
           <div className='content'>
             <form onSubmit={e => this.handleRegister(e)}>
@@ -69,6 +69,7 @@ class Register extends Component {
               <button className="mui-btn" type="submit" onSubmit={e => this.handleRegister(e)}>ต่อไป</button>
 
             </form>
+            
           </div>
         </div>
       </Style>
@@ -82,7 +83,7 @@ const Style = Styled.div`
   #Register{
     .content{
       animation-name: fadeInRight;
-      animation-duration: 0.2s;
+      animation-duration: 0.3s;
     }
     button{
       width: 100%;

@@ -6,6 +6,7 @@ import PageTransition from 'react-router-page-transition';
 
 import ToolBar from './ToolBar'
 import NavBar from './NavBar'
+import Content from '../components/Content'
 
 class Layout extends Component {
 
@@ -17,9 +18,9 @@ class Layout extends Component {
           <NavBar />
 
           <div className="page">
-            <div className="content">
+            <Content>
               {this.props.children}
-            </div>
+            </Content>
           </div>
 
 
@@ -37,8 +38,8 @@ const Style = Styled.div`
     .page{
       width: 100%;
       .content{
-        // animation-name: fadeInUp;
-        // animation-duration: 0.3s;
+        animation-name: fadeInUp;
+        animation-duration: 0.3s;
       }
     }
   }

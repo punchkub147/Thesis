@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
+import _ from 'lodash'
 
 import Layout from '../layouts'
 import ToolBar from '../layouts/ToolBar'
@@ -18,6 +19,10 @@ class Login extends Component {
     employer: {
       employer_id: '',
       data: {},
+    },
+    user: {
+      uid: '',
+      data: {},
     }
   }
 
@@ -26,11 +31,11 @@ class Login extends Component {
     const _this = this
 
     auth.onAuthStateChanged(user => {
-      user
-        ?getUser('employee', user => {
+      !user
+        ?console.log("กรุณาเข้าสู่ระบบ")
+        :getUser('employee', user => {
           this.setState({user})
         })
-        :browserHistory.push('/login')
     })
 
     db.collection('works').doc(work_id)
@@ -57,20 +62,28 @@ class Login extends Component {
     e.preventDefault();
     const { user, work, employer } = this.state
     
-    db.collection('needWork').add({
-      employer_id: employer.employer_id,
-
-      work_id: work.work_id,
-      work_name: work.data.name,
-      startAt: work.data.startAt,
-
-      employee_id: user.uid,
-      employee_name: `${user.data.fname} ${user.data.lname}`,
-      employee_phone: user.data.phone,
-
-      pack: 1, //user ต้องการจำนวนกี่ชิ้น 
-      deviceToken: user.data.deviceToken,
-    })
+    if(user.uid){
+      const needWork = {
+        employer_id: employer.employer_id,
+  
+        work_id: work.work_id,
+        work_name: work.data.name,
+        startAt: work.data.startAt,
+  
+        employee_id: user.uid,
+        employee_name: `${user.data.fname} ${user.data.lname}`,
+        employee_phone: user.data.phone,
+  
+        pack: 1, //user ต้องการจำนวนกี่ชิ้น 
+        deviceToken: user.data.deviceToken,
+      }
+      db.collection('needWork').add(_.pickBy(needWork, _.identity))
+      .then(data => {
+        alert("รับงานเรียบร้อย")
+      })
+    }else{
+      alert("กรุณาเข้าสู่ระบบ")
+    }
   }
 
   render() {
@@ -79,68 +92,73 @@ class Login extends Component {
 
     return (
       <Style>
-        <ToolBar
-          title={this.props.route.title} 
-          left={() => browserHistory.goBack()} 
-          // right={e => this.handleRegister(e)}
+        <div id="Work">
+          <ToolBar
+            title={this.props.route.title} 
+            left={() => browserHistory.goBack()} 
+            // right={e => this.handleRegister(e)}
           />
-          <img className="imageWork" src="http://a.lnwfile.com/_/a/_raw/j2/zv/up.jpg"/>
-
-          <div classname="container">
-
-            <div className="row">
-              <div className="col-6">
-                {data.name}
+            <img className="imageWork" src={data.image}/>
+          
+            <div className="container">
+          
+              <div className="row">
+                <div className="col-6">
+                  {data.name}
+                </div>
+                <div className="col-6 price">
+                  {data.piece} ชิ้น {data.price*data.piece} บาท
+                </div>
               </div>
-              <div className="col-6">
-                {data.piece} ชิ้น {data.price*data.piece} บาท
+          
+              <div className="row">
+                <div className="col-3">
+                  {data.sendBy}
+                </div>
+                <div className="col-3">
+                  {data.startAt}
+                </div>
+                <div className="col-3">
+                  {data.endAt}
+                </div>
+                <div className="col-3">
+                  {data.worktime}
+                </div>
               </div>
+          
+              <div className="row">
+                <div className="col-3">
+                  <img className="imageTool" src=""/>
+                </div>
+                <div className="col-9">
+                  {data.tool}
+                </div>
+              </div>
+          
+              <div className="row">
+                <div className="col-12">
+                  {data.detail}
+                </div>
+              </div>
+          
+              <div className="row">
+                <div className="col-3">
+                  <img className="imageEmployer" src={employer.data.image}/>
+                </div>
+                <div className="col-3">
+                  {employer.data.name}
+                  {employer.data.phone}
+                  {employer.data.address}
+                </div>
+              </div>
+          
             </div>
-
-            <div className="row">
-              <div className="col-3">
-                {data.sendBy}
-              </div>
-              <div className="col-3">
-                {data.startAt}
-              </div>
-              <div className="col-3">
-                {data.endAt}
-              </div>
-              <div className="col-3">
-                {data.worktime}
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-3">
-                <img className="imageTool" src=""/>
-              </div>
-              <div className="col-9">
-                {data.tool}
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-12">
-                {data.detail}
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-3">
-                <img className="imageEmployer" src={employer.data.image}/>
-              </div>
-              <div className="col-3">
-                {employer.data.name}
-                {employer.data.phone}
-                {employer.data.address}
-              </div>
-            </div>
-
+          
+          <div className="needWork" >
+            <button onClick={e => this.handleNeedWork(e)}> รับงาน </button>
           </div>
-
-          <button className="needWork" onClick={e => this.handleNeedWork(e)}> รับงาน </button>
+          
+        </div>
       </Style>
     );
   }
@@ -149,16 +167,32 @@ class Login extends Component {
 export default Login;
 
 const Style = Styled.div`
+#Work{
   .imageWork{
     width: 100%;
     height: 230px;
+    object-fit: cover;
+
+    animation-name: fadeInDown;
+    animation-duration: 0.5s;
   }
+  .container{
+    animation-name: fadeInUp;
+    animation-duration: 0.5s;
+  }
+
   .needWork{
     position: fixed;
     bottom: 0;
     width: 100%;
-    height: 40px;
-    line-height: 40px;
-    text-align: center;
+    height: 60px;
+    background: ${AppStyle.color.card};
+    ${AppStyle.shadow.lv1}
+    padding-top: 10px;
+    box-sizing: border-box;
   }
+  .price{
+    text-align: right;
+  }
+}
 `

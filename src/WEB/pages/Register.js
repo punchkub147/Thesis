@@ -4,14 +4,13 @@ import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
 
-import { register, auth, createUser } from '../../api/firebase'
+import { register, auth, createUser, db } from '../../api/firebase'
 import { getToken } from '../../api/notification'
 
 
 class Register extends Component {
   handleRegister = async (e) => {
     e.preventDefault();
-    const collection = "employer"
     const data = {
       deviceToken: await getToken()
     }
@@ -25,9 +24,12 @@ class Register extends Component {
         console.log(e.message);
         //openNotificationWithIcon('error',error.message,'');
       });
-      if(user){
-        await createUser(user, data, collection)
-        browserHistory.push({pathname: '/web/works', state: { goNext: true }})
+      if(user){ 
+        await db.collection('employer').doc(user.uid).set(data)
+        .then(() => {
+          console.log('success')
+        })
+        //browserHistory.push('/web/works')
       }
     }
   }

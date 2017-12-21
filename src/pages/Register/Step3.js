@@ -24,13 +24,13 @@ class Register3 extends Component {
             left={() => browserHistory.push('/register2')} 
             right={() => browserHistory.push('/search')}/>
 
-          <Step/>
+          <Step step='3'/>
           
-          <div className="container content">
-            <div className="row">
+          <div className=" content">
+            <div className="">
               {data.map(data =>
-                <div className="col-6">
-                  <div className="category">{data}</div>
+                <div className="category">
+                  <div className="card">{data}</div>
                 </div>
               )}
             </div>
@@ -50,11 +50,17 @@ const Style = Styled.div`
       animation-duration: 0.3s;
     }
     .category{
+      width: 50%;
       height: 100px;
       text-align: center;
       line-height: 100px;
-      ${AppStyle.shadow.lv1}
-      margin-bottom: 20px;
+      float: left;
+      background: #ccc;
+      padding: 10px 5px;
+    }
+    .card{
+      background: white;
+
     }
   }
 `

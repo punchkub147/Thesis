@@ -1,15 +1,26 @@
 const AppStyle = {
   color: {
-    main: "#dc5f6d",
-    sub: "#d0be85",
-    bg: "#e0eaea",
-    card: "white",
-    maintext: "#dc5f6d",
-    text: "#d6d6d6",
-    subtext: "#666",
+    main: "#eb7985",
+    sub: "#72c6aa",
+    bg: "#f4e4d1",
+    card: "#fcf4e2",
+    maintext: "#eb7985",
+    text: "#603913",
+    subtext: "#f4e4d1",
   },
+
   shadow: {
     lv1: "box-shadow: 0 0 15px #aaa;"
+  },
+
+  font: {
+    text1: `
+      font-size: 14px; 
+      font-weight: bold; 
+    `,
+    text2: `
+      font-size: 12px; 
+    `,
   },
 
 

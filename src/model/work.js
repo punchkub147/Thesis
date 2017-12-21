@@ -1,5 +1,6 @@
 {
   employer_id: user.uid,
+  employer_name: 'name',
 
   image: 'pathname.jpg',
   name: 'สานตะกร้า',

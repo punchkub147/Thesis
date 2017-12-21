@@ -38,7 +38,7 @@ export const createUser = async (user, data, collection) => {
   const userData = user
   console.log('CREATED', user)
   //firebase.database().ref(`users/${user.uid}`).set(userData)
-  db.collection(collection).doc(user.uid).set(data)
+  await db.collection(collection).doc(user.uid).set(data)
 }
 
 export const updateAt = async (collection, doc, data) => {

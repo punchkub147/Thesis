@@ -1,22 +1,22 @@
 {
-  "short_name": "โอมเบสท์",
+  "short_name": "โฮมเบสท์",
   "name": "หางานทำที่บ้าน",
   "icons": [
     {
-      "src": "logo.jpg",
+      "src": "logosmall.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {  
-      "src": "logo.jpg",  
+      "src": "logolarge.png",  
       "sizes": "512x512",  
       "type": "image/png"  
     }
   ],
   "start_url": "/index.html",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff",
+  "theme_color": "#f4e4d1",
+  "background_color": "#f4e4d1",
 
 
   "gcm_sender_id": "103953800507"

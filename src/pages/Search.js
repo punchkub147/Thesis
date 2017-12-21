@@ -5,6 +5,7 @@ import AppStyle from '../config/style'
 import _ from 'lodash'
 
 import Layout from '../layouts'
+import WorkItem from '../components/WorkItem'
 
 import { db } from '../api/firebase'
 
@@ -27,15 +28,14 @@ class Search extends Component {
 
   render() {
     const { worksList } = this.state
+    console.log(worksList)
+
     return (
       <Layout route={this.props.route}>
         <Style>
           <div id="Search">
-            {_.map(worksList, work => 
-              <div>
-                {work.name}
-                <Link to={`/work/${work.work_id}`}>View</Link>
-              </div>
+            {_.map(worksList, (work, i) => 
+              <WorkItem data={work} i={i}/>
             )}
           </div>
         </Style>
@@ -48,7 +48,7 @@ export default Search;
 
 const Style = Styled.div`
   #Search{
-    color: ${AppStyle.color.main}
+    padding-top: 10px;
   }
 
 `

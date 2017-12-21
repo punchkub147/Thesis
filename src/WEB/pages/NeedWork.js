@@ -29,17 +29,14 @@ class NeedWork extends Component {
   }
 
   getNeedWork = (user) => {
-    db.collection('needWork').where('employer_id', '==', user.uid).get()
-    .then(async querySnapshot => {
+    db.collection('needWork').where('employer_id', '==', user.uid)
+    .onSnapshot(async querySnapshot => {
       let needWorkList = []
       await querySnapshot.forEach(function(doc) {
         needWorkList.push(Object.assign(doc.data(),{needWork_id: doc.id}))
       });
       await this.setState({needWorkList})
     })
-    .catch(function(error) {
-      console.log("Error getting documents: ", error);
-    });
   }
 
   handleSendWork = (data) => {
@@ -48,9 +45,9 @@ class NeedWork extends Component {
     /////////////////
 
     db.collection('works').doc(data.work_id).get()
-    .then(snapshot => {
+    .then(async snapshot => {
       const work = snapshot.data()
-      db.collection('working').add({
+      const working = {
         employee_id: data.employee_id,
         work_id: snapshot.id,
         total_piece: work.piece*data.pack,
@@ -59,21 +56,24 @@ class NeedWork extends Component {
         work_name: work.name,
         startAt: work.startAt,
         endAt: work.endAt,
-      })
+      }
+      await db.collection('working').add(_.pickBy(working, _.identity))
+      console.log('ADD WORKING SUCCESS')
     })
     /////////////////
 
-    const title = 'บริษัทกำลังส่งงานให้'
-    const message = `บริษัทกำลังส่ง ${data.work_name} ในวันที่ ${data.startAt}`
-    db.collection('notifications').add({
+    const title = 'บริษัทยืนยันการส่งงาน'
+    const message = `บริษัทจะจัดส่ง ${data.work_name} ให้ในวันที่ ${data.startAt}`
+    const notifications = {
       employee_id: data.employee_id,
-      type: 'work',
+      type: 'send',
       title,
       message,
       link: `${Config.host}/tasks`,
       watched: false,
       createAt: moment().format(),
-    })
+    }
+    db.collection('notifications').add(_.pickBy(notifications, _.identity))
 
     PushFCM({
       to: data.deviceToken,

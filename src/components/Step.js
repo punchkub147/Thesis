@@ -7,24 +7,24 @@ import _ from 'lodash'
 class Step extends Component {
 
   render() {
-
+    const { step } = this.props
     return (
       <Style>
         <div id="Step">
           <div className="step">
-            <div className="">O</div>
+            <div className="">{step >= 1?'O':'X'}</div>
             ลงทะเบียน
           </div>
           <div className="step">
-            <div className="">O</div>
+            <div className="">{step >= 2?'O':'X'}</div>
             ประวัติ
           </div>
           <div className="step">
-            <div className="">O</div>
+            <div className="">{step >= 3?'O':'X'}</div>
             ถวามถนัด
           </div>
           <div className="step">
-            <div className="">O</div>
+            <div className="">{step >= 4?'O':'X'}</div>
             วันที่ทำงาน
           </div>
         </div>

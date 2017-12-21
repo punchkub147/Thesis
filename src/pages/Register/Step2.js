@@ -4,7 +4,7 @@ import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
 
-import { register, getUser, updateAt, db, auth } from '../../api/firebase'
+import { getUser, updateAt, db, auth, storage } from '../../api/firebase'
 import { getToken } from '../../api/notification'
 
 import Layout from '../../layouts'
@@ -21,19 +21,21 @@ class Register2 extends Component {
     user: {
       uid: '',
       data: {
+        profileImage: '',
         fname: '',
         lname: '',
         phone: '',
         personId: '',
         //address
-          area: '',
-          district: '',
-          homeNo: '',
-          postCode: '',
-          province: '',
-          road: '',
+        area: '',
+        district: '',
+        homeNo: '',
+        postCode: '',
+        province: '',
+        road: '',
       }
-    }
+    },
+    image64: '',
   }
 
   async componentDidMount() {
@@ -69,6 +71,42 @@ class Register2 extends Component {
       }
     })
   }
+
+  handleChangeImage = async (e) => {
+    const _this = this;
+    const file = e.target.files[0];
+    var reader = await new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = await function () {
+      _this.setState({ 
+        image64: reader.result
+      })
+    };
+    reader.onerror = await function (error) {
+      console.log('Error: ', error);
+    };
+
+    this.storageImage(file)
+  }
+
+  storageImage = async (file) => {
+    const { user } = this.state
+    const { data } = user
+    const imageId = this.state.user.uid
+    const storageImage = await storage.child('employee').child(imageId);
+    await storageImage.put(file);
+    const imageUri = await storageImage.getDownloadURL();
+    this.setState({
+      user: {
+        ...user,
+        data: {
+          ...data,
+          profileImage: imageUri
+        }
+      }
+    })
+  }
+
   // handleChangeAddress = (e, ref) => {
   //   const { user } = this.state
   //   const { data } = user
@@ -88,7 +126,9 @@ class Register2 extends Component {
   // }
 
   render() {
-    const user =this.state.user.data
+    const user = this.state.user.data
+    const { image64 } = this.state
+    console.log(this.state)
     return (
       <Style >
         <div id="Register2">
@@ -98,29 +138,39 @@ class Register2 extends Component {
             // right={e => this.handleProfile(e)}
             />
 
-          <Step/>
-          <div className="content">
-            <form className="" onSubmit={e => this.handleProfile(e)}>
+          <Step step='2'/>
 
+          <div className="container">
+          
+            <form className="" onSubmit={this.handleProfile}>
+                <img className="profileImage" src={user['profileImage']}/>
+
+                <input type="file" 
+                  onChange={this.handleChangeImage}
+                />
                 <input type="text" 
-                  value={user['fname']?user['fname']:''} 
+                  value={user['fname']} 
                   placeholder="ชื่อจริง"
+                  required
                   onChange={e => this.handleChangeUser(e, 'fname')}/>
                 <input type="text" 
                   value={user['lname']} 
                   placeholder="นามสกุล"
+                  required
                   onChange={e => this.handleChangeUser(e, 'lname')}/>
                 <input type="text" 
                   value={user['phone']} 
                   placeholder="เบอร์โทรศัพท์"
+                  required
                   onChange={e => this.handleChangeUser(e, 'phone')}/>
                 <input type="text" 
                   value={user['personId']} 
                   placeholder="รหัสประจำตัวประชาชน"
+                  required
                   onChange={e => this.handleChangeUser(e, 'personId')}/>
 
                 <div>สถานที่รับงาน</div>
-                
+
                 <input type="text" 
                   value={user['homeNo']} 
                   placeholder="บ้านเลขที่"
@@ -146,7 +196,7 @@ class Register2 extends Component {
                   placeholder="รหัสไปรษณีย์"
                   onChange={e => this.handleChangeUser(e, 'postcode')}/>
 
-              <button type="submit" onSubmit={e => this.handleProfile(e)}>ต่อไป</button>
+              <button type="submit" onSubmit={this.handleProfile}>ต่อไป</button>
             
             </form>
           </div>
@@ -162,7 +212,19 @@ const Style = Styled.div`
   #Register2{
     .content{
       animation-name: fadeInRight;
-      animation-duration: 0.2s;
+      animation-duration: 0.3s;
+    }
+    .profileImage{
+      width: 135px;
+      height: 135px;
+      border-radius: 100%;
+      background: #ccc;
+      object-fit: cover;
+      margin: 0 auto;
+      text-align: center;
+      img{
+        width: 100%;
+      }
     }
     .haft{
       // width: 45%;

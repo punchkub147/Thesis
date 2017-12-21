@@ -38,11 +38,11 @@ class Login extends Component {
               <div className="row justify-content-center">
                 <div className="col-md-3">
 
-                  <form onSubmit={(e) => this.handleLogin(e)}>   
+                  <form onSubmit={this.handleLogin}>   
                     <input placeholder="e-mail" type="email" ref={r => this.email = r }/>
                     <input placeholder="password" type="password" ref={r => this.password = r }/>
                     
-                    <button type="submit" onSubmit={(e) => this.handleLogin(e)} className="">Login</button>
+                    <button type="submit" onSubmit={this.handleLogin} className="">Login</button>
                   </form>
 
                   <Link to="/web/register"> <button type="submit" className="">Register</button> </Link>

@@ -5,6 +5,7 @@ import AppStyle from '../config/style'
 import _ from 'lodash'
 
 import Layout from '../layouts'
+import send from '../img/send.png'
 
 import { setUpNoti, getToken, PushFCM, PushSelf } from '../api/notification'
 
@@ -14,7 +15,7 @@ class Notification extends Component {
 
   state = {
     user: {},
-    notiList: {},
+    notiList: [],
   }
 
   componentDidMount() {
@@ -29,7 +30,7 @@ class Notification extends Component {
   }
 
   getNotification = (user) => {
-    db.collection('notification').where('employee_id', '==', user.uid).get()
+    db.collection('notifications').where('employee_id', '==', user.uid).get()
     .then(snapshot => {
       let notiList = []
       snapshot.forEach(data => {
@@ -58,19 +59,19 @@ class Notification extends Component {
 
   render() {
     const { notiList } = this.state
-    console.log()
     return (
       <Layout route={this.props.route}>
         <Style>
           <div id="Notification">
-
             <button className="mui-btn" onClick={this.handleSendNoti}>TEST SEND NOTI</button>
             <button className="mui-btn" onClick={this.handleServerNoti}>SERVER SEND NOTI</button>
 
-            {_.map(notiList, data => 
-              <div>
-                {data.type} {data.message}
-              </div>
+            {_.map(notiList, (data,i) => 
+              <Noti fade={i*0.2}>
+                <img src={send}/>
+                <div className="text">{data.message}</div>
+                <div className="time">{/*data.createAt*/}</div>
+              </Noti>
             )}
           </div>
         </Style>
@@ -82,5 +83,30 @@ class Notification extends Component {
 export default Notification;
 
 const Style = Styled.div`
+#Notification{
+  padding-top: 10px;
+}
+`
 
+const Noti = Styled.div`
+  width: 100%;
+  min-height: 70px;
+  background: ${AppStyle.color.card};
+  margin-bottom: 10px;
+  padding: 10px;
+  box-sizing: border-box;
+  img{
+    width: 40px;
+    float: left;
+    margin-right: 10px;
+  }
+  .text{
+    ${AppStyle.font.text1}
+  }
+  .time{
+    ${AppStyle.font.text2}
+  }
+
+  animation-name: fadeInUp;
+  animation-duration: ${props => props.fade+0.2}s;
 `
