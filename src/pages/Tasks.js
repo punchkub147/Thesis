@@ -4,6 +4,7 @@ import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 import moment from 'moment'
+import store from 'store'
 
 import { getUser, auth, db } from '../api/firebase'
 
@@ -15,15 +16,18 @@ class Tasks extends Component {
     workingList: {}
   }
 
-  componentDidMount() {
-    auth.onAuthStateChanged(user => {
-      user
-        ?getUser('employee', user => {
-          this.setState({user})
-          this.getWorking(user)
-        })
-        :browserHistory.push('/login')
-    })  
+  async componentDidMount() {
+    // auth.onAuthStateChanged(user => {
+    //   user
+    //     ?getUser('employee', user => {
+    //       this.setState({user})
+    //       this.getWorking(user)
+    //     })
+    //     :browserHistory.push('/login')
+    // }) 
+    const user = await store.get('employee')
+    this.setState({user})
+    this.getWorking(user)
   }
 
   getWorking = (user) => {
@@ -37,16 +41,23 @@ class Tasks extends Component {
     })
   }
 
+  handleDelete = (id) => {
+    db.collection('working').doc(id).delete()
+  }
+
   render() {
     const { workingList } = this.state
-
     return (
       <Layout route={this.props.route}>
         <Style>
           <div id="Tasks">
             {_.map(workingList, working => 
-              <div>
-                {working.work_name} {working.total_piece} {working.startAt}
+              <div className="task">
+                {working.work_name} ราคา{working.total_piece} เริ่มงานวันที่{working.startAt}   
+                {moment(working.createAt).fromNow()}
+                {/*
+                  <div onClick={() => this.handleDelete(working.working_id)}>DELETE</div>
+                */}
               </div>
             )}
           </div>
@@ -67,6 +78,8 @@ export default Tasks;
 
 const Style = Styled.div`
   #Tasks{
-    color: ${AppStyle.color.main}
+    .task{
+      margin-bottom: 10px;
+    }
   }
 `

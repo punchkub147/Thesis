@@ -6,6 +6,7 @@ import AppStyle from '../../config/style'
 import Layout from '../layouts'
 
 import { loginWithEmail, auth, db } from '../../api/firebase'
+import { getToken } from '../../api/notification'
 
 class Login extends Component {
 
@@ -18,8 +19,8 @@ class Login extends Component {
       employerRef.get().then(doc => {
         doc.exists
           ?browserHistory.push('/web/works')
-          :employeeRef.get().then(doc => {
-            doc.exists&&browserHistory.push('/search')
+          :employeeRef.get().then(async doc => {
+            await doc.exists&&browserHistory.push('/search')
           })
       })
       //browserHistory.push('/web/works')
@@ -37,8 +38,9 @@ class Login extends Component {
             <div className="container">
               <div className="row justify-content-center">
                 <div className="col-md-3">
-
                   <form onSubmit={this.handleLogin}>   
+                    สำหรับผู้ประกอบการ<br/><br/>
+
                     <input placeholder="e-mail" type="email" ref={r => this.email = r }/>
                     <input placeholder="password" type="password" ref={r => this.password = r }/>
                     
@@ -61,7 +63,7 @@ export default Login;
 const Style = Styled.div`
   #Login{    
     form{
-      margin-top: 200px;
+      margin-top: 150px;
     }
   }
 `

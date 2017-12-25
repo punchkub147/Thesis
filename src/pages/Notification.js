@@ -3,6 +3,7 @@ import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
+import store from 'store'
 
 import Layout from '../layouts'
 import send from '../img/send.png'
@@ -19,17 +20,27 @@ class Notification extends Component {
   }
 
   componentDidMount() {
-    auth.onAuthStateChanged(user => {
-      user
-        ?getUser('employee', user => {
-          this.setState({user})
-          this.getNotification(user)
-        })
-        :browserHistory.push('/login')
+    // auth.onAuthStateChanged(user => {
+    //   user
+    //     ?getUser('employee', user => {
+    //       this.setState({user})
+    //       this.getNotification(user)
+    //     })
+    //     :browserHistory.push('/login')
+    // })
+    this.setState({
+      user: store.get('employee')
     })
+    this.getNotification(store.get('employee'))
   }
 
   getNotification = (user) => {
+    this.setState({
+      notiList: store.get('notifications')
+    })
+
+    if(!user)return
+
     db.collection('notifications').where('employee_id', '==', user.uid).get()
     .then(snapshot => {
       let notiList = []
@@ -37,7 +48,9 @@ class Notification extends Component {
         notiList.push(Object.assign(data.data(),{noti_id: data.id}))
       })
       this.setState({notiList})
+      store.set('notifications',notiList)
     })
+    
   }
 
   handleSendNoti = async () => {
@@ -63,16 +76,19 @@ class Notification extends Component {
       <Layout route={this.props.route}>
         <Style>
           <div id="Notification">
-            <button className="mui-btn" onClick={this.handleSendNoti}>TEST SEND NOTI</button>
-            <button className="mui-btn" onClick={this.handleServerNoti}>SERVER SEND NOTI</button>
-
+            
             {_.map(notiList, (data,i) => 
               <Noti fade={i*0.2}>
                 <img src={send}/>
                 <div className="text">{data.message}</div>
                 <div className="time">{/*data.createAt*/}</div>
+                
               </Noti>
             )}
+
+            <button className="mui-btn" onClick={this.handleSendNoti}>TEST SEND NOTI</button>
+            <button className="mui-btn" onClick={this.handleServerNoti}>SERVER SEND NOTI</button>
+
           </div>
         </Style>
       </Layout>

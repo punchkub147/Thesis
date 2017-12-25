@@ -28,6 +28,7 @@ class Step extends Component {
             วันที่ทำงาน
           </div>
         </div>
+        <div style={{clear:'both'}}/>
       </Style>
     );
   }

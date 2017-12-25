@@ -6,6 +6,7 @@ import _ from 'lodash'
 
 import Layout from '../layouts'
 import ToolBar from '../layouts/ToolBar'
+import BottomButton from '../components/BottomButton'
 
 import { auth, db, getUser } from '../api/firebase'
 
@@ -151,12 +152,9 @@ class Login extends Component {
                   {employer.data.address}
                 </div>
               </div>
-          
             </div>
-          
-          <div className="needWork" >
-            <button onClick={e => this.handleNeedWork(e)}> รับงาน </button>
-          </div>
+
+          <BottomButton onClick={e => this.handleNeedWork(e)} text="รับงาน"/>
           
         </div>
       </Style>
@@ -179,17 +177,6 @@ const Style = Styled.div`
   .container{
     animation-name: fadeInUp;
     animation-duration: 0.5s;
-  }
-
-  .needWork{
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    height: 60px;
-    background: ${AppStyle.color.card};
-    ${AppStyle.shadow.lv1}
-    padding-top: 10px;
-    box-sizing: border-box;
   }
   .price{
     text-align: right;

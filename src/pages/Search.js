@@ -3,6 +3,7 @@ import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
+import store from 'store'
 
 import Layout from '../layouts'
 import WorkItem from '../components/WorkItem'
@@ -16,19 +17,23 @@ class Search extends Component {
   }
 
   componentDidMount() {
-    db.collection('works').get()
-    .then(snapshot => {
+    this.setState({
+      worksList: store.get('works')
+    })
+    db.collection('works')
+    .onSnapshot(snapshot => {
       let worksList = []
       snapshot.forEach(doc => {
         worksList.push(Object.assign(doc.data(),{work_id: doc.id}))
       })
       this.setState({worksList})
+      store.set('works', worksList)
     })
   }
 
   render() {
+    //const worksList = store.get('works')
     const { worksList } = this.state
-    console.log(worksList)
 
     return (
       <Layout route={this.props.route}>

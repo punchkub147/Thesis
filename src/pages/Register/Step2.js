@@ -3,6 +3,7 @@ import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
+import store from 'store'
 
 import { getUser, updateAt, db, auth, storage } from '../../api/firebase'
 import { getToken } from '../../api/notification'
@@ -10,6 +11,7 @@ import { getToken } from '../../api/notification'
 import Layout from '../../layouts'
 import ToolBar from '../../layouts/ToolBar'
 import Step from '../../components/Step'
+import BottomButton from '../../components/BottomButton';
 
 const isEmpty = (data) => {
   return data === ""?true:false
@@ -39,6 +41,10 @@ class Register2 extends Component {
   }
 
   async componentDidMount() {
+    // console.log(store.get('employee'))
+    // this.setState({
+    //   user: store.get('employee')
+    // })
     await getUser('employee', user => {
       this.setState({
         user: user
@@ -58,7 +64,7 @@ class Register2 extends Component {
     }
   }
 
-  handleChangeUser = (e, ref) => {
+  handleChangeProfile = (e, ref) => {
     const { user } = this.state
     const { data } = user
     this.setState({
@@ -128,7 +134,7 @@ class Register2 extends Component {
   render() {
     const user = this.state.user.data
     const { image64 } = this.state
-    console.log(this.state)
+
     return (
       <Style >
         <div id="Register2">
@@ -140,7 +146,7 @@ class Register2 extends Component {
 
           <Step step='2'/>
 
-          <div className="container">
+          <div className="container animate">
           
             <form className="" onSubmit={this.handleProfile}>
                 <img className="profileImage" src={user['profileImage']}/>
@@ -152,54 +158,55 @@ class Register2 extends Component {
                   value={user['fname']} 
                   placeholder="ชื่อจริง"
                   required
-                  onChange={e => this.handleChangeUser(e, 'fname')}/>
+                  onChange={e => this.handleChangeProfile(e, 'fname')}/>
                 <input type="text" 
                   value={user['lname']} 
                   placeholder="นามสกุล"
                   required
-                  onChange={e => this.handleChangeUser(e, 'lname')}/>
+                  onChange={e => this.handleChangeProfile(e, 'lname')}/>
                 <input type="text" 
                   value={user['phone']} 
                   placeholder="เบอร์โทรศัพท์"
                   required
-                  onChange={e => this.handleChangeUser(e, 'phone')}/>
+                  onChange={e => this.handleChangeProfile(e, 'phone')}/>
                 <input type="text" 
                   value={user['personId']} 
                   placeholder="รหัสประจำตัวประชาชน"
                   required
-                  onChange={e => this.handleChangeUser(e, 'personId')}/>
+                  onChange={e => this.handleChangeProfile(e, 'personId')}/>
 
                 <div>สถานที่รับงาน</div>
 
                 <input type="text" 
                   value={user['homeNo']} 
                   placeholder="บ้านเลขที่"
-                  onChange={e => this.handleChangeUser(e, 'homeNo')}/>
+                  onChange={e => this.handleChangeProfile(e, 'homeNo')}/>
                 <input type="text" 
                   value={user['road']} 
                   placeholder="ถนน"
-                  onChange={e => this.handleChangeUser(e, 'road')}/>
+                  onChange={e => this.handleChangeProfile(e, 'road')}/>
                 <input type="text" 
                   value={user['area']} 
                   placeholder="เขต"
-                  onChange={e => this.handleChangeUser(e, 'area')}/>
+                  onChange={e => this.handleChangeProfile(e, 'area')}/>
                 <input type="text" 
                   value={user['district']} 
                   placeholder="แขวง"
-                  onChange={e => this.handleChangeUser(e, 'district')}/>
+                  onChange={e => this.handleChangeProfile(e, 'district')}/>
                 <input type="text" 
                   value={user['province']} 
                   placeholder="จังหวัด"
-                  onChange={e => this.handleChangeUser(e, 'province')}/>
+                  onChange={e => this.handleChangeProfile(e, 'province')}/>
                 <input type="text" 
                   value={user['postcode']} 
                   placeholder="รหัสไปรษณีย์"
-                  onChange={e => this.handleChangeUser(e, 'postcode')}/>
+                  onChange={e => this.handleChangeProfile(e, 'postcode')}/>
 
-              <button type="submit" onSubmit={this.handleProfile}>ต่อไป</button>
-            
+              {/*<button type="submit" onSubmit={this.handleProfile}>ต่อไป</button>*/}
             </form>
+            
           </div>
+          <BottomButton onClick={this.handleProfile} text="ต่อไป"/>
         </div>
       </Style>
     );
@@ -210,8 +217,8 @@ export default Register2;
 
 const Style = Styled.div`
   #Register2{
-    .content{
-      animation-name: fadeInRight;
+    .animate{
+      animation-name: fadeInUp;
       animation-duration: 0.3s;
     }
     .profileImage{
@@ -233,6 +240,9 @@ const Style = Styled.div`
     }
     button{
       width: 100%;
+    }
+    .error{
+      border: solid 2px red;
     }
   }
 `

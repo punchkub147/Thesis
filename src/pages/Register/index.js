@@ -4,7 +4,7 @@ import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
 
-import { register, auth, createUser } from '../../api/firebase'
+import { register, auth, createUser, db } from '../../api/firebase'
 import { getToken } from '../../api/notification'
 
 import Layout from '../../layouts'
@@ -14,10 +14,11 @@ import Step from '../../components/Step'
 class Register extends Component {
   handleRegister = async (e) => {
     e.preventDefault();
-    const collection = "employee"
+
     const data = {
       deviceToken: await getToken()
     }
+
     const email = this.email.value
     const password = this.password.value
     const password2 = this.password2.value
@@ -29,7 +30,7 @@ class Register extends Component {
         //openNotificationWithIcon('error',error.message,'');
       });
       if(user){
-        await createUser(user, data, collection)
+        db.collection('employee').doc(user.uid).set(data)
         browserHistory.push('/register2')
       }
     }
@@ -51,22 +52,13 @@ class Register extends Component {
           <div className='content'>
             <form onSubmit={e => this.handleRegister(e)}>
 
-              <div className="mui-textfield mui-textfield--float-label">
-                <input type="email" ref={r => this.email = r }/>
-                <label>E-mail</label>
-              </div>
+              <input type="email" placeholder="อีเมลล์" ref={r => this.email = r }/>
 
-              <div className="mui-textfield mui-textfield--float-label">
-                <input type="password" ref={r => this.password = r }/>
-                <label>Password</label>
-              </div>
+              <input type="password" placeholder="รหัสผ่าน" ref={r => this.password = r }/>
 
-              <div className="mui-textfield mui-textfield--float-label">
-                <input type="password" ref={r => this.password2 = r }/>
-                <label>Confirm Password</label>
-              </div>
+              <input type="password" placeholder="ยืนยันรหัสผ่าน" ref={r => this.password2 = r }/>
  
-              <button className="mui-btn" type="submit" onSubmit={e => this.handleRegister(e)}>ต่อไป</button>
+              <button type="submit" onSubmit={e => this.handleRegister(e)}>ต่อไป</button>
 
             </form>
             
@@ -82,11 +74,8 @@ export default Register;
 const Style = Styled.div`
   #Register{
     .content{
-      animation-name: fadeInRight;
+      animation-name: fadeInUp;
       animation-duration: 0.3s;
-    }
-    button{
-      width: 100%;
     }
   }
 

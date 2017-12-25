@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
+import store from 'store'
 
 import logo from '../img/logo-xl.png'
 import bg12 from '../img/bg12.jpg'
@@ -9,22 +10,26 @@ import bg12 from '../img/bg12.jpg'
 import Layout from '../layouts'
 
 import { loginWithEmail, auth, db } from '../api/firebase'
+import { getToken } from '../api/notification'
+
 
 class Login extends Component {
 
   componentDidMount() {
     auth.onAuthStateChanged(async user => {
       if(user){
+
         const employerRef = await db.collection('employer').doc(user.uid)
         const employeeRef = await db.collection('employee').doc(user.uid)
         employerRef.get().then(doc => {
           doc.exists
             ?browserHistory.push('/web/works')
-            :employeeRef.get().then(doc => {
+            :employeeRef.get().then(async doc => {
               doc.exists
                 //&&browserHistory.push('/search')
             })
         })
+
       }
     })
   }
@@ -45,13 +50,19 @@ class Login extends Component {
   navigateUser = async (user) => {
     const employerRef = await db.collection('employer').doc(user.uid)
     const employeeRef = await db.collection('employee').doc(user.uid)
-    employeeRef.get().then(doc => {
-      doc.exists
-        ?browserHistory.push('/search')
-        :employerRef.get().then(doc => {
+    employeeRef.get().then(async doc => {
+      if(doc.exists){
+        browserHistory.push('/search')
+        await employeeRef.update({
+          deviceToken: await getToken()
+        })
+        console.log('UPDATE TOKEN')
+      }else{
+        employerRef.get().then(doc => {
           doc.exists
             &&browserHistory.push('/web/works')
         })
+      }
     })
   }
 
@@ -94,7 +105,7 @@ const Style = Styled.div`
   #Login{    
     background-image: url('${bg12}');
     background-size: 50px 10px;
-    height: 100vh;
+    min-height: 100vh;
 
     .content{
       animation-name: fadeInUp;

@@ -3,6 +3,9 @@ import { Router, browserHistory, Route, Link } from 'react-router';
 import AppStyle from '../config/style'
 import Styled from 'styled-components'
 
+import back from '../img/back.png'
+import next from '../img/next.png'
+
 class ToolBar extends Component {
 
   render() {
@@ -12,7 +15,7 @@ class ToolBar extends Component {
         <div id="ToolBar">
             <div className="left">
               {this.props.left
-                ?<div onClick={this.props.left}><img src="https://image.flaticon.com/icons/svg/271/271218.svg"/></div>
+                ?<div onClick={this.props.left}><img src={back}/></div>
                 :""
               }
             </div>
@@ -21,7 +24,7 @@ class ToolBar extends Component {
             </div>
             <div className="right">
               {this.props.right
-                ?<div onClick={this.props.right}><img src="https://image.flaticon.com/icons/svg/14/14704.svg"/></div>
+                ?<div onClick={this.props.right}><img src={next}/></div>
                 :""
               }
             </div>
