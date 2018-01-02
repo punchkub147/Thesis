@@ -8,6 +8,7 @@ import logo from '../img/logo-xl.png'
 import bg12 from '../img/bg12.jpg'
 
 import Layout from '../layouts'
+import Button from '../components/Button'
 
 import { loginWithEmail, auth, db } from '../api/firebase'
 import { getToken } from '../api/notification'
@@ -73,24 +74,34 @@ class Login extends Component {
         <div id="Login">
           <div className="container">
             <div className="row justify-content-md-center">
+
               <div className="col-xs-12 col-sm-8 col-md-6 col-lg-4">
                 <div className="logo">
                   <img src={logo}/>
                 </div>
+              </div>
+              
+              <div className="card">
+                <div className="col-xs-12 col-sm-8 col-md-6 col-lg-4">
                 <form onSubmit={(e) => this.handleLogin(e)}>
                 
                   <input placeholder="อีเมลล์" type="email" ref={r => this.email = r }/>
 
                   <input placeholder="รหัสผ่าน" type="password" ref={r => this.password = r }/>
 
-                  <button type="submit" onSubmit={(e) => this.handleLogin(e)}>
+                  <Button type="submit" onSubmit={(e) => this.handleLogin(e)}>
                     Login
-                  </button>
+                  </Button>
 
                 </form>
 
-                <Link to="/register"> <button type="submit" className="">Register</button> </Link>
+                <Link to="/register">
+                  <div className="register">Register</div> 
+                </Link>
+              
+                </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -111,6 +122,13 @@ const Style = Styled.div`
       animation-name: fadeInUp;
       animation-duration: 0.3s;
     }
+
+    .card{
+      background: ${AppStyle.color.bg};
+      padding: 15px 0;
+      ${AppStyle.shadow.lv1}
+    }
+
     .logo{
       width: 100%;
 
@@ -121,11 +139,13 @@ const Style = Styled.div`
         width: 100%;
       }
     }
+
     box-sizing: border-box;
 
     .register{
       width: 100%;
       text-align: center;
+      margin-top: 20px;
     }
   }
 

@@ -11,62 +11,11 @@ import Step from '../../components/Step'
 
 import image from '../../img/logo-xl.png'
 import BottomButton from '../../components/BottomButton';
+import FormAbilities from '../../components/FormAbilities';
 
 class Register3 extends Component {
 
-  state = {
-    abilities: []
-  }
-
-  async componentDidMount() {
-    await getUser('employee', user => {
-      this.setState({
-        user,
-      })
-    })
-
-    db.collection('abilities').get()
-    .then(snap => {
-      let abilities = []
-      snap.forEach(data => {
-        //abilities.push({ability_id: data.id,data: _.set(data.data(),'selected', false)})
-        
-        abilities.push({
-          ability_id: data.id,
-          name: data.data().name,
-          image: data.data().image,
-          selected: false,
-        })
-      })
-      this.setState({abilities})
-    })
-  }
-
-
-  handleSelect = (key) => {
-    let { abilities } = this.state
-    _.set(abilities[key], `selected`, !this.state.abilities[key].selected);
-    this.setState({abilities})
-
-    let userAbilities = []
-    abilities.map(data => {
-      if(data.selected === true){
-        userAbilities.push(data.ability_id)
-      }
-    })
-    this.setState({userAbilities})
-  }
-
-  handleUpdateAbilities = () => {
-    const { user, userAbilities } = this.state
-    db.collection('employee').doc(user.uid).update({
-      abilities: userAbilities
-    })
-    browserHistory.push('/search')
-  }
-
   render() {
-    const { abilities } = this.state
     return (
       <Style>
         <div id="Register3">
@@ -77,8 +26,9 @@ class Register3 extends Component {
             />
 
           <Step step='3'/>
+          <FormAbilities push='/search' />
+          {/*
           <div className="container animate">
-
             <div className="row" style={{margin: '0 -5px'}}>
               {abilities.map((data, key) =>
                 <div onClick={() => this.handleSelect(key)}
@@ -97,10 +47,9 @@ class Register3 extends Component {
                 </div>
               )}
             </div>
-
           </div>
-
-          <BottomButton onClick={this.handleUpdateAbilities} text="ต่อไป"/>
+          <BottomButton onClick={this.handleUpdateAbilities}>ต่อไป</BottomButton>
+            */}
         </div>
       </Style>
     );

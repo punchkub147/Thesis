@@ -55,6 +55,7 @@ const Style = Styled.div`
       width: 20%;
       height: 100%;
       text-align: left;
+      cursor: pointer;
     }
     .title{
       float: left;
@@ -68,6 +69,7 @@ const Style = Styled.div`
       width: 20%;
       height: 100%;
       text-align: right;
+      cursor: pointer;
     }
     img{
       padding-top: 12.5px;

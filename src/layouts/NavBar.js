@@ -51,10 +51,10 @@ class NavBar extends Component {
             <div className="menu">
               {menuList.map(menu => 
                 <Link to={menu.path} onClick={this.addEffect}>
-                  <li>
+                  <div className={`list ${menu.path===this.props.route.path?'border':'border-t'}`}>
                     <img src={menu.icon} className={effect? "effect": ""}/>
-                  </li> 
-                </Link> 
+                  </div>
+                </Link>
               )}
             </div>
         </div>
@@ -78,22 +78,28 @@ const Style = Styled.div`
     .menu{
       width: 100%;
       background: red;
-      li{
+      .list{
         display: flex;
         align-items: center;
         justify-content: center;
-        
+        height: 50px;
         float: left;
         width: ${100/menuList.length}%;
         line-height: 50px;
         text-align: center;
         list-style-type: none;
-        padding-top: 12.5px;
+        //padding-top: 12.5px;
         img{
           width: 25px;
           height: 25px;
         }
       }
+    }
+    .border{
+      border-bottom: solid 2px ${AppStyle.color.sub};
+    }
+    .border-t{
+      border-bottom: solid 2px transparent;
     }
     .effect{
       // animation-name: pulse;

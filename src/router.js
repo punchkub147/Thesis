@@ -11,7 +11,8 @@ import Dashboard from './pages/Dashboard'
 import Notification from './pages/Notification'
 import Profile from './pages/Profile'
 import Work from './pages/Work'
-
+import EditAbilities from './pages/EditAbilities'
+import EditProfile from './pages/EditProfile';
 
 import Web from './WEB/Web'
 import WebAddWork from './WEB/pages/AddWork' 
@@ -85,6 +86,17 @@ class AppRouter extends Component {
         page: Work,
         title: "งาน",
       },
+      { path: '/editabilities',
+        exact: false,
+        page: EditAbilities,
+        title: "ความสามารถ",
+      },
+      { path: '/editprofile',
+        exact: false,
+        page: EditProfile,
+        title: "ข้อมูลส่วนตัว",
+      },
+      
 
       /////////////////////////////// WEB ////////////////////////////////////
 

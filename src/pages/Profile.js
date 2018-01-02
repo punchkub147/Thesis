@@ -18,18 +18,26 @@ class Profile extends Component {
     user: {
       uid: '',
       data: {
-        abilities: []
+        abilities: {}
       },
     }
   }
 
   componentDidMount() {
+    // db.collection('employee').where('abilities.ทอ', '==', true).get()
+    // .then( snap => {
+    //   snap.forEach(data => {
+    //     console.log(data.data().fname)
+    //   })
+    // })
+
     if(!store.get('employee'))browserHistory.push('login')
 
     this.setState({
       user: store.get('employee')
     })
     getUser('employee', user => {
+      store.set('employee',user)
       this.setState({user})
     })
   }
@@ -45,11 +53,14 @@ class Profile extends Component {
 
   render() {
     const { data } = this.state.user
-    console.log(data.abilities)
+    console.log('abibibibqweqwei',data.abilities)
     return (
       <Layout route={this.props.route}>
         <Style>
           <div id="Profile">
+
+            <Link to='/editprofile'>แก้ไข</Link>
+
             <div className="row justify-content-center">
               <img className="profileImage" src={_.get(data,'profileImage')}/>
             </div>
@@ -77,12 +88,20 @@ class Profile extends Component {
                       <img className="icon" src={icon}/>
                     </div>
                     <div className="col-10">
-                      เลขที่บ้าน {data.homeNo?data.homeNo:'-'}{' '}
+                    {/*
+                      เลขที่บ้าน {data.homeNo&&`${data.homeNo}`}
                       ถนน {data.road?data.road:'-'}{' '}
                       เขต {data.area?data.area:'-'}{' '}
                       แขวง {data.district?data.district:'-'}{' '}
                       จังหวัด {data.province?data.province:'-'}{' '}
                       รหัสไปษณีย์ {data.postcode?data.postcode:'-'}{' '}
+                    */}
+                      {data.homeNo&&`เลขที่บ้าน ${data.homeNo} `}
+                      {data.road&&`ถนน ${data.road} `}
+                      {data.area&&`เขต ${data.area} `}
+                      {data.district&&`แขวง ${data.district} `}
+                      {data.province&&`จังหวัด ${data.province} `}
+                      {data.postcode&&`รหัสไปรษณีย์ ${data.postcode} `}
                     </div>
                   </div>
                 </div>
@@ -92,8 +111,11 @@ class Profile extends Component {
             <div className="card">
               <div className="row">
                 <div className="col-12">
-                  {data.abilities.map((data,key) => 
-                    <div>{data}</div>
+                  ความสามารถ
+                  <Link to="/editabilities">แก้ไข</Link>
+                  {data.abilities&&
+                    _.map(data.abilities,(data,key) => 
+                    <div>{key}</div>
                   )}
                 </div>
               </div>

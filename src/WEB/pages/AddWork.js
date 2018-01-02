@@ -45,7 +45,7 @@ class AddWork extends Component {
       const image = await this.storageImage(file)
       const data = await Object.assign(work, {
         employer_id: user.uid,
-        createAt: moment().format(),
+        createAt: new Date(),
         image
       })
       const workData = await db.collection('works').add(data)

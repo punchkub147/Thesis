@@ -7,6 +7,7 @@ const AppStyle = {
     maintext: "#eb7985",
     text: "#603913",
     subtext: "#f4e4d1",
+    white: "#f4e4d1",
   },
 
   shadow: {

@@ -15,7 +15,7 @@ class Layout extends Component {
       <Style>
         <div id="Layout">
           <ToolBar title={this.props.route.title}/>
-          <NavBar />
+          <NavBar route={this.props.route}/>
 
           <div className="page">
             <Content>

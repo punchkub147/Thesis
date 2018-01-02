@@ -31,13 +31,20 @@ class Tasks extends Component {
   }
 
   getWorking = (user) => {
-    db.collection('working').where('employee_id', '==', user.uid)
+    this.setState({
+      workingList: store.get('working')
+    })
+
+    db.collection('working')
+    .where('employee_id', '==', user.uid)
+    .where('endAt', '>=', new Date())
     .onSnapshot(snap => {
       const workingList = []
       snap.forEach(doc => {
         workingList.push(Object.assign(doc.data(),{working_id: doc.id}))
       })
       this.setState({workingList})
+      store.set('working', workingList)
     })
   }
 
@@ -47,13 +54,14 @@ class Tasks extends Component {
 
   render() {
     const { workingList } = this.state
+    console.log('workingList',workingList)
     return (
       <Layout route={this.props.route}>
         <Style>
           <div id="Tasks">
             {_.map(workingList, working => 
               <div className="task">
-                {working.work_name} ราคา{working.total_piece} เริ่มงานวันที่{working.startAt}   
+                {working.work_name} ราคา{working.total_piece} เริ่มงานวันที่{moment(working.startAt).format("MMM Do YY")+ ' '}   
                 {moment(working.createAt).fromNow()}
                 {/*
                   <div onClick={() => this.handleDelete(working.working_id)}>DELETE</div>

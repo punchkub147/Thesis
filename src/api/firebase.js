@@ -44,7 +44,7 @@ export const createUser = async (user, data, collection) => {
 export const updateAt = async (collection, doc, data) => {
   // const firebase = await connect()
   // const db = await firebase.database().ref();
-  await _.set(data, 'updateAt', moment().format())
+  await _.set(data, 'updateAt', new Date())
   db.collection(collection).doc(doc).update(data)
   //db.child(ref).child(key).update(data)
 }

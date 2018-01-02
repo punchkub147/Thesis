@@ -154,7 +154,7 @@ class Login extends Component {
               </div>
             </div>
 
-          <BottomButton onClick={e => this.handleNeedWork(e)} text="รับงาน"/>
+          <BottomButton onClick={e => this.handleNeedWork(e)}>รับงาน</BottomButton>
           
         </div>
       </Style>

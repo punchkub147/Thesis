@@ -85,10 +85,10 @@ class Notification extends Component {
                 
               </Noti>
             )}
-
+            {/*}
             <button className="mui-btn" onClick={this.handleSendNoti}>TEST SEND NOTI</button>
             <button className="mui-btn" onClick={this.handleServerNoti}>SERVER SEND NOTI</button>
-
+            */}
           </div>
         </Style>
       </Layout>
