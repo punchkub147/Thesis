@@ -20,6 +20,8 @@ input{
   height: 40px;
   padding-left: 10px;
   border: none;
+  border-bottom: solid 2px #72c6aa;
+  background: #fcf4e2;
 }
 input:focus {
   border: none;

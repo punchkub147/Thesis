@@ -60,10 +60,7 @@ export default Register3;
 
 const Style = Styled.div`
   #Register3{
-    .animate{
-      animation-name:fadeInUp;
-      animation-duration: 0.3s;
-    }
+
   }
 `
 const Card = Styled.div`

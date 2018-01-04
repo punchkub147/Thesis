@@ -9,6 +9,7 @@ import bg12 from '../img/bg12.jpg'
 
 import Layout from '../layouts'
 import Button from '../components/Button'
+import Content from '../components/Content'
 
 import { loginWithEmail, auth, db } from '../api/firebase'
 import { getToken } from '../api/notification'
@@ -75,14 +76,12 @@ class Login extends Component {
           <div className="container">
             <div className="row justify-content-md-center">
 
-              <div className="col-xs-12 col-sm-8 col-md-6 col-lg-4">
+              <Content>
                 <div className="logo">
                   <img src={logo}/>
                 </div>
-              </div>
               
               <div className="card">
-                <div className="col-xs-12 col-sm-8 col-md-6 col-lg-4">
                 <form onSubmit={(e) => this.handleLogin(e)}>
                 
                   <input placeholder="อีเมลล์" type="email" ref={r => this.email = r }/>
@@ -98,10 +97,8 @@ class Login extends Component {
                 <Link to="/register">
                   <div className="register">Register</div> 
                 </Link>
-              
-                </div>
               </div>
-
+              </Content>
             </div>
           </div>
         </div>
@@ -125,7 +122,7 @@ const Style = Styled.div`
 
     .card{
       background: ${AppStyle.color.bg};
-      padding: 15px 0;
+      padding: 10px;
       ${AppStyle.shadow.lv1}
     }
 

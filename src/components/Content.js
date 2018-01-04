@@ -9,8 +9,8 @@ class Content extends Component {
   render() {
     return (
       <div className="container">
-        <div className="row">
-          <div className="col-12">
+        <div className="row justify-content-center">
+          <div className="col-xs-12 col-sm-8 col-md-6 col-lg-5">
             {this.props.children}
           </div>
         </div>

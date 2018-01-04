@@ -138,7 +138,7 @@ class FormProfile extends Component {
       <Style>
         <div id="FormProfile">
 
-          <div className="container animate">
+          <div className="container">
             <form className="" onSubmit={this.handleProfile}>
               <div className="row justify-content-center">
                 <img className="profileImage" src={user['profileImage']}/>

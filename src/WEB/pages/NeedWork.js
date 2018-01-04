@@ -51,6 +51,7 @@ class NeedWork extends Component {
         employee_id: data.employee_id,
         work_id: snapshot.id,
         total_piece: work.piece*data.pack,
+        finished_piece: 0,
         worktime: work.worktime,
         price: work.price,
         work_name: work.name,

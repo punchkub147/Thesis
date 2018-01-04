@@ -39,10 +39,7 @@ export default Register2;
 
 const Style = Styled.div`
   #Register2{
-    .animate{
-      animation-name: fadeInUp;
-      animation-duration: 0.3s;
-    }
+
     .profileImage{
       width: 135px;
       height: 135px;

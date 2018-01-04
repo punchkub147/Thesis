@@ -18,9 +18,7 @@ class Layout extends Component {
           <NavBar route={this.props.route}/>
 
           <div className="page">
-            <Content>
-              {this.props.children}
-            </Content>
+            {this.props.children}
           </div>
 
 

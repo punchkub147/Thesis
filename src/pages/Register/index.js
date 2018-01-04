@@ -74,8 +74,8 @@ export default Register;
 const Style = Styled.div`
   #Register{
     .content{
-      animation-name: fadeInUp;
-      animation-duration: 0.3s;
+      // animation-name: fadeInUp;
+      // animation-duration: 0.3s;
     }
   }
 

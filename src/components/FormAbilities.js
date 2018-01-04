@@ -77,7 +77,7 @@ class FormAbilities extends Component {
     return (
       <Style>
         <div id="FormAbilities">
-          <div className="container animate">
+          <div className="container">
 
             <div className="row" style={{margin: '0 -5px'}}>
               {abilities.map((data, key) =>
