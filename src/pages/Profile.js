@@ -64,7 +64,8 @@ class Profile extends Component {
             <Content>
 
               <Link to='/editprofile'>แก้ไข</Link>
-              <div className="row justify-content-center">
+
+              <div className="row justify-content-center" style={{margin: '0 10px'}}>
                 <img className="profileImage" src={_.get(data,'profileImage')}/>
               </div>
 
