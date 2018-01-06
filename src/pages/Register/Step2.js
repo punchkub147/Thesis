@@ -40,28 +40,5 @@ export default Register2;
 const Style = Styled.div`
   #Register2{
 
-    .profileImage{
-      width: 135px;
-      height: 135px;
-      border-radius: 100%;
-      background: #ccc;
-      object-fit: cover;
-      margin: 0 auto;
-      text-align: center;
-      img{
-        width: 100%;
-      }
-    }
-    .haft{
-      // width: 45%;
-      // float: left;
-      // margin-right: 10px;
-    }
-    button{
-      width: 100%;
-    }
-    .error{
-      border: solid 2px red;
-    }
   }
 `

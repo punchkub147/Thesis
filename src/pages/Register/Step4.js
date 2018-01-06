@@ -9,24 +9,22 @@ import { db, getUser } from '../../api/firebase'
 import ToolBar from '../../layouts/ToolBar'
 import Step from '../../components/Step'
 
-import image from '../../img/logo-xl.png'
-import BottomButton from '../../components/BottomButton';
-import FormAbilities from '../../components/FormAbilities';
+import FormWorkTime from '../../components/FormWorkTime';
 
-class Register3 extends Component {
+class Register4 extends Component {
 
   render() {
     return (
       <Style>
-        <div id="Register3">
+        <div id="Register4">
           <ToolBar 
             title={this.props.route.title} 
-            left={() => browserHistory.push('/register3')} 
+            left={() => browserHistory.push('/register2')} 
             //right={this.handleUpdateAbilities}
             />
 
-          <Step step='3'/>
-          <FormAbilities push='/register4' />
+          <Step step='4'/>
+          <FormWorkTime  push='/search' />
 
         </div>
       </Style>
@@ -34,10 +32,10 @@ class Register3 extends Component {
   }
 }
 
-export default Register3;
+export default Register4;
 
 const Style = Styled.div`
-  #Register3{
+  #Register4{
 
   }
 `

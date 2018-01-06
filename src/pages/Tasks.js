@@ -19,41 +19,68 @@ class Tasks extends Component {
     workingList: [],
     menu: 0,
     updateAt: '',
-    modalIsOpen: false
+    modalIsOpen: false,
+    limitWorkTimeToDay: 0,
+    totalTimeAllWork: 0
   }
 
   async componentDidMount() {
-    // auth.onAuthStateChanged(user => {
-    //   user
-    //     ?getUser('employee', user => {
-    //       this.setState({user})
-    //       this.getWorking(user)
-    //     })
-    //     :browserHistory.push('/login')
-    // }) 
     const user = await store.get('employee')
     this.setState({user})
-    this.getWorking(user)
+
+    this.setState({
+      limitWorkTimeToDay: 10800,
+    })
+
+    await this.getWorking(user)
+    // this.genNowWorking()
+    // this.genAllWorking()
   }
 
   getWorking = (user) => {
-    // this.setState({
-    //   workingList: store.get('working')
-    // })
-    store.remove('working')
+    this.setState({
+      workingList: store.get('working')
+    })
+    //store.remove('working')
 
     db.collection('working')
     .where('employee_id', '==', user.uid)
-    //.orderBy("endAt", "desc")
     //.where('endAt', '>=', new Date())
     .onSnapshot(snap => {
-      const workingList = []
+      let workingList = []
       snap.forEach(doc => {
         const data = doc.data()
-        //data.endAt >= new Date()&&
-        workingList.push(Object.assign(data,{working_id: doc.id}))
+        if(data.endAt <= new Date())return //ถ้าวันส่งน้อยกว่าวันนี้ให้ยกเลิก = ได้งานเฉพาะที่ต้องทำปัจจุบัน
+
+        const toDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
+          o.updateAt >= moment().startOf('day')&& //ถ้าเป็นงานในวันนี้เท่านั้น 
+            o.piece
+        )// งานที่ทำเสร็จในวันนี้
+
+        let finished_piece = _.sumBy(data.do_piece, (o) => o.piece)
+        if(finished_piece==undefined)finished_piece=0 //debug
+
+        let worktime = 0
+        if(data.worktime!=undefined)worktime=data.worktime //debug
+
+        workingList.push(Object.assign(data,{
+          working_id: doc.id,
+          worktime,
+          finished_piece,
+          toDayFinishedPiece,
+        }))
       })
-      this.setState({workingList})
+      workingList = _.orderBy(workingList, ['endAt'], ['asc']); //เรียงวันที่
+
+      let totalTimeAllWork = 0 //เวลาที่ต้องทำทั้งหมดทุกงาน
+      workingList.map(working => {
+        totalTimeAllWork += (working.worktime*60)*(working.total_piece-working.finished_piece)
+      })
+
+      this.setState({
+        workingList,
+        totalTimeAllWork,
+      })
       store.set('working', workingList)
     })
   }
@@ -63,15 +90,18 @@ class Tasks extends Component {
     const updateAt = new Date()
     let newPiece = +this.do.value //จำนวนชิ้นที่ระบุ
     let piece = 0 
-
-    let finished_piece = +work.finished_piece //จำนวนชิ้นที่ทำเสร็จแล้ว (ของเก่า)
+    let total_finished_piece = _.sumBy(work.do_piece, (o) => o.piece) //จำนวนชิ้นที่ทำเสร็จแล้ว (ของเก่า)
     
+    this.setState({
+      updateAt,
+      modalIsOpen: false,
+    })
+
     if(newPiece>=(work.limitTodo-work.toDayFinishedPiece))newPiece=(work.limitTodo-work.toDayFinishedPiece) //ทำได้ไม่เกินจำกัดของวันนี้
-    //if(newPiece <= 0)newPiece=0
 
-    piece = finished_piece+newPiece //จำนวนชิ้นงานเดิน บวก จำนวนชิ้นงานที่ทำใหม่วันนี้
+    piece = total_finished_piece+newPiece //จำนวนชิ้นงานเดิน บวก จำนวนชิ้นงานที่ทำใหม่วันนี้
 
-    if(finished_piece==NaN)finished_piece=0
+    if(total_finished_piece==NaN)total_finished_piece=0
     if(newPiece==null || newPiece==undefined)newPiece=0
 
     if(piece>=work.total_piece)piece=work.total_piece
@@ -81,30 +111,30 @@ class Tasks extends Component {
 
     const workingRef = db.collection('working').doc(work.working_id)
 
+    const updatePiece = {
+      piece: newPiece,
+      updateAt,
+    }
+    
     let do_piece = []
+    // Has Notworking
     await workingRef.get()
     .then(data => {
-      const updatePiece = {
-        piece: newPiece,
-        updateAt,
-      }
+
       if(data.data().do_piece != undefined){
         do_piece = _.assign(data.data().do_piece,{[data.data().do_piece.length]: updatePiece})
       }else{
         do_piece = [updatePiece]
       }
     })
-
-    await workingRef.update({
+  
+    workingRef.update({
       finished_piece: piece,
       do_piece,
       updateAt
     })
 
-    this.setState({
-      updateAt,
-      modalIsOpen: false,
-    })
+
 
     //finished_piece : [{piece: n,updateAt: newDate()}]
   }
@@ -121,61 +151,90 @@ class Tasks extends Component {
     })
   }
 
-  render() {
-    const { workingList, doWork } = this.state
-    //const sorted = _.orderBy(workingList, ['endAt'], ['desc']);
-    
-    const menuList = ['งานวันนี้','งานทั้งหมด']
-
-    const limitWorkTimeToDay = 10800 //เวลางานที่ผู้ใช้สามารถทำในวันนี้
+  genNowWorking = () => {
+    const { workingList, limitWorkTimeToDay } = this.state
     let limitTimeDayWork = limitWorkTimeToDay // 3 hours
-
-    let totalTimeAllWork = 0
-    workingList.map(working => {
-      if(working.endAt >= new Date())
-        totalTimeAllWork += (working.worktime*60)*(working.total_piece-working.finished_piece)
-    })
-    // console.log('totalTimeAllWork',totalTimeAllWork,'second')
-    // console.log('limitTimeDayWork',limitTimeDayWork)
-
     let totalTimeDayWork = 0 //เวลางานที่ต้องทำในวันนี้
     
     let nowWorking = []
     workingList.map(async working => {
-      if(working.finished_piece >= working.total_piece)return
-      if(working.endAt < new Date())return
+      if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
 
       const todoWork = working.total_piece-working.finished_piece //จำนวนงานนี้ที่เหลือทั้งหมด
+      
       let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
       for(let i = 1; i <= todoWork; i++){
         if(limitTimeDayWork >= working.worktime*60){
           totalTimeDayWork += working.worktime*60
           limitTimeDayWork -= working.worktime*60
-          // console.log('limitTimeDayWork',limitTimeDayWork,working.worktime)
-          // console.log('timeDayWork',totalTimeDayWork,working.worktime)
           limitTodo = i
         }
       }
-      // console.log('AAA',working.work_name,totalTimeDayWork,todoWork,limitTodo,limitTodo*working.worktime*60)
-      // console.log('limitTimeDayWork',limitTimeDayWork)
-
-      let toDayFinishedPiece = _.sumBy(working.do_piece, (o) => 
-        o.piece
-      ) //จำนวนงานที่ทำเสร็จในวันนี้
-      
-      if(limitTodo > 0) //ถ้ามีจำนวนงานที่ต้องทำ
+      if(limitTodo > 0){ //ถ้ามีจำนวนงานที่ต้องทำ
         nowWorking.push(Object.assign(working, {
           limitTodo,
-          toDayFinishedPiece,
           timeTodo: limitTodo*working.worktime*60
         }))
+      }
     })
-    // console.log('nowWorking',nowWorking)
-    // console.log('timeDayWork',totalTimeDayWork)
+    this.setState({
+      nowWorking,
+      totalTimeDayWork,
+    })
+  }
+
+  genAllWorking = () => {
+    const { workingList } = this.state
+    let allWorking = []
+    workingList.map(working => {
+      if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
+
+      //working.endAt >= new Date()&&
+      allWorking.push(working)
+    })
+    this.setState({allWorking})
+  }
+
+  render() {
+    const { workingList, doWork, limitWorkTimeToDay, totalTimeAllWork } = this.state
+    
+    const menuList = ['งานวันนี้','งานทั้งหมด']
+
+    if(totalTimeAllWork==0
+    )return <div/>
+    console.log('titaltimeallwork',totalTimeAllWork)
+
+    /////////////////////// GEN NOW WORK ////////////////////////////////
+    let limitTimeDayWork = limitWorkTimeToDay // 3 hours
+    let totalTimeDayWork = 0 //เวลางานที่ต้องทำในวันนี้
+    
+    let nowWorking = []
+    workingList.map(async working => {
+      if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
+
+      const todoWork = working.total_piece-working.finished_piece //จำนวนงานนี้ที่เหลือทั้งหมด
+      
+      let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
+      for(let i = 1; i <= todoWork; i++){
+        if(limitTimeDayWork >= working.worktime*60){
+          totalTimeDayWork += working.worktime*60
+          limitTimeDayWork -= working.worktime*60
+          limitTodo = i
+        }
+      }
+      if(limitTodo > 0){ //ถ้ามีจำนวนงานที่ต้องทำ
+        nowWorking.push(Object.assign(working, {
+          limitTodo,
+          timeTodo: limitTodo*working.worktime*60
+        }))
+      }
+    })
+    /////////////////////// GEN NOW WORK ////////////////////////////////
 
     const nowTask = (
       <div>
-      {nowWorking.map( working => 
+      {nowWorking&&
+        nowWorking.map( working => 
         <NowTask>
           <div className='row'>
             <div className='col-9'>
@@ -227,14 +286,16 @@ class Tasks extends Component {
       </div>
     )
 
+    ////////////////////// GEN ALL WORK ///////////////////////
     let allWorking = []
     workingList.map(working => {
-      if(working.endAt < new Date())return
-      if(working.finished_piece >= working.total_piece)return
+      if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
 
       //working.endAt >= new Date()&&
       allWorking.push(working)
     })
+    ////////////////////// GEN ALL WORK ///////////////////////
+
     const allTask = (
       _.map(allWorking, working => 
         <AllTask>
@@ -243,10 +304,12 @@ class Tasks extends Component {
               <div className="name">{working.work_name}</div>
             </div>
             <div className='col-2'>
-              <div className="piece">{working.finished_piece}/{working.total_piece}</div>
+              <div className="piece">
+                {working.finished_piece}/{working.total_piece}
+              </div>
             </div>
             <div className='col-4'>
-              <div className="date">ส่งในพรุ่งนี้</div>
+              <div className="date">ส่ง {moment(working.endAt).locale('th').fromNow()}</div>
             </div>
           </div>
           <div className='row'>
@@ -304,11 +367,18 @@ class Tasks extends Component {
           </div>
           
           <WorkDate>
-            {'Total Time All Work '+moment().startOf('day').second(totalTimeAllWork).format('H:mm:ss')}
-            <br/>
-            {'ToDay WorkTime '+moment().startOf('day').second(totalTimeDayWork).format('H:mm:ss')}
-            <br/>
-            {'Limit WorkTime ToDay '+moment().startOf('day').second(limitWorkTimeToDay).format('H:mm:ss')}
+            <div className="row">
+              <div className="col-10">
+              {'เวลางานที่ต้องทำทั้งหมดททุกงาน '+moment().startOf('day').second(totalTimeAllWork).format('H:mm:ss')}
+              <br/>
+              {'เวลาที่ต้องทำงานวันนี้ '+moment().startOf('day').second(totalTimeDayWork).format('H:mm:ss')}
+              <br/>
+              {'เวลาที่จำกัดวันนี้ '+moment().startOf('day').second(limitWorkTimeToDay).format('H:mm:ss')}
+              </div>
+              <div className="col-2">
+                <Link to="/editworktime">แก้ไข</Link>
+              </div>
+            </div>
           </WorkDate>
           <div style={{height: '60px'}}></div>
         </Style>

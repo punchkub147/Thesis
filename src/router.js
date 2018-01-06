@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Register from './pages/Register/index'
 import Register2 from './pages/Register/Step2'
 import Register3 from './pages/Register/Step3'
+import Register4 from './pages/Register/Step4'
 import Search from './pages/Search'
 import Tasks from './pages/Tasks'
 import Dashboard from './pages/Dashboard'
@@ -12,7 +13,8 @@ import Notification from './pages/Notification'
 import Profile from './pages/Profile'
 import Work from './pages/Work'
 import EditAbilities from './pages/EditAbilities'
-import EditProfile from './pages/EditProfile';
+import EditProfile from './pages/EditProfile'
+import EditWorkTime from './pages/EditWorkTime'
 
 import Web from './WEB/Web'
 import WebAddWork from './WEB/pages/AddWork' 
@@ -55,7 +57,12 @@ class AppRouter extends Component {
         exact: false,
         page: Register3,
         title: "ความถนัด",
-        },
+      },
+      { path: '/register4',
+        exact: false,
+        page: Register4,
+        title: "ความถนัด",
+      },
       { path: '/search',
         exact: false,
         page: Search,
@@ -96,6 +103,12 @@ class AppRouter extends Component {
         page: EditProfile,
         title: "ข้อมูลส่วนตัว",
       },
+      { path: '/editworktime',
+        exact: false,
+        page: EditWorkTime,
+        title: "ข้อมูลส่วนตัว",
+      },
+      
       
 
       /////////////////////////////// WEB ////////////////////////////////////
