@@ -18,6 +18,7 @@ import EditWorkTime from './pages/EditWorkTime'
 
 import Web from './WEB/Web'
 import WebAddWork from './WEB/pages/AddWork' 
+import WebEditWork from './WEB/pages/EditWork'
 import WebLogin from './WEB/pages/Login'
 import WebRegister from './WEB/pages/Register' 
 import WebWorks from './WEB/pages/Works'
@@ -147,6 +148,11 @@ class AppRouter extends Component {
         exact: false,
         page: WebAddWork,
         title: "เพิ่มงาน",
+      },
+      { path: '/web/editwork/:id',
+        exact: false,
+        page: WebEditWork,
+        title: "แก้ไขงาน",
       },
     ]
 

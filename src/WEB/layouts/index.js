@@ -46,7 +46,7 @@ const Style = Styled.div`
   .content{
     padding: 20px;
     box-sizing: border-box;
-    background: ${AppStyle.color.card};
+    background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}
   }
 `

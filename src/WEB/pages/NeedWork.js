@@ -57,7 +57,7 @@ class NeedWork extends Component {
         work_name: work.name,
         startAt: work.startAt,
         endAt: work.endAt,
-        createAt: moment().format(),
+        createAt: new Date,
       }
       await db.collection('working').add(_.pickBy(working, _.identity))
       console.log('ADD WORKING SUCCESS')

@@ -11,6 +11,7 @@ import Layout from '../layouts'
 import { auth, db } from '../../api/firebase'
 
 import Work from '../components/Work'
+import Button from '../../components/Button';
 
 class Works extends Component {
 
@@ -37,8 +38,7 @@ class Works extends Component {
     .then(async querySnapshot => {
       let itemsList = []
       await querySnapshot.forEach(function(doc) {
-        console.log(doc.id, " => ", doc.data());
-        itemsList.push(Object.assign(doc.data(),{item_id: doc.id}))
+        itemsList.push(Object.assign(doc.data(),{work_id: doc.id}))
       });
       await this.setState({itemsList})
     })
@@ -49,35 +49,40 @@ class Works extends Component {
 
   render() {
     const { user, itemsList } = this.state
-    console.log(itemsList, user)
 
     return (
       <Style>
         <Layout>
-          <Link to="/web/addwork"><button>เพิ่มงาน</button></Link>
+          <Link to="/web/addwork"><Button>เพิ่มงาน</Button></Link>
           <div className="table-items">
             <div className="row">
-              <div className="col-5">
+              <div className="col-4">
                 ชื่อ
               </div>
-              <div className="col-3">
+              <div className="col-2">
                 ราคา
               </div>
-              <div className="col-3">
+              <div className="col-2">
                 จำนวนชุดที่เหลือ
+              </div>
+              <div className="col-2">
+                แก้ไข
               </div>
             </div>
             {_.map(itemsList, item => 
               <div className="item">
                 <div className="row">
-                  <div className="col-5">
+                  <div className="col-4">
                     {item.name}
                   </div>
-                  <div className="col-3">
+                  <div className="col-2">
                     {item.price}
                   </div>
-                  <div className="col-3">
+                  <div className="col-2">
                     {item.pack}
+                  </div>
+                  <div className="col-2">
+                    <Link to={`/web/editwork/${item.work_id}`}> แก้ไข </Link>
                   </div>
                 </div>
               </div>

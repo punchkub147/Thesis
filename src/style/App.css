@@ -23,8 +23,18 @@ input{
   border-bottom: solid 2px #72c6aa;
   background: #fcf4e2;
 }
-input:focus {
+textarea{
+  width: 100%;
+  margin-bottom: 10px;
+  height: 120px;
+  padding-left: 10px;
   border: none;
+  border-bottom: solid 2px #72c6aa;
+  background: #fcf4e2;
+}
+
+textarea:focus, input:focus{
+  outline: none;
 }
 
 button{

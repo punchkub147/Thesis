@@ -91,7 +91,7 @@ class Tasks extends Component {
 
       let totalTimeAllWork = 0 //เวลาที่ต้องทำทั้งหมดทุกงาน
       workingList.map(working => {
-        totalTimeAllWork += (working.worktime*60)*(working.total_piece-working.finished_piece)
+        totalTimeAllWork += (working.worktime)*(working.total_piece-working.finished_piece)
       })
 
       this.setState({
@@ -151,9 +151,6 @@ class Tasks extends Component {
       do_piece,
       updateAt,
     })
-
-
-
     //finished_piece : [{piece: n,updateAt: newDate()}]
   }
 
@@ -173,7 +170,7 @@ class Tasks extends Component {
     
     const menuList = ['งานวันนี้','งานทั้งหมด']
 
-    if(totalTimeAllWork==0)return <div/>
+    // if(totalTimeAllWork==0)return <div/>
 
     /////////////////////// GEN NOW WORK ////////////////////////////////
     let limitTimeDayWork = limitWorkTimeToDay // 3 hours
@@ -188,16 +185,16 @@ class Tasks extends Component {
       
       let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
       for(let i = 1; i <= todoWork; i++){
-        if(limitTimeDayWork >= working.worktime*60){
-          totalTimeDayWork += working.worktime*60
-          limitTimeDayWork -= working.worktime*60
+        if(limitTimeDayWork >= working.worktime){
+          totalTimeDayWork += +working.worktime
+          limitTimeDayWork -= +working.worktime
           limitTodo = i
         }
       }
       if(limitTodo > 0){ //ถ้ามีจำนวนงานที่ต้องทำ
         nowWorking.push(Object.assign(working, {
           limitTodo,
-          timeTodo: limitTodo*working.worktime*60
+          timeTodo: limitTodo*working.worktime
         }))
       }
     })
@@ -235,7 +232,7 @@ class Tasks extends Component {
                 </div>
                 <div className='col-6'>
                   <div className="timing">
-                  {secToTime(working.timeTodo)}({working.worktime*60}s)
+                  {secToTime(working.timeTodo)}({working.worktime}s)
                   </div>
                 </div>
               </div>
@@ -293,7 +290,6 @@ class Tasks extends Component {
       )
     )
 
-    console.log('state',this.state.doing)
     return (
       <Layout route={this.props.route}>
         <Style>
