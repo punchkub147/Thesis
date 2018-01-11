@@ -20,7 +20,7 @@ class EditProfile extends Component {
       <Style>
         <div id="EditProfile">
           <ToolBar 
-            title='ความสามารถ'
+            title='ข้อมูลส่วนตัว'
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
             />

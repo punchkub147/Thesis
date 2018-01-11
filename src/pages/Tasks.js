@@ -7,11 +7,15 @@ import moment from 'moment'
 import store from 'store'
 import Modal from 'react-modal'
 
+import { Slider } from 'antd';
+
 import { getUser, auth, db } from '../api/firebase'
+import { secToTime } from '../functions/moment'
 
 import Layout from '../layouts'
 import Content from '../components/Content';
 import Progress from '../components/Progress';
+import Button from '../components/Button';
 
 class Tasks extends Component {
 
@@ -21,15 +25,22 @@ class Tasks extends Component {
     updateAt: '',
     modalIsOpen: false,
     limitWorkTimeToDay: 0,
-    totalTimeAllWork: 0
+    totalTimeAllWork: 0,
+    doing: 0,
   }
 
   async componentDidMount() {
-    const user = await store.get('employee')
-    this.setState({user})
 
+    getUser('employee', user => {
+      this.setState({user})
+      store.set('employee',user)
+    })    
+    let user = await store.get('employee')
+    this.setState({user})
+    
+    const limitWorkTimeToDay = user.data.workTime[moment().format('ddd').toLowerCase()]
     this.setState({
-      limitWorkTimeToDay: 10800,
+      limitWorkTimeToDay,
     })
 
     await this.getWorking(user)
@@ -46,16 +57,21 @@ class Tasks extends Component {
     db.collection('working')
     .where('employee_id', '==', user.uid)
     //.where('endAt', '>=', new Date())
-    .onSnapshot(snap => {
+    .onSnapshot(async snap => {
       let workingList = []
-      snap.forEach(doc => {
+      await snap.forEach(doc => {
         const data = doc.data()
         if(data.endAt <= new Date())return //ถ้าวันส่งน้อยกว่าวันนี้ให้ยกเลิก = ได้งานเฉพาะที่ต้องทำปัจจุบัน
 
         const toDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
           o.updateAt >= moment().startOf('day')&& //ถ้าเป็นงานในวันนี้เท่านั้น 
+          o.updateAt <=moment().endOf('day')&&
             o.piece
         )// งานที่ทำเสร็จในวันนี้
+        const anotherDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
+          o.updateAt < moment().startOf('day')&& //ถ้าเป็นงานในวันอื่น
+            o.piece
+        )// งานที่ทำเสร็จในวันอื่น
 
         let finished_piece = _.sumBy(data.do_piece, (o) => o.piece)
         if(finished_piece==undefined)finished_piece=0 //debug
@@ -68,6 +84,7 @@ class Tasks extends Component {
           worktime,
           finished_piece,
           toDayFinishedPiece,
+          anotherDayFinishedPiece
         }))
       })
       workingList = _.orderBy(workingList, ['endAt'], ['asc']); //เรียงวันที่
@@ -88,13 +105,14 @@ class Tasks extends Component {
   handleDo = async (e, work) => {
     e.preventDefault();
     const updateAt = new Date()
-    let newPiece = +this.do.value //จำนวนชิ้นที่ระบุ
+    let newPiece = +this.state.doing //จำนวนชิ้นที่ระบุ
     let piece = 0 
     let total_finished_piece = _.sumBy(work.do_piece, (o) => o.piece) //จำนวนชิ้นที่ทำเสร็จแล้ว (ของเก่า)
     
     this.setState({
       updateAt,
       modalIsOpen: false,
+      doing: 0,
     })
 
     if(newPiece>=(work.limitTodo-work.toDayFinishedPiece))newPiece=(work.limitTodo-work.toDayFinishedPiece) //ทำได้ไม่เกินจำกัดของวันนี้
@@ -131,7 +149,7 @@ class Tasks extends Component {
     workingRef.update({
       finished_piece: piece,
       do_piece,
-      updateAt
+      updateAt,
     })
 
 
@@ -144,55 +162,10 @@ class Tasks extends Component {
   }
 
   handleOpenModal = (working) => {
-    console.log('open')
     this.setState({
       modalIsOpen: true,
       doWork: working,
     })
-  }
-
-  genNowWorking = () => {
-    const { workingList, limitWorkTimeToDay } = this.state
-    let limitTimeDayWork = limitWorkTimeToDay // 3 hours
-    let totalTimeDayWork = 0 //เวลางานที่ต้องทำในวันนี้
-    
-    let nowWorking = []
-    workingList.map(async working => {
-      if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
-
-      const todoWork = working.total_piece-working.finished_piece //จำนวนงานนี้ที่เหลือทั้งหมด
-      
-      let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
-      for(let i = 1; i <= todoWork; i++){
-        if(limitTimeDayWork >= working.worktime*60){
-          totalTimeDayWork += working.worktime*60
-          limitTimeDayWork -= working.worktime*60
-          limitTodo = i
-        }
-      }
-      if(limitTodo > 0){ //ถ้ามีจำนวนงานที่ต้องทำ
-        nowWorking.push(Object.assign(working, {
-          limitTodo,
-          timeTodo: limitTodo*working.worktime*60
-        }))
-      }
-    })
-    this.setState({
-      nowWorking,
-      totalTimeDayWork,
-    })
-  }
-
-  genAllWorking = () => {
-    const { workingList } = this.state
-    let allWorking = []
-    workingList.map(working => {
-      if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
-
-      //working.endAt >= new Date()&&
-      allWorking.push(working)
-    })
-    this.setState({allWorking})
   }
 
   render() {
@@ -200,9 +173,7 @@ class Tasks extends Component {
     
     const menuList = ['งานวันนี้','งานทั้งหมด']
 
-    if(totalTimeAllWork==0
-    )return <div/>
-    console.log('titaltimeallwork',totalTimeAllWork)
+    if(totalTimeAllWork==0)return <div/>
 
     /////////////////////// GEN NOW WORK ////////////////////////////////
     let limitTimeDayWork = limitWorkTimeToDay // 3 hours
@@ -212,7 +183,8 @@ class Tasks extends Component {
     workingList.map(async working => {
       if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
 
-      const todoWork = working.total_piece-working.finished_piece //จำนวนงานนี้ที่เหลือทั้งหมด
+
+      const todoWork = working.total_piece-working.anotherDayFinishedPiece //จำนวนงานนี้ที่เหลือ งานทั้งหมด-งานวันอื่น
       
       let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
       for(let i = 1; i <= todoWork; i++){
@@ -263,16 +235,16 @@ class Tasks extends Component {
                 </div>
                 <div className='col-6'>
                   <div className="timing">
-                  {moment().startOf('day').second(working.timeTodo).format('H:mm:ss')}({working.worktime*60}s)
+                  {secToTime(working.timeTodo)}({working.worktime*60}s)
                   </div>
                 </div>
               </div>
               
             </div>
             <div className='col-3'>
-            {working.toDayFinishedPiece==working.limitTodo
+            {working.toDayFinishedPiece>=working.limitTodo
               ?<div className="finish" onClick={() => this.handleOpenModal(working)}>FINISH</div>
-              :<div className="do" onClick={() => this.handleOpenModal(working)}>DO</div>
+              :<div className="do" onClick={() => this.handleOpenModal(working)}>ทำ</div>
             }
             </div>
           
@@ -289,9 +261,7 @@ class Tasks extends Component {
     ////////////////////// GEN ALL WORK ///////////////////////
     let allWorking = []
     workingList.map(working => {
-      if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
-
-      //working.endAt >= new Date()&&
+      //if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
       allWorking.push(working)
     })
     ////////////////////// GEN ALL WORK ///////////////////////
@@ -323,57 +293,59 @@ class Tasks extends Component {
       )
     )
 
+    console.log('state',this.state.doing)
     return (
-      <div>
       <Layout route={this.props.route}>
         <Style>
-          <div id="Tasks">
+ 
+          <Tabbar>
+          {menuList.map((menu,key) =>
+            <div className={`menu ${this.state.menu==key&&'border'}`} 
+              onClick={() => this.setState({menu: key})}>
+              {menu}
+            </div>
+          )}
+          </Tabbar>
 
-            <Tabbar>
-            {menuList.map((menu,key) =>
-              <div className={`menu ${this.state.menu==key&&'border'}`} 
-                onClick={() => this.setState({menu: key})}>
-                {menu}
-              </div>
-            )}
-            </Tabbar>
+          <Content>
+          {this.state.menu===0&&
+            nowTask
+          }
+          {this.state.menu===1&&
+            allTask
+          }
+          </Content>
 
-            <Content>
-            {this.state.menu===0&&
-              nowTask
-            }
-            {this.state.menu===1&&
-              allTask
-            }
-            </Content>
-
-            <Modal
-              isOpen={this.state.modalIsOpen}
-              // onAfterOpen={this.afterOpenModal}
-              // onRequestClose={this.closeModal}
-              style={{
-                content: {'margin-top': '100px', height: '200px' },
-                overlay: {background: 'rgba(0,0,0,0.5)'}
-              }}
-              contentLabel="Example Modal"
-            >
-              <div>{_.get(doWork,'finished_piece')}/{_.get(doWork,'total_piece')}</div>
-              {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
-              <form>
-                <input type='number' ref={r => this.do = r }/>
-                <button onClick={(e) => this.handleDo(e,doWork)}>DO</button>
-              </form>
-            </Modal>
-          </div>
-          
+          <Modal
+            isOpen={this.state.modalIsOpen}
+            // onAfterOpen={this.afterOpenModal}
+            // onRequestClose={this.closeModal}
+            style={{
+              content: {'margin-top': '100px', height: '200px', background: '#fcf4e2'},
+              overlay: {background: 'rgba(0,0,0,0.5)'}
+            }}
+            contentLabel="Example Modal"
+          >
+            <div>ทำงาน {this.state.doing} จาก {_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
+            {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
+            <form>
+              <Slider min={0} max={_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')}
+                onChange={doing => this.setState({doing})}
+                value={this.state.doing}
+                style={{margin: '40px 0'}}
+                />
+              <Button onClick={(e) => this.handleDo(e,doWork)}>ยืนยัน</Button>
+            </form>
+          </Modal>
+ 
           <WorkDate>
             <div className="row">
               <div className="col-10">
-              {'เวลางานที่ต้องทำทั้งหมดททุกงาน '+moment().startOf('day').second(totalTimeAllWork).format('H:mm:ss')}
+              {'เวลางานที่ต้องทำทั้งหมดททุกงาน '+secToTime(totalTimeAllWork)}
               <br/>
-              {'เวลาที่ต้องทำงานวันนี้ '+moment().startOf('day').second(totalTimeDayWork).format('H:mm:ss')}
+              {'เวลาที่ต้องทำงานวันนี้ '+secToTime(totalTimeDayWork)}
               <br/>
-              {'เวลาที่จำกัดวันนี้ '+moment().startOf('day').second(limitWorkTimeToDay).format('H:mm:ss')}
+              {'เวลาที่จำกัดวันนี้ '+secToTime(limitWorkTimeToDay)}
               </div>
               <div className="col-2">
                 <Link to="/editworktime">แก้ไข</Link>
@@ -381,10 +353,10 @@ class Tasks extends Component {
             </div>
           </WorkDate>
           <div style={{height: '60px'}}></div>
+
         </Style>
       </Layout>
-      </div>
-    );
+    )
   }
 }
 
@@ -395,9 +367,7 @@ class Tasks extends Component {
 export default Tasks;
 
 const Style = Styled.div`
-  #Tasks{
-    //min-height: 100vh;
-  }
+
 `
 const Tabbar = Styled.div`
   width: 100%;
@@ -448,6 +418,8 @@ const NowTask = Styled.div`
     text-align: center;
     line-height: 50px;
     cursor: pointer;
+    color: ${AppStyle.color.white};
+    box-shadow: 3px 3px 0 ${AppStyle.color.black};
   }
   .finish{
     width: 50px;

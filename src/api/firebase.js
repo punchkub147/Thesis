@@ -67,7 +67,7 @@ export const getUser = async (collection, callback) => {
           :callback(undefined)
       })
       .catch(error => 
-          console.log("Error getting document:", error)
+          console.log("Error getting user:", error)
       )
     }
   });

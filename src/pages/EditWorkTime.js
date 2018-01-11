@@ -15,7 +15,7 @@ class EditWorkTime extends Component {
       <Style>
         <div id="EditWorkTime">
           <ToolBar 
-            title='ความสามารถ'
+            title='เวลาทำงาน'
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
             />
@@ -34,5 +34,6 @@ const Style = Styled.div`
     //   animation-name:fadeInUp;
     //   animation-duration: 0.3s;
     // }
+    
   }
 `

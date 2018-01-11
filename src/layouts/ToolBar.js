@@ -8,6 +8,11 @@ import next from '../img/next.png'
 
 class ToolBar extends Component {
 
+  handleLeft = () => {
+    console.log('left')
+    this.props.left
+  }
+
   render() {
     const { title } = this.props
     return (
@@ -52,27 +57,27 @@ const Style = Styled.div`
 
     .left{
       float: left;
-      width: 20%;
+      width: 10%;
       height: 100%;
       text-align: left;
       cursor: pointer;
     }
     .title{
       float: left;
-      width: 60%;
+      width: 80%;
       text-align: center;
       color: ${AppStyle.color.card};
       font-size: 18px;
     }
     .right{
       float: left;
-      width: 20%;
+      width: 10%;
       height: 100%;
       text-align: right;
       cursor: pointer;
     }
     img{
-      padding-top: 12.5px;
+      padding-top: 0px;
       width: 25px;
       heigth: 25px;
     }

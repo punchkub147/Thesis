@@ -3,10 +3,15 @@ import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
+import moment from 'moment'
 
 import Layout from '../layouts'
 import ToolBar from '../layouts/ToolBar'
 import BottomButton from '../components/BottomButton'
+
+import Alarm from '../img/alarm.png'
+import Send from '../img/send.png'
+import Back from '../img/back.png'
 
 import { auth, db, getUser } from '../api/firebase'
 
@@ -94,40 +99,46 @@ class Login extends Component {
     return (
       <Style>
         <div id="Work">
-          <ToolBar
-            title={this.props.route.title} 
-            left={() => browserHistory.goBack()} 
-            // right={e => this.handleRegister(e)}
-          />
-            <img className="imageWork" src={data.image}/>
+
+            <div className="imageWork">          
+              <div className="goback" onClick={() => browserHistory.goBack()}>
+                <img src={Back}/>
+              </div>
+              <img src={data.image}/>
+            </div>
           
             <div className="container">
           
-              <div className="row">
-                <div className="col-6">
+              <div className="row card">
+                <div className="col-7 name">
                   {data.name}
                 </div>
-                <div className="col-6 price">
+                <div className="col-5 price">
                   {data.piece} ชิ้น {data.price*data.piece} บาท
                 </div>
               </div>
           
-              <div className="row">
-                <div className="col-3">
+              <div className="row card">
+                <div className="col-3 sendBy">
+                  <img src={Send}/><br/>
                   {data.sendBy}
                 </div>
-                <div className="col-3">
-                  {data.startAt}
+                <div className="col-3 startAt">
+                  <div>เริ่มงาน</div>
+                  {moment(data.startAt).locale('th').fromNow()}
                 </div>
-                <div className="col-3">
-                  {data.endAt}
+                <div className="col-3 endAt">
+                  <div>รับงาน</div>
+                  {moment(data.endAt).locale('th').fromNow()}
                 </div>
-                <div className="col-3">
+                <div className="col-3 workTime">
+                  <img src={Alarm}/><br/>
                   {data.worktime}
                 </div>
               </div>
           
-              <div className="row">
+              <div className="row card">
+                <div className="col-12">เครื่องมือ</div>
                 <div className="col-3">
                   <img className="imageTool" src=""/>
                 </div>
@@ -136,8 +147,9 @@ class Login extends Component {
                 </div>
               </div>
           
-              <div className="row">
+              <div className="row card">
                 <div className="col-12">
+                  รายละเอียด<br/>
                   {data.detail}
                 </div>
               </div>
@@ -167,19 +179,65 @@ export default Login;
 const Style = Styled.div`
 #Work{
   .imageWork{
+    position: relative;
     width: 100%;
     height: 230px;
-    object-fit: cover;
-
-    animation-name: fadeInDown;
-    animation-duration: 0.5s;
+    background: ${AppStyle.color.card};
+    .goback{
+      position: absolute;
+      left: 15px;
+      height: 50px;
+      width: 50px;
+      cursor: pointer;
+      img{
+        margin-top: 12.5px;
+        width: 25px;
+        height: 25px;
+      }
+    }
+    img{
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+      animation-name: fadeInDown;
+      animation-duration: 0.5s;
+    }
   }
   .container{
     animation-name: fadeInUp;
     animation-duration: 0.5s;
   }
+  .card{
+    background: ${AppStyle.color.card};
+    padding: 10px 0;
+    margin-bottom: 10px;
+  }
   .price{
     text-align: right;
+    font-size: 16px;
+  }
+  .name{
+    font-size: 18px;
+  }
+  .sendBy{
+    text-align: center;
+    img{
+      width: 30px;
+      height: 30px;
+    }
+  }
+  .startAt{
+    text-align: center;
+  }
+  .endAt{
+    text-align: center;
+  }
+  .workTime{
+    text-align: center;
+    img{
+      width: 30px;
+      height: 30px;
+    }
   }
 }
 `

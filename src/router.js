@@ -66,7 +66,7 @@ class AppRouter extends Component {
       { path: '/search',
         exact: false,
         page: Search,
-        title: "Extra Inhome",
+        title: "โฮมเบสท์",
       },
       { path: '/tasks',
         exact: false,
@@ -106,7 +106,7 @@ class AppRouter extends Component {
       { path: '/editworktime',
         exact: false,
         page: EditWorkTime,
-        title: "ข้อมูลส่วนตัว",
+        title: "เวลาทำงาน",
       },
       
       

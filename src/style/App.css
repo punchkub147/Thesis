@@ -57,3 +57,41 @@ button{
   animation-name: 'fadeOutRight';
   animation-duration: 0.2s;
 }
+
+/* ////// RESET ANT /////////// */
+/* Picker */
+.ant-time-picker-icon{
+  display: none;
+}
+.ant-time-picker-panel-inner{
+  background-color: #fcf4e2;
+  left: 0;
+}
+li.ant-time-picker-panel-select-option-selected{
+  background: #f4e4d1;
+}
+.ant-time-picker-panel-select li:hover{
+  background: #f4e4d1;
+}
+/* Slider */
+.ant-slider-handle{
+  border-color: #eb7985;
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+}
+.ant-slider-handle:hover{
+  border-color: #eb7985;
+}
+.ant-slider-handle:active{
+  border-color: #eb7985;
+}
+.ant-slider-track{
+  background-color: #eb7985;
+}
+.ant-slider:hover .ant-slider-track{
+  background-color: #eb7985;
+}
+.ant-slider:hover .ant-slider-handle{
+  border-color: #eb7985;
+}
