@@ -7,6 +7,7 @@ import PageTransition from 'react-router-page-transition';
 import ToolBar from './ToolBar'
 import NavBar from './NavBar'
 import Content from '../components/Content'
+import bg2 from '../img/bg2.jpg'
 
 class Layout extends Component {
 
@@ -32,6 +33,9 @@ export default Layout;
 
 const Style = Styled.div`
   #Layout{
+    background-image: url('${bg2}');
+    background-size: 50px 10px;
+    min-height: 100vh;
     flex: 1;
     .page{
       width: 100%;

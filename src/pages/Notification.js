@@ -76,21 +76,20 @@ class Notification extends Component {
     return (
       <Layout route={this.props.route}>
         <Style>
-          <div id="Notification">
-            <Content>
-            {_.map(notiList, (data,i) => 
-              <Noti fade={i*0.2}>
-                <img src={send}/>
-                <div className="text">{data.message}</div>
-                <div className="time">{/*data.createAt*/}</div>
-              </Noti>
-            )}
-            </Content>
-            {/*}
-            <button className="mui-btn" onClick={this.handleSendNoti}>TEST SEND NOTI</button>
-            <button className="mui-btn" onClick={this.handleServerNoti}>SERVER SEND NOTI</button>
-            */}
-          </div>
+        
+          <Content>
+          {_.map(notiList, (data,i) => 
+            <Noti fade={i*0.2}>
+              <img src={send}/>
+              <div className="text">{data.message}</div>
+              <div className="time">{/*data.createAt*/}</div>
+            </Noti>
+          )}
+          </Content>
+          {/*}
+          <button className="mui-btn" onClick={this.handleSendNoti}>TEST SEND NOTI</button>
+          <button className="mui-btn" onClick={this.handleServerNoti}>SERVER SEND NOTI</button>
+          */}
         </Style>
       </Layout>
     );
@@ -100,9 +99,7 @@ class Notification extends Component {
 export default Notification;
 
 const Style = Styled.div`
-#Notification{
   padding-top: 10px;
-}
 `
 const Noti = Styled.div`
   width: 100%;
@@ -111,13 +108,14 @@ const Noti = Styled.div`
   margin-bottom: 10px;
   padding: 10px;
   box-sizing: border-box;
+  ${AppStyle.shadow.lv1}
   img{
     width: 40px;
     float: left;
     margin-right: 10px;
   }
   .text{
-    ${AppStyle.font.text1}
+    ${AppStyle.font.text2}
   }
   .time{
     ${AppStyle.font.text2}

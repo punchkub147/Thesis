@@ -12,16 +12,51 @@ const AppStyle = {
   },
 
   shadow: {
-    lv1: "box-shadow: 0 0 15px #aaa;"
+    lv1: "box-shadow: 0 0 15px #ccc;",
+    lv2: "box-shadow: 3px 3px 0 #ccc;",
   },
 
   font: {
-    text1: `
-      font-size: 14px; 
-      font-weight: bold; 
+    tool: `
+      font-family: 'Anchan';
+      font-weight: normal; 
+      color: #f4e4d1;
+      font-size: 24px;
     `,
-    text2: `
-      font-size: 12px; 
+    main: `
+      font-family: 'Anchan';
+      font-weight: normal; 
+      color: #603913;
+      font-size: 22px;
+    `,
+    menu: `
+      font-family: 'Anchan';
+      font-weight: normal; 
+      color: #603913;
+      font-size: 22px;
+    `,
+    read1: `
+      font-family: 'TH Sarabun New';
+      font-weight: bold; 
+      color: #603913;
+      font-size: 20px;
+    `,
+    read2: `
+      font-family: 'TH Sarabun New';
+    `,
+    read3: `
+      font-family: 'TH Sarabun New';
+    `,
+    hilight: `
+      font-family: 'TH Sarabun New';
+      font-weight: bold; 
+      color: #eb7985;
+    `,
+    button: `
+      font-family: 'Anchan';
+      font-weight: normal; 
+      color: #f4e4d1;
+      font-size: 24px;
     `,
   },
 

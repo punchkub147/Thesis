@@ -11,15 +11,13 @@ class AppButton extends Component {
   render() {
     return (
       <Style>
-        <div id="AppButton">
-          <button 
-            onClick={this.props.onClick}
-            onSubmit={this.props.onSubmit}
-            type={this.props.type}>
-            
-            {this.props.children}
-          </button>
-        </div>
+        <button 
+          onClick={this.props.onClick}
+          onSubmit={this.props.onSubmit}
+          type={this.props.type}>
+          
+          {this.props.children}
+        </button>
       </Style>
     );
   }
@@ -28,18 +26,16 @@ class AppButton extends Component {
 export default AppButton;
 
 const Style = Styled.div`
-  #AppButton{
-    margin: 0 auto;
-    width: 150px;
-    button{
-      cursor: pointer;
-      width: 100%;
-      color: ${AppStyle.color.white};
-      background: none;
-      background-image: url('${buttonimg}');
-      background-size: auto 40px;
-      background-repeat: no-repeat;
-      border: none;
-    }
+  margin: 0 auto;
+  width: 150px;
+  button{
+    cursor: pointer;
+    width: 100%;
+    background: none;
+    background-image: url('${buttonimg}');
+    background-size: auto 40px;
+    background-repeat: no-repeat;
+    border: none;
+    ${AppStyle.font.button}
   }
 `

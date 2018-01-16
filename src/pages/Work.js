@@ -33,6 +33,7 @@ class Login extends Component {
   }
 
   componentDidMount() {
+    window.scrollTo(0, 0)
     const work_id = this.props.routeParams.id
     const _this = this
 
@@ -214,10 +215,10 @@ const Style = Styled.div`
   }
   .price{
     text-align: right;
-    font-size: 16px;
+    ${AppStyle.font.hilight}
   }
   .name{
-    font-size: 18px;
+    ${AppStyle.font.main}
   }
   .sendBy{
     text-align: center;

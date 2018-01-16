@@ -12,20 +12,24 @@ import Step from '../components/Step'
 import image from '../img/logo-xl.png'
 import BottomButton from '../components/BottomButton';
 import FormProfile from '../components/FormProfile';
+import Bg from '../components/Bg';
 
 class EditProfile extends Component {
 
   render() {
     return (
       <Style>
-        <div id="EditProfile">
+        <Bg>
           <ToolBar 
             title='ข้อมูลส่วนตัว'
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
             />
-          <FormProfile push='/profile' />
-        </div>
+
+          <div className="card">
+            <FormProfile push='/profile' />
+          </div>
+        </Bg>
       </Style>
     );
   }
@@ -34,10 +38,14 @@ class EditProfile extends Component {
 export default EditProfile;
 
 const Style = Styled.div`
-  #EditProfile{
-    // .animate{
-    //   animation-name:fadeInUp;
-    //   animation-duration: 0.3s;
-    // }
+  // .animate{
+  //   animation-name:fadeInUp;
+  //   animation-duration: 0.3s;
+  // }
+  .card{
+    margin-top: 10px;    
+    width: 100%;
+    background: ${AppStyle.color.card};
+    ${AppStyle.shadow.lv1}
   }
 `

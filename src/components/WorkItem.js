@@ -46,6 +46,8 @@ const Style = Styled.div`
   height: 90px;
   clear: both;
   background: ${AppStyle.color.card};
+  ${AppStyle.shadow.lv1}
+
   margin-bottom: 10px;
   .image{
     width: 90px;
@@ -61,15 +63,16 @@ const Style = Styled.div`
     float: left;
     padding: 10px;
     .name{
-      ${AppStyle.font.text1}
+      ${AppStyle.font.read1}
     }
     .employer{
-      ${AppStyle.font.text1}
+      ${AppStyle.font.read2}
     }
   }
   .price{
     float: right;
     padding: 10px;
+    ${AppStyle.font.hilight}
   }
 
 }

@@ -12,9 +12,7 @@ class BottomButton extends Component {
       <div>
         <div style={{height: '60px'}}/>
         <Style>
-          <div id="BottomButton">
-            <Button onClick={this.props.onClick}>{this.props.children}</Button>
-          </div>
+          <Button onClick={this.props.onClick}>{this.props.children}</Button>
         </Style>
       </div>
     );

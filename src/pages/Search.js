@@ -7,6 +7,7 @@ import store from 'store'
 
 import Layout from '../layouts'
 import WorkItem from '../components/WorkItem'
+import Content from '../components/Content'
 
 import { db } from '../api/firebase'
 
@@ -37,13 +38,13 @@ class Search extends Component {
 
     return (
       <Layout route={this.props.route}>
-        <Style>
-          <div id="Search">
+          <Style>
+            <Content>
             {_.map(worksList, (work, i) => 
               <WorkItem data={work} i={i}/>
             )}
-          </div>
-        </Style>
+            </Content>
+          </Style>
       </Layout>
     );
   }
@@ -52,8 +53,5 @@ class Search extends Component {
 export default Search;
 
 const Style = Styled.div`
-  #Search{
-    padding-top: 10px;
-  }
-
+  padding-top: 10px;
 `

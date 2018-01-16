@@ -172,28 +172,33 @@ class FormProfile extends Component {
               <input type="text" 
                 value={user['homeNo']} 
                 placeholder="บ้านเลขที่"
+                className="col-6"
                 onChange={e => this.handleChangeProfile(e, 'homeNo')}/>
               <input type="text" 
                 value={user['road']} 
                 placeholder="ถนน"
+                className="col-6"
                 onChange={e => this.handleChangeProfile(e, 'road')}/>
               <input type="text" 
                 value={user['area']} 
                 placeholder="เขต"
+                className="col-6"
                 onChange={e => this.handleChangeProfile(e, 'area')}/>
               <input type="text" 
                 value={user['district']} 
                 placeholder="แขวง"
+                className="col-6"
                 onChange={e => this.handleChangeProfile(e, 'district')}/>
               <input type="text" 
                 value={user['province']} 
                 placeholder="จังหวัด"
+                className="col-6"
                 onChange={e => this.handleChangeProfile(e, 'province')}/>
               <input type="text" 
                 value={user['postcode']} 
                 placeholder="รหัสไปรษณีย์"
+                className="col-6"
                 onChange={e => this.handleChangeProfile(e, 'postcode')}/>
-
               {/*<button type="submit" onSubmit={this.handleProfile}>ต่อไป</button>*/}
             </form>
             
@@ -210,27 +215,30 @@ export default FormProfile;
 
 const Style = Styled.div`
   #FormProfile{
-    padding-top: 20px;
+    margin-top: 85px;
     .animate{
       animation-name: fadeInUp;
       animation-duration: 0.3s;
     }
     .profileImage{
-      width: 135px;
-      height: 135px;
+      width: 140px;
+      height: 140px;
       border-radius: 100%;
       background: #ccc;
       object-fit: cover;
       margin: 0 auto;
       text-align: center;
+      margin-bottom: 10px;
+      margin-top: -70px;
+      ${AppStyle.shadow.lv1}
       img{
         width: 100%;
       }
     }
     .haft{
-      // width: 45%;
-      // float: left;
-      // margin-right: 10px;
+      width: 50%;
+      float: left;
+      margin: 0 5px;
     }
     button{
       width: 100%;

@@ -14,6 +14,8 @@ import Button from './Button';
 
 import { TimePicker } from 'antd';
 
+import Scroll from './Scroll'
+
 const format = 'HH:mm'
 
 const secToMoment = (sec) => {
@@ -73,6 +75,12 @@ class FormWorkTime extends Component {
       
       store.set('employee',user)
     })
+
+    this.setWheel()
+  }
+
+  setWheel = () => {
+    
   }
 
   handleUpdateWorkTime = async () => {
@@ -116,6 +124,10 @@ class FormWorkTime extends Component {
             </div>
           </div>
           <div>
+
+          <Scroll/>
+
+
           {_.map(workTime, (date, day) =>
             <div className="row justify-content-center datetime">
               <div className="col-4">

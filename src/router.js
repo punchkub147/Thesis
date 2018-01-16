@@ -16,7 +16,6 @@ import EditAbilities from './pages/EditAbilities'
 import EditProfile from './pages/EditProfile'
 import EditWorkTime from './pages/EditWorkTime'
 
-import Web from './WEB/Web'
 import WebAddWork from './WEB/pages/AddWork' 
 import WebEditWork from './WEB/pages/EditWork'
 import WebLogin from './WEB/pages/Login'

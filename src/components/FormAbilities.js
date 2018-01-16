@@ -27,7 +27,6 @@ class FormAbilities extends Component {
   }
 
   setAbilities = async (user) => {
-    
     await db.collection('abilities').get()
     .then(snap => {
       let abilities = []
@@ -37,7 +36,7 @@ class FormAbilities extends Component {
           ability_id: data.id,
           name: data.data().name,
           image: data.data().image,
-          selected: user.data.abilities[data.data().name]&&user.data.abilities[data.data().name]
+          selected: _.get(user.data.abilities, data.data().name)!=undefined?true:false
         })
       })
       this.setState({abilities})
@@ -135,7 +134,7 @@ const Card = Styled.div`
       position: absolute;
       width: 100%;
       height: 140px;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.5);
 
       animation-name: zoomIn;
       animation-duration: 0.2s;
@@ -143,7 +142,8 @@ const Card = Styled.div`
         font-size: 28px;
         transform: rotate(-10deg);
         margin-top: 50px;
-        color: ${AppStyle.color.main};
+        color: ${AppStyle.color.white};
+        font-family: 'Anchan';
       }
     }
 `

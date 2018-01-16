@@ -12,6 +12,7 @@ import Content from '../components/Content'
 
 import { getUser, auth, db } from '../api/firebase'
 import { storage } from 'firebase';
+import Button from '../components/Button';
 
 class Profile extends Component {
 
@@ -59,12 +60,7 @@ class Profile extends Component {
       <Layout route={this.props.route}>
         <Style>
           <div id="Profile">
-
-
             <Content>
-
-              <Link to='/editprofile'>แก้ไข</Link>
-
               <div className="row justify-content-center" style={{margin: '0 10px'}}>
                 <img className="profileImage" src={_.get(data,'profileImage')}/>
               </div>
@@ -73,7 +69,8 @@ class Profile extends Component {
                 {`${_.get(data,'fname')} ${_.get(data,'lname')}`}
               </div>
 
-              <div className="detail card">  
+              <div className="detail card"> 
+                <Link to='/editprofile'>แก้ไข</Link> 
                 <div className="row">
                   <div className="col-2">
                     <img className="icon" src={icon}/>
@@ -123,7 +120,7 @@ class Profile extends Component {
               </div>
 
             </Content>
-            <button onClick={this.logout}>LOGOUT</button>
+            <Button onClick={this.logout}>ออกจากระบบ</Button>
 
 
           </div>
@@ -136,35 +133,34 @@ class Profile extends Component {
 export default Profile;
 
 const Style = Styled.div`
-  #Profile{
-    color: ${AppStyle.color.text};
-    padding-top: 20px;
-    .profileImage{
-      width: 120px;
-      height: 120px;
-      background: #ccc;
-      border-radius: 100%;
-      object-fit: cover;
-      ${AppStyle.shadow.lv1}
+  color: ${AppStyle.color.text};
+  padding: 10px 0;
+  .profileImage{
+    width: 140px;
+    height: 140px;
+    background: ${AppStyle.color.white};
+    border-radius: 100%;
+    object-fit: cover;
+    ${AppStyle.shadow.lv1}
+  }
+  .name{
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    ${AppStyle.font.menu}
+  }
+  .detail{
+    .icon{
+      width: 25px;
+      margin: 0 auto;
     }
-    .name{
-      height: 40px;
-      line-height: 40px;
-      font-size: 18px;
-      text-align: center;
-    }
-    .detail{
-      .icon{
-        width: 25px;
-        margin: 0 auto;
-      }
-    }
-    .card{
-      width: 100%;
-      padding: 10px;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-      background: ${AppStyle.color.card};
-    }
+  }
+  .card{
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    background: ${AppStyle.color.card};
+    ${AppStyle.shadow.lv1}
   }
 `

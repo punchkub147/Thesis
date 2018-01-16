@@ -17,6 +17,8 @@ import Content from '../components/Content';
 import Progress from '../components/Progress';
 import Button from '../components/Button';
 
+import alarm2 from '../img/alarm2.png'
+
 class Tasks extends Component {
 
   state = {
@@ -227,12 +229,15 @@ class Tasks extends Component {
               <div className='row'>
                 <div className='col-6'>
                   <div className="edittime">
-                    ส่ง{moment(working.endAt).locale('th').fromNow()}
+                    <button>
+                      <img src={alarm2}/>
+                      {' '} ~ {working.worktime/60} นาที
+                    </button>
                   </div>
                 </div>
                 <div className='col-6'>
                   <div className="timing">
-                  {secToTime(working.timeTodo)}({working.worktime}s)
+                  {secToTime(working.timeTodo)}
                   </div>
                 </div>
               </div>
@@ -296,7 +301,7 @@ class Tasks extends Component {
  
           <Tabbar>
           {menuList.map((menu,key) =>
-            <div className={`menu ${this.state.menu==key&&'border'}`} 
+            <div className={`menu ${this.state.menu==key?'border-t':'border'}`} 
               onClick={() => this.setState({menu: key})}>
               {menu}
             </div>
@@ -304,12 +309,14 @@ class Tasks extends Component {
           </Tabbar>
 
           <Content>
-          {this.state.menu===0&&
-            nowTask
-          }
-          {this.state.menu===1&&
-            allTask
-          }
+            <div style={{'padding-top': '10px'}}>
+              {this.state.menu===0&&
+                nowTask
+              }
+              {this.state.menu===1&&
+                allTask
+              }
+            </div>
           </Content>
 
           <Modal
@@ -317,8 +324,17 @@ class Tasks extends Component {
             // onAfterOpen={this.afterOpenModal}
             // onRequestClose={this.closeModal}
             style={{
-              content: {'margin-top': '100px', height: '200px', background: '#fcf4e2'},
-              overlay: {background: 'rgba(0,0,0,0.5)'}
+              content: {height: '200px', background: '#fcf4e2',
+              margin: '0 auto',
+              width: '300px',
+              'margin-top': '100px', 
+              'animation-name': 'fadeIn',
+              'animation-duration': '0.3s',
+            },
+              overlay: { background: 'rgba(0,0,0,0.5)',
+              'animation-name': 'fadeIn',
+              'animation-duration': '0.3s',
+            },
             }}
             contentLabel="Example Modal"
           >
@@ -376,11 +392,19 @@ const Tabbar = Styled.div`
     width: 50%;
     float: left;
     cursor: pointer;
+    ${AppStyle.font.menu}
   }
-  margin-bottom: 10px;
-  border-bottom: solid 2px transparent;
-  .border{
+  margin-bottom: 2px;
+
+  box-sizing: border-box;
+  .border-t{
     border-bottom: solid 2px ${AppStyle.color.sub};
+    color: ${AppStyle.color.sub};
+    font-weight: bold;
+    box-sizing: border-box;
+  }
+  .border{
+    border-bottom: solid 2px transparent;
   }
 `
 const NowTask = Styled.div`
@@ -388,20 +412,35 @@ const NowTask = Styled.div`
   box-sizing: border-box;
   background: ${AppStyle.color.card};
   margin-bottom: 10px;
+  ${AppStyle.shadow.lv1}
   .name{
-    ${AppStyle.font.text1}
+    ${AppStyle.font.read1}
   }
   .piece{
-    ${AppStyle.font.text2}
+    ${AppStyle.font.read1}
     text-align: right;
   }
   .progress{
     height: 20px;
     width: 100%;
     //background: ${AppStyle.color.main};
+    margin-bottom: 10px;
   }
   .edittime{
-
+    button{
+      width: 100px;
+      height: 30px;
+      background: ${AppStyle.color.sub};
+      border: none;
+      border-radius: 4px;
+      color: ${AppStyle.color.white};
+      font-size: 14px;
+      ${AppStyle.shadow.lv2}
+      img{
+        height: 20px;
+        width: 20px;
+      }
+    }
   }
   .timing{
     text-align: right;
@@ -414,8 +453,8 @@ const NowTask = Styled.div`
     text-align: center;
     line-height: 50px;
     cursor: pointer;
-    color: ${AppStyle.color.white};
-    box-shadow: 3px 3px 0 ${AppStyle.color.black};
+    ${AppStyle.font.tool}
+    ${AppStyle.shadow.lv2}
   }
   .finish{
     width: 50px;
@@ -431,14 +470,15 @@ const AllTask = Styled.div`
   box-sizing: border-box;
   background: ${AppStyle.color.card};
   margin-bottom: 10px;
+  ${AppStyle.shadow.lv1}
   .name{
-    ${AppStyle.font.text1}
+    ${AppStyle.font.read1}
   }
   .piece{
-    ${AppStyle.font.text2}
+    ${AppStyle.font.read1}
   }
   .date{
-    ${AppStyle.font.text2}
+    ${AppStyle.font.read2}
     text-align: right;
   }
   .progress{

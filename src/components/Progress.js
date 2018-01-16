@@ -3,14 +3,17 @@ import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 
-class Progress extends Component {
+import { Progress } from 'antd';
+
+class AppProgress extends Component {
 
 
   render() {
     const n = 10
 
     const { now, max } = this.props
-    const percent = ((now+1)/max)*10
+    let percent = (now/max)*100
+    if(percent>=100)percent=100
 
     let progress = []
     for(let i = 1; i <= n; i++){
@@ -18,19 +21,21 @@ class Progress extends Component {
         ?progress[i]=1
         :progress[i]=0
     }
+    console.log(percent)
     return (
       <Style>
-        {progress.map(per =>
+        {/*progress.map(per =>
           <div className='box' style={{width: `${100/n}%`}}>
             <div className='inbox' style={{background: per==1?`${AppStyle.color.main}`:'#ccc'}}>|</div>
           </div>
-        )}
+        )*/}
+        <Progress percent={percent} status="active" showInfo={false} strokeWidth={15}/>
       </Style>
     );
   }
 }
 
-export default Progress;
+export default AppProgress;
 
 const Style = Styled.div`
   .box{
@@ -40,5 +45,20 @@ const Style = Styled.div`
     .inbox{
       color: transparent;
     }
+  }
+  .ant-progress-bg{
+    background: ${AppStyle.color.main};
+    height: 15px;
+    border-radius: 0px;
+  }
+  .ant-progress-status-success .ant-progress-bg{
+    background: ${AppStyle.color.sub};
+  }
+  .ant-progress-inner{
+    background-color: ${AppStyle.color.bg};
+    border-radius: 0px;
+  }
+  .ant-progress-status-active .ant-progress-bg:before{
+    border-radius: 0px;
   }
 `

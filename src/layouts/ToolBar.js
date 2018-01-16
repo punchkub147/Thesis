@@ -48,7 +48,6 @@ const Style = Styled.div`
     height: 50px;
     width: 100%;
     line-height: 50px;
-    font-weight: bold;
     padding: 0 16px;
     box-sizing: border-box;
     background: ${AppStyle.color.main};
@@ -67,7 +66,7 @@ const Style = Styled.div`
       width: 80%;
       text-align: center;
       color: ${AppStyle.color.card};
-      font-size: 18px;
+      ${AppStyle.font.tool}
     }
     .right{
       float: left;
