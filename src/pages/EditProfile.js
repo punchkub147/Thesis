@@ -1,21 +1,17 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
-import AppStyle from '../config/style' 
-import _ from 'lodash'
-
-import { db, getUser } from '../api/firebase'
+import AppStyle from '../config/style'
 
 import ToolBar from '../layouts/ToolBar'
-import Step from '../components/Step'
 
-import image from '../img/logo-xl.png'
-import BottomButton from '../components/BottomButton';
 import FormProfile from '../components/FormProfile';
 import Bg from '../components/Bg';
 
 class EditProfile extends Component {
-
+  componentDidMount() {
+    window.scrollTo(0, 0)
+  }
   render() {
     return (
       <Style>
@@ -45,7 +41,7 @@ const Style = Styled.div`
   .card{
     margin-top: 10px;    
     width: 100%;
-    background: ${AppStyle.color.card};
+    background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}
   }
 `

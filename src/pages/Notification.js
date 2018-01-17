@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
@@ -9,9 +8,9 @@ import Layout from '../layouts'
 import send from '../img/send.png'
 import Content from '../components/Content'
 
-import { setUpNoti, getToken, PushFCM, PushSelf } from '../api/notification'
+import { getToken, PushFCM, PushSelf } from '../api/notification'
 
-import { getUser, auth, db } from '../api/firebase'
+import { db } from '../api/firebase'
 
 class Notification extends Component {
 
@@ -21,6 +20,7 @@ class Notification extends Component {
   }
 
   componentDidMount() {
+    window.scrollTo(0, 0)
     // auth.onAuthStateChanged(user => {
     //   user
     //     ?getUser('employee', user => {
@@ -80,7 +80,7 @@ class Notification extends Component {
           <Content>
           {_.map(notiList, (data,i) => 
             <Noti fade={i*0.2}>
-              <img src={send}/>
+              <img alt='' src={send}/>
               <div className="text">{data.message}</div>
               <div className="time">{/*data.createAt*/}</div>
             </Noti>

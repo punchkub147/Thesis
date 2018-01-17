@@ -1,8 +1,4 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
-import Styled from 'styled-components'
-import AppStyle from '../config/style' 
-import _ from 'lodash'
 
 class Content extends Component {
 
@@ -20,7 +16,3 @@ class Content extends Component {
 }
 
 export default Content;
-
-const Style = Styled.div`
-
-`

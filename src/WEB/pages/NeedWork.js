@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
-import AppStyle from '../../config/style' 
 import Config from '../../config' 
 import _ from 'lodash'
 import moment from 'moment'

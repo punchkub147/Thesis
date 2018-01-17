@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
-import _ from 'lodash'
 
-import { register, auth, createUser, db } from '../../api/firebase'
+import { auth, db } from '../../api/firebase'
 import { getToken } from '../../api/notification'
 
 
@@ -18,7 +16,7 @@ class Register extends Component {
     const password = this.password.value
     const password2 = this.password2.value
 
-    if(password === password2 && password != ''){
+    if(password === password2 && password !== ''){
       const user = await auth.createUserWithEmailAndPassword(email, password)
       .catch( e => {
         console.log(e.message);

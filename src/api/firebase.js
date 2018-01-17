@@ -1,4 +1,3 @@
-import React from 'react';
 import _ from 'lodash';
 import * as firebase from 'firebase';
 import '@firebase/firestore'
@@ -6,8 +5,6 @@ import cuid from 'cuid';
 import moment from 'moment';
 
 //import { userModel } from './model';
-
-//import { Button, notification } from 'antd';
 
 import connect from './connectFirebase';
 
@@ -35,7 +32,6 @@ export const messaging = firebase.messaging();
 export const createUser = async (user, data, collection) => {
   // const firebase = await connect()
   // const db = await firebase.database().ref();
-  const userData = user
   console.log('CREATED', user)
   //firebase.database().ref(`users/${user.uid}`).set(userData)
   await db.collection(collection).doc(user.uid).set(data)

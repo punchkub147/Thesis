@@ -1,16 +1,12 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
 
-import moment from 'moment'
-
 import Layout from '../layouts'
 
 import { auth, db } from '../../api/firebase'
-
-import Work from '../components/Work'
 import Button from '../../components/Button';
 
 class Works extends Component {
@@ -48,7 +44,7 @@ class Works extends Component {
   }
 
   render() {
-    const { user, itemsList } = this.state
+    const { itemsList } = this.state
 
     return (
       <Style>

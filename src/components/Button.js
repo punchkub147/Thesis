@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
-import _ from 'lodash'
 
 import buttonimg from '../img/button.png'
 
@@ -37,5 +35,8 @@ const Style = Styled.div`
     background-repeat: no-repeat;
     border: none;
     ${AppStyle.font.button}
+  }
+  button:active{
+    opacity: 0.8;
   }
 `

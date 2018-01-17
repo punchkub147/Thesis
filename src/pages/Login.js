@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
-import store from 'store'
 
 import logo from '../img/logo-xl.png'
 import bg12 from '../img/bg12.jpg'
 
-import Layout from '../layouts'
 import Button from '../components/Button'
 import Content from '../components/Content'
 
-import { loginWithEmail, auth, db } from '../api/firebase'
+import { auth, db } from '../api/firebase'
 import { getToken } from '../api/notification'
 
 
 class Login extends Component {
 
   componentDidMount() {
+    window.scrollTo(0, 0)
     auth.onAuthStateChanged(async user => {
       if(user){
 
@@ -72,34 +71,32 @@ class Login extends Component {
 
     return (
       <Style>
-        <div id="Login">
-          <div className="container">
-            <div className="row justify-content-md-center">
+        <div className="container">
+          <div className="row justify-content-md-center">
 
-              <Content>
-                <div className="logo">
-                  <img src={logo}/>
-                </div>
-              
-              <div className="card">
-                <form onSubmit={(e) => this.handleLogin(e)}>
-                
-                  <input placeholder="อีเมลล์" type="email" ref={r => this.email = r }/>
-
-                  <input placeholder="รหัสผ่าน" type="password" ref={r => this.password = r }/>
-
-                  <Button type="submit" onSubmit={(e) => this.handleLogin(e)}>
-                    Login
-                  </Button>
-
-                </form>
-
-                <Link to="/register">
-                  <div className="register">Register</div> 
-                </Link>
+            <Content>
+              <div className="logo">
+                <img alt='' src={logo}/>
               </div>
-              </Content>
+            
+            <div className="card">
+              <form onSubmit={(e) => this.handleLogin(e)}>
+              
+                <input placeholder="อีเมลล์" type="email" ref={r => this.email = r }/>
+
+                <input placeholder="รหัสผ่าน" type="password" ref={r => this.password = r }/>
+
+                <Button type="submit" onSubmit={(e) => this.handleLogin(e)}>
+                  Login
+                </Button>
+
+              </form>
+
+              <Link to="/register">
+                <div className="register">Register</div> 
+              </Link>
             </div>
+            </Content>
           </div>
         </div>
       </Style>
@@ -110,40 +107,39 @@ class Login extends Component {
 export default Login;
 
 const Style = Styled.div`
-  #Login{    
-    background-image: url('${bg12}');
-    background-size: 50px 10px;
-    min-height: 100vh;
+  transition: 1s;
+  background-image: url('${bg12}');
+  background-size: 50px 10px;
+  min-height: 100vh;
 
-    .content{
-      animation-name: fadeInUp;
-      animation-duration: 0.3s;
-    }
+  .content{
+    animation-name: fadeInUp;
+    animation-duration: 0.3s;
+  }
 
-    .card{
-      background: ${AppStyle.color.bg};
-      padding: 10px;
-      ${AppStyle.shadow.lv1}
-    }
+  .card{
+    background: ${AppStyle.color.bg};
+    padding: 10px;
+    ${AppStyle.shadow.lv1}
+  }
 
-    .logo{
+  .logo{
+    width: 100%;
+    min-height: 340px;
+
+    animation-name: jackInTheBox;
+    animation-duration: 1s;
+
+    img{
       width: 100%;
-
-      animation-name: jackInTheBox;
-      animation-duration: 1s;
-
-      img{
-        width: 100%;
-      }
-    }
-
-    box-sizing: border-box;
-
-    .register{
-      width: 100%;
-      text-align: center;
-      margin-top: 20px;
     }
   }
 
+  box-sizing: border-box;
+
+  .register{
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+  }
 `

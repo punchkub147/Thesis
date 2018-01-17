@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
@@ -9,10 +9,12 @@ import Modal from 'react-modal'
 
 import { Slider } from 'antd';
 
-import { getUser, auth, db } from '../api/firebase'
+import { getUser, db } from '../api/firebase'
 import { secToTime } from '../functions/moment'
 
 import Layout from '../layouts'
+import Tabbar from '../layouts/Tabbar'
+
 import Content from '../components/Content';
 import Progress from '../components/Progress';
 import Button from '../components/Button';
@@ -23,7 +25,6 @@ class Tasks extends Component {
 
   state = {
     workingList: [],
-    menu: 0,
     updateAt: '',
     modalIsOpen: false,
     limitWorkTimeToDay: 0,
@@ -32,7 +33,7 @@ class Tasks extends Component {
   }
 
   async componentDidMount() {
-
+    window.scrollTo(0, 0)
     getUser('employee', user => {
       this.setState({user})
       store.set('employee',user)
@@ -52,7 +53,7 @@ class Tasks extends Component {
 
   getWorking = (user) => {
     this.setState({
-      workingList: store.get('working')
+      workingList: store.get('tasks')
     })
     //store.remove('working')
 
@@ -76,10 +77,10 @@ class Tasks extends Component {
         )// งานที่ทำเสร็จในวันอื่น
 
         let finished_piece = _.sumBy(data.do_piece, (o) => o.piece)
-        if(finished_piece==undefined)finished_piece=0 //debug
+        if(finished_piece===undefined)finished_piece=0 //debug
 
         let worktime = 0
-        if(data.worktime!=undefined)worktime=data.worktime //debug
+        if(data.worktime!==undefined)worktime=data.worktime //debug
 
         workingList.push(Object.assign(data,{
           working_id: doc.id,
@@ -100,7 +101,7 @@ class Tasks extends Component {
         workingList,
         totalTimeAllWork,
       })
-      store.set('working', workingList)
+      store.set('tasks', workingList)
     })
   }
 
@@ -121,8 +122,8 @@ class Tasks extends Component {
 
     piece = total_finished_piece+newPiece //จำนวนชิ้นงานเดิน บวก จำนวนชิ้นงานที่ทำใหม่วันนี้
 
-    if(total_finished_piece==NaN)total_finished_piece=0
-    if(newPiece==null || newPiece==undefined)newPiece=0
+    if(total_finished_piece===NaN)total_finished_piece=0
+    if(newPiece===null || newPiece===undefined)newPiece=0
 
     if(piece>=work.total_piece)piece=work.total_piece
 
@@ -141,7 +142,7 @@ class Tasks extends Component {
     await workingRef.get()
     .then(data => {
 
-      if(data.data().do_piece != undefined){
+      if(data.data().do_piece !== undefined){
         do_piece = _.assign(data.data().do_piece,{[data.data().do_piece.length]: updatePiece})
       }else{
         do_piece = [updatePiece]
@@ -169,20 +170,15 @@ class Tasks extends Component {
 
   render() {
     const { workingList, doWork, limitWorkTimeToDay, totalTimeAllWork } = this.state
-    
-    const menuList = ['งานวันนี้','งานทั้งหมด']
-
-    // if(totalTimeAllWork==0)return <div/>
 
     /////////////////////// GEN NOW WORK ////////////////////////////////
     let limitTimeDayWork = limitWorkTimeToDay // 3 hours
     let totalTimeDayWork = 0 //เวลางานที่ต้องทำในวันนี้
     
     let nowWorking = []
-    workingList.map(async working => {
+    _.map(workingList, async working => {
       if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
-
-
+  
       const todoWork = working.total_piece-working.anotherDayFinishedPiece //จำนวนงานนี้ที่เหลือ งานทั้งหมด-งานวันอื่น
       
       let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
@@ -200,13 +196,12 @@ class Tasks extends Component {
         }))
       }
     })
+  
     /////////////////////// GEN NOW WORK ////////////////////////////////
 
     const nowTask = (
-      <div>
-      {nowWorking&&
-        nowWorking.map( working => 
-        <NowTask>
+      _.map(nowWorking, (working,i) => 
+        <NowTask fade={i*0.2}>
           <div className='row'>
             <div className='col-9'>
               <div className='row'>
@@ -230,7 +225,7 @@ class Tasks extends Component {
                 <div className='col-6'>
                   <div className="edittime">
                     <button>
-                      <img src={alarm2}/>
+                      <img alt='' src={alarm2}/>
                       {' '} ~ {working.worktime/60} นาที
                     </button>
                   </div>
@@ -255,22 +250,21 @@ class Tasks extends Component {
           {/*
             <div onClick={() => this.handleDelete(working.working_id)}>DELETE</div>
           */}
-        </NowTask>
-      )}
-      </div>
+        </NowTask> 
+      )
     )
 
     ////////////////////// GEN ALL WORK ///////////////////////
     let allWorking = []
-    workingList.map(working => {
+    _.map(workingList, working => {
       //if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
       allWorking.push(working)
     })
     ////////////////////// GEN ALL WORK ///////////////////////
 
     const allTask = (
-      _.map(allWorking, working => 
-        <AllTask>
+      _.map(allWorking, (working, i) => 
+        <AllTask fade={i*0.2}>
           <div className='row'>
             <div className='col-6'>
               <div className="name">{working.work_name}</div>
@@ -294,80 +288,67 @@ class Tasks extends Component {
         </AllTask>
       )
     )
+    const tabs = [
+      {
+        render: <Content>{nowTask}</Content>,
+        name: 'งานวันนี้',
+      },
+      {
+        render: <Content>{allTask}</Content>,
+        name: 'งานทั้งหมด',
+      },
+    ]
 
     return (
-      <Layout route={this.props.route}>
-        <Style>
- 
-          <Tabbar>
-          {menuList.map((menu,key) =>
-            <div className={`menu ${this.state.menu==key?'border-t':'border'}`} 
-              onClick={() => this.setState({menu: key})}>
-              {menu}
-            </div>
-          )}
-          </Tabbar>
-
-          <Content>
-            <div style={{'padding-top': '10px'}}>
-              {this.state.menu===0&&
-                nowTask
-              }
-              {this.state.menu===1&&
-                allTask
-              }
-            </div>
-          </Content>
-
-          <Modal
-            isOpen={this.state.modalIsOpen}
-            // onAfterOpen={this.afterOpenModal}
-            // onRequestClose={this.closeModal}
-            style={{
-              content: {height: '200px', background: '#fcf4e2',
-              margin: '0 auto',
-              width: '300px',
-              'margin-top': '100px', 
-              'animation-name': 'fadeIn',
-              'animation-duration': '0.3s',
-            },
-              overlay: { background: 'rgba(0,0,0,0.5)',
-              'animation-name': 'fadeIn',
-              'animation-duration': '0.3s',
-            },
-            }}
-            contentLabel="Example Modal"
-          >
-            <div>ทำงาน {this.state.doing} จาก {_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
-            {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
-            <form>
-              <Slider min={0} max={_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')}
-                onChange={doing => this.setState({doing})}
-                value={this.state.doing}
-                style={{margin: '40px 0'}}
-                />
-              <Button onClick={(e) => this.handleDo(e,doWork)}>ยืนยัน</Button>
-            </form>
-          </Modal>
- 
-          <WorkDate>
-            <div className="row">
-              <div className="col-10">
-              {'เวลางานที่ต้องทำทั้งหมดททุกงาน '+secToTime(totalTimeAllWork)}
-              <br/>
-              {'เวลาที่ต้องทำงานวันนี้ '+secToTime(totalTimeDayWork)}
-              <br/>
-              {'เวลาที่จำกัดวันนี้ '+secToTime(limitWorkTimeToDay)}
+      <div>
+        <Layout route={this.props.route}>
+          <Style>
+          
+            {_.toLength(workingList) !== 0
+              ?<Tabbar tabs={tabs}/>
+              :<Content>
+                <div className='message'>คุณยังไม่มีงาน</div>
+              </Content>
+            }
+            
+            <WorkDate>
+              <div className="row">
+                <div className="col-10">
+                {'เวลางานที่ต้องทำทั้งหมดททุกงาน '+secToTime(totalTimeAllWork)}
+                <br/>
+                {'เวลาที่ต้องทำงานวันนี้ '+secToTime(totalTimeDayWork)}
+                <br/>
+                {'เวลาที่จำกัดวันนี้ '+secToTime(limitWorkTimeToDay)}
+                </div>
+                <div className="col-2">
+                  <Link to="/editworktime">แก้ไข</Link>
+                </div>
               </div>
-              <div className="col-2">
-                <Link to="/editworktime">แก้ไข</Link>
-              </div>
-            </div>
-          </WorkDate>
-          <div style={{height: '60px'}}></div>
+            </WorkDate>
+            <div style={{height: '60px'}}></div>
 
-        </Style>
-      </Layout>
+          </Style>
+        </Layout>
+
+        <Modal
+          isOpen={this.state.modalIsOpen}
+          // onAfterOpen={this.afterOpenModal}
+          // onRequestClose={this.closeModal}
+          style={modalStyle}
+          contentLabel="Example Modal"
+        >
+          <div>ทำงาน {this.state.doing} จาก {_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
+          {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
+          <form>
+            <Slider min={0} max={_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')}
+              onChange={doing => this.setState({doing})}
+              value={this.state.doing}
+              style={{margin: '40px 0'}}
+              />
+            <Button onClick={(e) => this.handleDo(e,doWork)}>ยืนยัน</Button>
+          </form>
+        </Modal>
+      </div>
     )
   }
 }
@@ -379,41 +360,29 @@ class Tasks extends Component {
 export default Tasks;
 
 const Style = Styled.div`
-
-`
-const Tabbar = Styled.div`
-  width: 100%;
-  background: ${AppStyle.color.card};
-  ${AppStyle.shadow.lv1}
-  height: 50px;
-  line-height: 50px;
-  text-align: center;
-  .menu{
-    width: 50%;
-    float: left;
-    cursor: pointer;
-    ${AppStyle.font.menu}
-  }
-  margin-bottom: 2px;
-
-  box-sizing: border-box;
-  .border-t{
-    border-bottom: solid 2px ${AppStyle.color.sub};
-    color: ${AppStyle.color.sub};
-    font-weight: bold;
-    box-sizing: border-box;
-  }
-  .border{
-    border-bottom: solid 2px transparent;
+  .message{
+    width: 100%;
+    background: ${AppStyle.color.card};
+    ${AppStyle.shadow.lv1}
+    padding: 10px;
+    text-align: center;
+    ${AppStyle.font.read1}
+    border-radius: 100px;
+    margin-top: 20px;
   }
 `
+
 const NowTask = Styled.div`
+  animation-name: fadeInLeft; 
+  animation-duration: ${props => props.fade+0.2}s;
+
   padding: 10px;
   box-sizing: border-box;
   background: ${AppStyle.color.card};
   margin-bottom: 10px;
   ${AppStyle.shadow.lv1}
   .name{
+    text-align: left;
     ${AppStyle.font.read1}
   }
   .piece{
@@ -427,6 +396,7 @@ const NowTask = Styled.div`
     margin-bottom: 10px;
   }
   .edittime{
+    text-align: left;
     button{
       width: 100px;
       height: 30px;
@@ -466,12 +436,16 @@ const NowTask = Styled.div`
   }
 `
 const AllTask = Styled.div`
+  animation-name: fadeInRight;
+  animation-duration: ${props => props.fade+0.2}s;
+
   padding: 10px;
   box-sizing: border-box;
   background: ${AppStyle.color.card};
   margin-bottom: 10px;
   ${AppStyle.shadow.lv1}
   .name{
+    text-align: left;
     ${AppStyle.font.read1}
   }
   .piece{
@@ -496,3 +470,22 @@ const WorkDate = Styled.div`
   background: ${AppStyle.color.card};
   ${AppStyle.shadow.lv1}
 `
+
+const modalStyle = {
+  content: {
+  height: '200px', 
+  background: `${AppStyle.color.white}`,
+  margin: '0 auto',
+  width: '300px',
+  'margin-top': '120px', 
+  'z-index': '99999999',
+  'animation-name': 'zoomIn',
+  'animation-duration': '0.2s',
+},
+  overlay: { 
+  background: `rgba(0,0,0,0.3)`,
+  'z-index': '9999999',
+  'animation-name': 'fadeIn',
+  'animation-duration': '0.3s',
+},
+}

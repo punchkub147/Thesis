@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
@@ -10,8 +10,7 @@ import icon from '../img/next.png'
 import Layout from '../layouts'
 import Content from '../components/Content'
 
-import { getUser, auth, db } from '../api/firebase'
-import { storage } from 'firebase';
+import { getUser, auth } from '../api/firebase'
 import Button from '../components/Button';
 
 class Profile extends Component {
@@ -26,6 +25,7 @@ class Profile extends Component {
   }
 
   componentDidMount() {
+    window.scrollTo(0, 0)
     // db.collection('employee').where('abilities.ทอ', '==', true).get()
     // .then( snap => {
     //   snap.forEach(data => {
@@ -62,7 +62,7 @@ class Profile extends Component {
           <div id="Profile">
             <Content>
               <div className="row justify-content-center" style={{margin: '0 10px'}}>
-                <img className="profileImage" src={_.get(data,'profileImage')}/>
+                <img className="profileImage" alt='' src={_.get(data,'profileImage')}/>
               </div>
 
               <div className="name">
@@ -73,19 +73,19 @@ class Profile extends Component {
                 <Link to='/editprofile'>แก้ไข</Link> 
                 <div className="row">
                   <div className="col-2">
-                    <img className="icon" src={icon}/>
+                    <img className="icon" alt='' src={icon}/>
                   </div>
                   <div className="col-10">{_.get(data,'phone')}</div>
                 </div>
                 <div className="row">
                   <div className="col-2">
-                    <img className="icon" src={icon}/>
+                    <img className="icon" alt='' src={icon}/>
                   </div>
                   <div className="col-10">{_.get(data,'personId')}</div>
                 </div>
                 <div className="row">
                   <div className="col-2">
-                    <img className="icon" src={icon}/>
+                    <img className="icon" alt='' src={icon}/>
                   </div>
                   <div className="col-10">
                   {/*

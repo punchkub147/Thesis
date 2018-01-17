@@ -1,20 +1,16 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
-import _ from 'lodash'
-
-import { db, getUser } from '../api/firebase'
 
 import ToolBar from '../layouts/ToolBar'
-import Step from '../components/Step'
 
-import image from '../img/logo-xl.png'
-import BottomButton from '../components/BottomButton';
 import FormAbilities from '../components/FormAbilities';
 
 class EditAbilities extends Component {
-
+  componentDidMount() {
+    window.scrollTo(0, 0)
+  }
   render() {
     return (
       <Style>

@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
 import Styled from 'styled-components'
-import AppStyle from '../config/style' 
-import _ from 'lodash'
+import AppStyle from '../config/style'
 
 class Step extends Component {
 
@@ -10,24 +8,46 @@ class Step extends Component {
     const { step } = this.props
     return (
       <Style>
-        <div id="Step">
           <div className="step">
-            <div className="">{step >= 1?'O':'X'}</div>
+            {step >= 1
+              ?<div className="o"/>
+              :<div className="x"/>
+            }
+            {step >= 2
+              ?<div className='line-o'/>     
+              :<div className='line-x'/>   
+            }     
             ลงทะเบียน
           </div>
           <div className="step">
-            <div className="">{step >= 2?'O':'X'}</div>
+            {step >= 2
+              ?<div className="o"/>
+              :<div className="x"/>
+            }
+            {step >= 3
+              ?<div className='line-o'/>     
+              :<div className='line-x'/>   
+            }  
             ประวัติ
           </div>
           <div className="step">
-            <div className="">{step >= 3?'O':'X'}</div>
+            {step >= 3
+              ?<div className="o"/>
+              :<div className="x"/>
+            }
+            {step >= 4
+              ?<div className='line-o'/>     
+              :<div className='line-x'/>   
+            }  
             ถวามถนัด
           </div>
           <div className="step">
-            <div className="">{step >= 4?'O':'X'}</div>
+            {step >= 4
+              ?<div className="o"/>
+              :<div className="x"/>
+            }
             วันที่ทำงาน
           </div>
-        </div>
         <div style={{clear:'both'}}/>
       </Style>
     );
@@ -37,14 +57,45 @@ class Step extends Component {
 export default Step;
 
 const Style = Styled.div`
-#Step{
   width: 100%;
-  padding: 16px;
+  padding: 10px;
   .step{
+    position: relative;
     width: 25%;
-    margin-bottom: 20px;
     text-align: center;
     float: left;
+    .line-o{
+      height: 2px;
+      width: 100%;
+      position: relative;
+      left: 50%;
+      top: -18px;
+      background: ${AppStyle.color.main};
+    }
+    .line-x{
+      height: 2px;
+      width: 100%;
+      position: relative;
+      left: 50%;
+      top: -18px;
+      background: ${AppStyle.color.gray};
+    }
   }
-}
+
+  .o{
+    width: 15px;
+    height: 15px;
+    margin: 10px auto;
+    border-radius: 100%;
+    background: ${AppStyle.color.main};
+    position: relative;
+    z-index: 10;
+  }
+  .x{
+    width: 15px;
+    height: 15px;
+    margin: 10px auto;
+    border-radius: 100%;
+    background: ${AppStyle.color.gray};
+  }
 `

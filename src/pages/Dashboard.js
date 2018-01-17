@@ -5,7 +5,9 @@ import AppStyle from '../config/style'
 import Layout from '../layouts'
 
 class Dashboard extends Component {
-
+  componentDidMount() {
+    window.scrollTo(0, 0)
+  }
   render() {
 
     return (

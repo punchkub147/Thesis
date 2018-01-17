@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { Link } from 'react-router';
 import Styled from 'styled-components'
-import AppStyle from '../config/style' 
-import _ from 'lodash'
+import AppStyle from '../config/style'
 
 class WorkItem extends Component {
 
@@ -15,7 +14,7 @@ class WorkItem extends Component {
           <div id="WorkItem">
 
             <div className="image">
-              <img src={data.image}/>
+              <img alt='' src={data.image}/>
             </div>
 
             <div className="detail">

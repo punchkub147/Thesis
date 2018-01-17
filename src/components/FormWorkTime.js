@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 import moment from 'moment'
 import store from 'store'
 
-import { db, getUser, updateAt, storage, auth } from '../api/firebase'
-import { timeToSec, secToTime } from '../functions/moment'
+import { db, getUser } from '../api/firebase'
+import { timeToSec } from '../functions/moment'
 
-import ToolBar from '../layouts/ToolBar'
 import Button from './Button';
 
 import { TimePicker } from 'antd';
@@ -84,7 +83,6 @@ class FormWorkTime extends Component {
   }
 
   handleUpdateWorkTime = async () => {
-    const { sun, mon, tue, wed, thu, fri, sat } = this.state.workTime
     const { workTime, user } = this.state
     db.collection('employee').doc(user.uid).update({
       workTime

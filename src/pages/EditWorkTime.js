@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
-import _ from 'lodash'
 
 import ToolBar from '../layouts/ToolBar'
 
 import FormWorkTime from '../components/FormWorkTime';
 
 class EditWorkTime extends Component {
-
+  componentDidMount() {
+    window.scrollTo(0, 0)
+  }
   render() {
     return (
       <Style>

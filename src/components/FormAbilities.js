@@ -1,15 +1,11 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 
 import { db, getUser } from '../api/firebase'
 
-import ToolBar from '../layouts/ToolBar'
-import Step from '../components/Step'
-
-import image from '../img/logo-xl.png'
 import BottomButton from '../components/BottomButton';
 
 class FormAbilities extends Component {
@@ -36,7 +32,7 @@ class FormAbilities extends Component {
           ability_id: data.id,
           name: data.data().name,
           image: data.data().image,
-          selected: _.get(user.data.abilities, data.data().name)!=undefined?true:false
+          selected: _.get(user.data.abilities, data.data().name)!==undefined?true:false
         })
       })
       this.setState({abilities})
@@ -75,32 +71,30 @@ class FormAbilities extends Component {
     const { abilities } = this.state
     return (
       <Style>
-        <div id="FormAbilities">
-          <div className="container">
+        <div className="container">
 
-            <div className="row" style={{margin: '0 -5px'}}>
-              {abilities.map((data, key) =>
-                <div onClick={() => this.handleSelect(key)}
-                  className="col-6 col-xs-6 col-sm-6 col-md-4" style={{padding: '5px'}}>
+          <div className="row" style={{margin: '0 -5px'}}>
+            {abilities.map((data, key) =>
+              <div onClick={() => this.handleSelect(key)}
+                className="col-6 col-xs-6 col-sm-6 col-md-4" style={{padding: '10px 5px 0 5px'}}>
 
-                  <Card className="card" display={data.selected?'block':'none'}>
-                    <div className="incard">
-                      <div className="cover">
-                        <div className="text">เลือกแล้ว</div>
-                      </div>
-                      <img src={data.image}/>
-                    {data.name}
+                <Card className="frame" display={data.selected?'block':'none'}>
+                  <div className="incard">
+                    <div className="cover">
+                      <div className="text">เลือกแล้ว</div>
                     </div>
-                  </Card>
+                    <img alt='' src={data.image}/>
+                  {data.name}
+                  </div>
+                </Card>
 
-                </div>
-              )}
-            </div>
-
+              </div>
+            )}
           </div>
 
-          <BottomButton onClick={this.handleUpdateAbilities}>ยืนยัน</BottomButton>
         </div>
+
+        <BottomButton onClick={this.handleUpdateAbilities}>ยืนยัน</BottomButton>
       </Style>
     );
   }
@@ -109,11 +103,9 @@ class FormAbilities extends Component {
 export default FormAbilities;
 
 const Style = Styled.div`
-  #FormAbilities{
-    .animate{
-      animation-name:fadeInUp;
-      animation-duration: 0.3s;
-    }
+  .animate{
+    animation-name:fadeInUp;
+    animation-duration: 0.3s;
   }
 `
 const Card = Styled.div`
@@ -136,14 +128,16 @@ const Card = Styled.div`
       height: 140px;
       background: rgba(0,0,0,0.5);
 
-      animation-name: zoomIn;
-      animation-duration: 0.2s;
+      animation-name: fadeIn;
+      animation-duration: 0.1s;
       .text{
         font-size: 28px;
         transform: rotate(-10deg);
         margin-top: 50px;
         color: ${AppStyle.color.white};
         font-family: 'Anchan';
+        animation-name: zoomIn;
+        animation-duration: 0.3s;
       }
     }
 `

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { Router, browserHistory, Route } from 'react-router';
 
 import Login from './pages/Login'
 import Register from './pages/Register/index'

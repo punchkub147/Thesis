@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import Styled from 'styled-components'
-import AppStyle from '../config/style' 
 
 import bg2 from '../img/bg2.jpg'
 

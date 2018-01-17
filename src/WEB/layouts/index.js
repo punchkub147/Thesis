@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style'
 

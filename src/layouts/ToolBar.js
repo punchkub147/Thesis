@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
 import AppStyle from '../config/style'
 import Styled from 'styled-components'
 
@@ -20,7 +19,7 @@ class ToolBar extends Component {
         <div id="ToolBar">
             <div className="left">
               {this.props.left
-                ?<div onClick={this.props.left}><img src={back}/></div>
+                ?<div onClick={this.props.left}><img alt='' src={back}/></div>
                 :""
               }
             </div>
@@ -29,7 +28,7 @@ class ToolBar extends Component {
             </div>
             <div className="right">
               {this.props.right
-                ?<div onClick={this.props.right}><img src={next}/></div>
+                ?<div onClick={this.props.right}><img alt='' src={next}/></div>
                 :""
               }
             </div>

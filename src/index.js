@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom';
 import 'antd/dist/antd.css'
 
 import './style/animate.css';
-import './style/mui.min.css';
-import './style/mui.min.js';
+// import './style/mui.min.css';
+// import './style/mui.min.js';
 import './style/bootstrap-grid.min.css';
 
 import './style/App.css';

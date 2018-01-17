@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Styled from 'styled-components'
-import AppStyle from '../config/style' 
-import _ from 'lodash'
+import AppStyle from '../config/style'
 
 import { Progress } from 'antd';
 

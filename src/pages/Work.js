@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 import moment from 'moment'
 
-import Layout from '../layouts'
-import ToolBar from '../layouts/ToolBar'
 import BottomButton from '../components/BottomButton'
 
 import Alarm from '../img/alarm.png'
@@ -103,9 +101,9 @@ class Login extends Component {
 
             <div className="imageWork">          
               <div className="goback" onClick={() => browserHistory.goBack()}>
-                <img src={Back}/>
+                <img alt='' src={Back}/>
               </div>
-              <img src={data.image}/>
+              <img alt='' src={data.image}/>
             </div>
           
             <div className="container">
@@ -121,27 +119,30 @@ class Login extends Component {
           
               <div className="row card">
                 <div className="col-3 sendBy">
-                  <img src={Send}/><br/>
+                  <img alt='' src={Send}/><br/>
                   {data.sendBy}
                 </div>
                 <div className="col-3 startAt">
-                  <div>เริ่มงาน</div>
+                  <div className='text'>เริ่มงาน</div>
                   {moment(data.startAt).locale('th').fromNow()}
                 </div>
                 <div className="col-3 endAt">
-                  <div>รับงาน</div>
+                  <div className='text'>รับงาน</div>
                   {moment(data.endAt).locale('th').fromNow()}
                 </div>
                 <div className="col-3 workTime">
-                  <img src={Alarm}/><br/>
-                  {data.worktime}
+                  <img alt='' src={Alarm}/><br/>
+                  {(data.worktime>=60)
+                    ?'~ ' + data.worktime/60 + ' นาที'
+                    :data.worktime + ' วินาที'
+                  }
                 </div>
               </div>
           
               <div className="row card">
                 <div className="col-12">เครื่องมือ</div>
                 <div className="col-3">
-                  <img className="imageTool" src=""/>
+                  <img className="imageTool" alt='' src=""/>
                 </div>
                 <div className="col-9">
                   {data.tool}
@@ -157,7 +158,7 @@ class Login extends Component {
           
               <div className="row">
                 <div className="col-3">
-                  <img className="imageEmployer" src={employer.data.image}/>
+                  <img className="imageEmployer" alt='' src={employer.data.image}/>
                 </div>
                 <div className="col-3">
                   {employer.data.name}
@@ -212,6 +213,7 @@ const Style = Styled.div`
     background: ${AppStyle.color.card};
     padding: 10px 0;
     margin-bottom: 10px;
+    ${AppStyle.shadow.lv1}
   }
   .price{
     text-align: right;
@@ -229,9 +231,15 @@ const Style = Styled.div`
   }
   .startAt{
     text-align: center;
+    .text{
+      ${AppStyle.font.read1}
+    }
   }
   .endAt{
     text-align: center;
+    .text{
+      ${AppStyle.font.read1}
+    }
   }
   .workTime{
     text-align: center;

@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 
-import Layout from '../layouts'
-
-import { loginWithEmail, auth, db } from '../../api/firebase'
-import { getToken } from '../../api/notification'
+import { auth, db } from '../../api/firebase'
 
 class Login extends Component {
 

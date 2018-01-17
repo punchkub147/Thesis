@@ -7,8 +7,9 @@ const AppStyle = {
     maintext: "#eb7985",
     text: "#603913",
     subtext: "#f4e4d1",
-    white: "#f4e4d1",
+    white: "#fcf4e2",
     black: "#603913",
+    gray: "#ccc",
   },
 
   shadow: {
@@ -43,14 +44,17 @@ const AppStyle = {
     `,
     read2: `
       font-family: 'TH Sarabun New';
+      font-size: 20px;
     `,
     read3: `
       font-family: 'TH Sarabun New';
+      font-size: 20px;
     `,
     hilight: `
       font-family: 'TH Sarabun New';
       font-weight: bold; 
       color: #eb7985;
+      font-size: 20px;
     `,
     button: `
       font-family: 'Anchan';

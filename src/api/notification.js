@@ -1,4 +1,4 @@
-import { messaging, config } from './firebase'
+import { messaging } from './firebase'
 
 import Push from 'push.js'
 
@@ -17,7 +17,7 @@ export const PushSelf = (data) => {
 }
 
 export const PushFCM = async (data) => {
-  const res = await fetch('https://fcm.googleapis.com/fcm/send',{
+  await fetch('https://fcm.googleapis.com/fcm/send',{
     headers: {
       'Authorization': `key=${apiKey}`,
       'Content-Type': 'application/json'

@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link, hashHistory } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
 import moment from 'moment'
 import cuid from 'cuid'
 
-import Layout from '../layouts'
-
 import { auth, db, storage } from '../../api/firebase'
-import { timeToSec, secToTime } from '../../functions/moment'
+import { timeToSec } from '../../functions/moment'
 
 import { TimePicker, DatePicker } from 'antd'
 import Button from '../../components/Button';
@@ -59,7 +57,7 @@ class FormEditWork extends Component {
   handleAddWork = async (e) => {
     e.preventDefault();
     const { work, user, file, image64 } = this.state
-    if(image64!=''){
+    if(image64 !== ''){
       let image = ''
       if(file){
         image = await this.storageImage(file)
@@ -74,10 +72,10 @@ class FormEditWork extends Component {
       })
 
       if(this.props.workId){
-        const workData = await db.collection('works').doc(this.props.workId).update(data)
+        await db.collection('works').doc(this.props.workId).update(data)
         alert('แก้ไขงานเรียบร้อบ')
       }else{
-        const workData = await db.collection('works').add(data)
+        await db.collection('works').add(data)
         alert('เพิ่มงานเรียบร้อบ')
       }
       await browserHistory.push('/web/works')      
@@ -103,7 +101,6 @@ class FormEditWork extends Component {
   }
 
   storageImage = async (file) => {
-    const { work } = this.state
     const imageId = cuid()
     const storageImage = await storage.child('work').child(imageId);
     await storageImage.put(file);
@@ -210,7 +207,7 @@ class FormEditWork extends Component {
           <div className="row">
             <div className="col-12">
               <div className="image">
-                <img src={image64}/>
+                <img alt='' src={image64}/>
               </div>
             </div>
           </div>

@@ -1,33 +1,33 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
-import _ from 'lodash'
-
-import { db, getUser } from '../../api/firebase'
 
 import ToolBar from '../../layouts/ToolBar'
 import Step from '../../components/Step'
 
-import FormWorkTime from '../../components/FormWorkTime';
+import FormWorkTime from '../../components/FormWorkTime'
+
+import bg2 from '../../img/bg2.jpg'
+import Bg from '../../components/Bg'
 
 class Register4 extends Component {
 
   render() {
     return (
-      <Style>
-        <div id="Register4">
+      <Bg>
+        <Style>
           <ToolBar 
             title={this.props.route.title} 
             left={() => browserHistory.push('/register2')} 
             //right={this.handleUpdateAbilities}
             />
-
-          <Step step='4'/>
-          <FormWorkTime  push='/search' />
-
-        </div>
-      </Style>
+          <div className='card'>
+            <Step step='4'/>
+            <FormWorkTime  push='/search' />
+          </div>
+        </Style>
+      </Bg>
     );
   }
 }
@@ -35,7 +35,13 @@ class Register4 extends Component {
 export default Register4;
 
 const Style = Styled.div`
-  #Register4{
-
+  .card{
+    position: relative;
+    margin-top: 10px;
+    width: 100%;
+    background: ${AppStyle.color.bg};
+    ${AppStyle.shadow.lv1}
+    padding: 10px 0;
+    padding-bottom: -20px;
   }
 `

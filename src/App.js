@@ -1,14 +1,9 @@
 import React, { Component } from 'react';
-import { Router, browserHistory, Route, Link } from 'react-router';
 import AppRouter from './router'
-import Styled from 'styled-components'
 import store from 'store'
 
-import NavBar from './layouts/NavBar'
-
 import { setUpNoti } from './api/notification'
-import { register, getUser, updateAt, db, auth } from './api/firebase'
-import { locale } from 'moment';
+import { db, auth } from './api/firebase'
 
 window.onbeforeunload = function(){
   // PushSelf({
