@@ -44,6 +44,7 @@ const AppStyle = {
     `,
     read2: `
       font-family: 'TH Sarabun New';
+      color: #603913;
       font-size: 20px;
     `,
     read3: `

@@ -4,8 +4,7 @@ import AppStyle from '../config/style'
 
 import { Progress } from 'antd';
 
-class AppProgress extends Component {
-
+export default class extends Component {
 
   render() {
     const n = 10
@@ -20,21 +19,22 @@ class AppProgress extends Component {
         ?progress[i]=1
         :progress[i]=0
     }
-    console.log(percent)
     return (
-      <Style>
+      <Style percent={percent}>
         {/*progress.map(per =>
           <div className='box' style={{width: `${100/n}%`}}>
             <div className='inbox' style={{background: per==1?`${AppStyle.color.main}`:'#ccc'}}>|</div>
           </div>
         )*/}
-        <Progress percent={percent} status="active" showInfo={false} strokeWidth={15}/>
+        <Progress 
+          percent={percent} 
+          status={percent<100&&'active'}
+          showInfo={false} 
+          strokeWidth={15} />
       </Style>
     );
   }
 }
-
-export default AppProgress;
 
 const Style = Styled.div`
   .box{
@@ -46,7 +46,10 @@ const Style = Styled.div`
     }
   }
   .ant-progress-bg{
-    background: ${AppStyle.color.main};
+    background: ${props => props.percent<100
+      ?AppStyle.color.main
+      :AppStyle.color.sub
+    };
     height: 15px;
     border-radius: 0px;
   }

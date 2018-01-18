@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style'
+import moment from 'moment'
 
 class WorkItem extends Component {
 
@@ -20,6 +21,9 @@ class WorkItem extends Component {
             <div className="detail">
               <div className="name">{data.name}</div>
               <div className="employer">{data.employer_name}</div>
+              <div className='startDate'>
+                {moment(data.startAt).locale('th').fromNow()}
+              </div>
             </div>
 
             <div className="price">
@@ -63,9 +67,15 @@ const Style = Styled.div`
     padding: 10px;
     .name{
       ${AppStyle.font.read1}
+      text-align: left;
     }
     .employer{
       ${AppStyle.font.read2}
+      text-align: left;
+    }
+    .startDate{
+      ${AppStyle.font.read2}
+      text-align: left;
     }
   }
   .price{

@@ -5,31 +5,32 @@ import AppStyle from '../config/style'
 import _ from 'lodash'
 import moment from 'moment'
 import store from 'store'
-import Modal from 'react-modal'
+
 
 import { Slider } from 'antd';
 
 import { getUser, db } from '../api/firebase'
 import { secToTime } from '../functions/moment'
+import { getTasks, genNowWorking, genAllWorking, taskDoing } from '../functions/task'
 
 import Layout from '../layouts'
 import Tabbar from '../layouts/Tabbar'
 
-import Content from '../components/Content';
-import Progress from '../components/Progress';
-import Button from '../components/Button';
+import Content from '../components/Content'
+import Progress from '../components/Progress'
+import Button from '../components/Button'
+import Modal from '../components/Modal'
 
 import alarm2 from '../img/alarm2.png'
 
 class Tasks extends Component {
 
   state = {
-    workingList: [],
-    updateAt: '',
-    modalIsOpen: false,
+    tasks: [],
     limitWorkTimeToDay: 0,
     totalTimeAllWork: 0,
     doing: 0,
+    modalIsOpen: false,
   }
 
   async componentDidMount() {
@@ -41,27 +42,28 @@ class Tasks extends Component {
     let user = await store.get('employee')
     this.setState({user})
     
-    const limitWorkTimeToDay = user.data.workTime[moment().format('ddd').toLowerCase()]
-    this.setState({
-      limitWorkTimeToDay,
-    })
+    if(user.data.workTime){
+      const limitWorkTimeToDay = user.data.workTime[moment().format('ddd').toLowerCase()]
+      this.setState({
+        limitWorkTimeToDay,
+      })
+    }else{
+      console.log('กรุณาระบุเวลาการทำงาน')
+    }
 
     await this.getWorking(user)
-    // this.genNowWorking()
-    // this.genAllWorking()
   }
 
-  getWorking = (user) => {
+  getWorking = async (user) => {
     this.setState({
-      workingList: store.get('tasks')
+      tasks: store.get('tasks')
     })
-    //store.remove('working')
 
     db.collection('working')
     .where('employee_id', '==', user.uid)
     //.where('endAt', '>=', new Date())
     .onSnapshot(async snap => {
-      let workingList = []
+      let tasks = []
       await snap.forEach(doc => {
         const data = doc.data()
         if(data.endAt <= new Date())return //ถ้าวันส่งน้อยกว่าวันนี้ให้ยกเลิก = ได้งานเฉพาะที่ต้องทำปัจจุบัน
@@ -82,7 +84,7 @@ class Tasks extends Component {
         let worktime = 0
         if(data.worktime!==undefined)worktime=data.worktime //debug
 
-        workingList.push(Object.assign(data,{
+        tasks.push(Object.assign(data,{
           working_id: doc.id,
           worktime,
           finished_piece,
@@ -90,71 +92,34 @@ class Tasks extends Component {
           anotherDayFinishedPiece
         }))
       })
-      workingList = _.orderBy(workingList, ['endAt'], ['asc']); //เรียงวันที่
+      tasks = _.orderBy(tasks, ['endAt'], ['asc']); //เรียงวันที่
 
       let totalTimeAllWork = 0 //เวลาที่ต้องทำทั้งหมดทุกงาน
-      workingList.map(working => {
+      tasks.map(working => {
         totalTimeAllWork += (working.worktime)*(working.total_piece-working.finished_piece)
       })
 
       this.setState({
-        workingList,
+        tasks,
         totalTimeAllWork,
       })
-      store.set('tasks', workingList)
+      store.set('tasks', tasks)
     })
+
   }
 
   handleDo = async (e, work) => {
     e.preventDefault();
-    const updateAt = new Date()
-    let newPiece = +this.state.doing //จำนวนชิ้นที่ระบุ
-    let piece = 0 
-    let total_finished_piece = _.sumBy(work.do_piece, (o) => o.piece) //จำนวนชิ้นที่ทำเสร็จแล้ว (ของเก่า)
     
     this.setState({
-      updateAt,
       modalIsOpen: false,
+    })
+
+    taskDoing(work, this.state.doing)
+
+    this.setState({
       doing: 0,
     })
-
-    if(newPiece>=(work.limitTodo-work.toDayFinishedPiece))newPiece=(work.limitTodo-work.toDayFinishedPiece) //ทำได้ไม่เกินจำกัดของวันนี้
-
-    piece = total_finished_piece+newPiece //จำนวนชิ้นงานเดิน บวก จำนวนชิ้นงานที่ทำใหม่วันนี้
-
-    if(total_finished_piece===NaN)total_finished_piece=0
-    if(newPiece===null || newPiece===undefined)newPiece=0
-
-    if(piece>=work.total_piece)piece=work.total_piece
-
-    if(piece<=0)piece=0
-    if(newPiece<=(work.toDayFinishedPiece*-1))newPiece=(work.toDayFinishedPiece*-1)
-
-    const workingRef = db.collection('working').doc(work.working_id)
-
-    const updatePiece = {
-      piece: newPiece,
-      updateAt,
-    }
-    
-    let do_piece = []
-    // Has Notworking
-    await workingRef.get()
-    .then(data => {
-
-      if(data.data().do_piece !== undefined){
-        do_piece = _.assign(data.data().do_piece,{[data.data().do_piece.length]: updatePiece})
-      }else{
-        do_piece = [updatePiece]
-      }
-    })
-  
-    workingRef.update({
-      finished_piece: piece,
-      do_piece,
-      updateAt,
-    })
-    //finished_piece : [{piece: n,updateAt: newDate()}]
   }
 
   handleDelete = (id) => {
@@ -169,36 +134,10 @@ class Tasks extends Component {
   }
 
   render() {
-    const { workingList, doWork, limitWorkTimeToDay, totalTimeAllWork } = this.state
+    const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork } = this.state
 
-    /////////////////////// GEN NOW WORK ////////////////////////////////
-    let limitTimeDayWork = limitWorkTimeToDay // 3 hours
-    let totalTimeDayWork = 0 //เวลางานที่ต้องทำในวันนี้
-    
-    let nowWorking = []
-    _.map(workingList, async working => {
-      if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
+    const { nowWorking, limitTimeDayWork, totalTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks)
   
-      const todoWork = working.total_piece-working.anotherDayFinishedPiece //จำนวนงานนี้ที่เหลือ งานทั้งหมด-งานวันอื่น
-      
-      let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
-      for(let i = 1; i <= todoWork; i++){
-        if(limitTimeDayWork >= working.worktime){
-          totalTimeDayWork += +working.worktime
-          limitTimeDayWork -= +working.worktime
-          limitTodo = i
-        }
-      }
-      if(limitTodo > 0){ //ถ้ามีจำนวนงานที่ต้องทำ
-        nowWorking.push(Object.assign(working, {
-          limitTodo,
-          timeTodo: limitTodo*working.worktime
-        }))
-      }
-    })
-  
-    /////////////////////// GEN NOW WORK ////////////////////////////////
-
     const nowTask = (
       _.map(nowWorking, (working,i) => 
         <NowTask fade={i*0.2}>
@@ -226,7 +165,10 @@ class Tasks extends Component {
                   <div className="edittime">
                     <button>
                       <img alt='' src={alarm2}/>
-                      {' '} ~ {working.worktime/60} นาที
+                      {' '} {working.worktime >= 60
+                        ?'~ ' + working.worktime/60 + ' นาที'
+                        : working.worktime + ' วินาที'
+                      }
                     </button>
                   </div>
                 </div>
@@ -254,13 +196,7 @@ class Tasks extends Component {
       )
     )
 
-    ////////////////////// GEN ALL WORK ///////////////////////
-    let allWorking = []
-    _.map(workingList, working => {
-      //if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
-      allWorking.push(working)
-    })
-    ////////////////////// GEN ALL WORK ///////////////////////
+    const allWorking = genAllWorking(tasks)
 
     const allTask = (
       _.map(allWorking, (working, i) => 
@@ -288,6 +224,7 @@ class Tasks extends Component {
         </AllTask>
       )
     )
+
     const tabs = [
       {
         render: <Content>{nowTask}</Content>,
@@ -304,7 +241,7 @@ class Tasks extends Component {
         <Layout route={this.props.route}>
           <Style>
           
-            {_.toLength(workingList) !== 0
+            {_.size(tasks) > 0
               ?<Tabbar tabs={tabs}/>
               :<Content>
                 <div className='message'>คุณยังไม่มีงาน</div>
@@ -330,13 +267,7 @@ class Tasks extends Component {
           </Style>
         </Layout>
 
-        <Modal
-          isOpen={this.state.modalIsOpen}
-          // onAfterOpen={this.afterOpenModal}
-          // onRequestClose={this.closeModal}
-          style={modalStyle}
-          contentLabel="Example Modal"
-        >
+        <Modal modalIsOpen={this.state.modalIsOpen}>
           <div>ทำงาน {this.state.doing} จาก {_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
           {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
           <form>
@@ -348,6 +279,7 @@ class Tasks extends Component {
             <Button onClick={(e) => this.handleDo(e,doWork)}>ยืนยัน</Button>
           </form>
         </Modal>
+
       </div>
     )
   }
@@ -426,6 +358,9 @@ const NowTask = Styled.div`
     ${AppStyle.font.tool}
     ${AppStyle.shadow.lv2}
   }
+  .do:active{
+    opacity: 0.8;
+  }
   .finish{
     width: 50px;
     height: 50px;
@@ -469,23 +404,5 @@ const WorkDate = Styled.div`
   height: 60px;
   background: ${AppStyle.color.card};
   ${AppStyle.shadow.lv1}
+  line-height: 20px;
 `
-
-const modalStyle = {
-  content: {
-  height: '200px', 
-  background: `${AppStyle.color.white}`,
-  margin: '0 auto',
-  width: '300px',
-  'margin-top': '120px', 
-  'z-index': '99999999',
-  'animation-name': 'zoomIn',
-  'animation-duration': '0.2s',
-},
-  overlay: { 
-  background: `rgba(0,0,0,0.3)`,
-  'z-index': '9999999',
-  'animation-name': 'fadeIn',
-  'animation-duration': '0.3s',
-},
-}
