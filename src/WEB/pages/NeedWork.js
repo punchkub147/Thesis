@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
+import AppStyle from '../../config/style' 
 import Config from '../../config' 
 import _ from 'lodash'
 import moment from 'moment'
@@ -10,10 +11,12 @@ import Layout from '../layouts'
 import { auth, db } from '../../api/firebase'
 import { PushFCM } from '../../api/notification'
 
+import Table from '../components/Table'
+
 class NeedWork extends Component {
 
   state = {
-    needWorkList: {},
+    needWorkList: [],
   }
 
   async componentDidMount() {
@@ -48,6 +51,7 @@ class NeedWork extends Component {
       const work = snapshot.data()
       const working = {
         employee_id: data.employee_id,
+        employer_id: data.employer_id,
         work_id: snapshot.id,
         total_piece: work.piece*data.pack,
         finished_piece: 0,
@@ -86,17 +90,50 @@ class NeedWork extends Component {
   render() {
     const { needWorkList } = this.state
 
+    const columns = [
+      {
+        title: 'ชื่องาน',
+        dataIndex: 'work_name',
+        key: 'work_name',
+        className: 'name',
+        render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
+      }, 
+      {
+        title: 'ชื่อผู้รับงาน',
+        dataIndex: 'employee_name',
+        key: 'employee_name',
+        //render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
+      }, {
+        title: 'เบอร์ติดต่อ',
+        dataIndex: 'employee_phone',
+        key: 'employee_phone',
+      }, {
+        title: 'จำนวนชุดที่ต้องการ',
+        dataIndex: 'pack',
+        key: 'pack',
+      }, {
+        title: 'ส่งงาน',
+        key: 'action',
+        render: (text, item) => (
+          <span>
+            <div className='click' onClick={ () => this.handleSendWork(item)}> ส่งงาน </div>
+          </span>
+        ),
+      }
+    ];
+
     return (
       <Style>
-        <Layout>
-          <div id="NeedWork">
-            {_.map(needWorkList, (data, key) =>
-              <div className="">
-                {data.employee_name} {data.employee_phone} {data.pack}
-                <button onClick={ () => this.handleSendWork(data)}>ส่งงาน</button>
-              </div>
-            )}
-          </div>
+        <Layout {...this.props}>
+          {/*
+            _.map(needWorkList, (data, key) =>
+            <div className="">
+              {data.employee_name} {data.employee_phone} {data.pack}
+              <button onClick={ () => this.handleSendWork(data)}>ส่งงาน</button>
+            </div>
+          )
+          */}
+          <Table columns={columns} dataSource={needWorkList} pagination={false} />
         </Layout>
       </Style>
     );
@@ -106,7 +143,11 @@ class NeedWork extends Component {
 export default NeedWork;
 
 const Style = Styled.div`
-  #NeedWork{    
-
+  .click{
+    cursor: pointer;
+    ${AppStyle.font.hilight}
+  }
+  .align-right{
+    text-align: right;
   }
 `

@@ -75,9 +75,9 @@ class Login extends Component {
           <div className="row justify-content-md-center">
 
             <Content>
-              <div className="logo">
-                <img alt='' src={logo}/>
-              </div>
+                <div className="col-11 logo" style={{'margin-top': '40px'}}>
+                  <img alt='' src={logo}/>
+                </div>
             
             <div className="card">
               <form onSubmit={(e) => this.handleLogin(e)}>
@@ -125,11 +125,11 @@ const Style = Styled.div`
 
   .logo{
     width: 100%;
-    min-height: 340px;
+    min-height: 300px;
 
     animation-name: jackInTheBox;
     animation-duration: 1s;
-
+    margin: 0 auto;
     img{
       width: 100%;
     }

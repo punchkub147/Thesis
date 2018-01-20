@@ -86,6 +86,8 @@ const Style = Styled.div`
     border-bottom: solid 2px transparent;
   }
 
+
+
   .ant-tabs-bar{
     margin-bottom: 10px;
   }
@@ -109,7 +111,10 @@ const Style = Styled.div`
   .ant-tabs-ink-bar{
     background: ${AppStyle.color.sub};
     bottom: 0;
-    height: 4px;
+    height: 2px;
+  }
+  .ant-tabs-nav-wrap{
+    margin: 0;
   }
   
 `

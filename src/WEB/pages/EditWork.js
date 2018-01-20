@@ -12,7 +12,7 @@ class EditWork extends Component {
     const workId = this.props.params.id
     return (
       <Style>
-        <Layout>
+        <Layout {...this.props}>
           <div className="row">
             <div className="col-xs-12 col-sm-12 col-md-10 col-lg-6">
               <FormEditWork workId={workId}/>

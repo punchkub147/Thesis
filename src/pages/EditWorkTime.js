@@ -6,6 +6,8 @@ import AppStyle from '../config/style'
 import ToolBar from '../layouts/ToolBar'
 
 import FormWorkTime from '../components/FormWorkTime';
+import Bg from '../components/Bg';
+import Card from '../components/Card';
 
 class EditWorkTime extends Component {
   componentDidMount() {
@@ -13,16 +15,18 @@ class EditWorkTime extends Component {
   }
   render() {
     return (
-      <Style>
-        <div id="EditWorkTime">
+      <Bg>
+        <Style>
           <ToolBar 
             title='เวลาทำงาน'
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
             />
-          <FormWorkTime push='/tasks' />
-        </div>
-      </Style>
+          <Card>
+            <FormWorkTime push='/tasks' />
+          </Card>
+        </Style>
+      </Bg>
     );
   }
 }
@@ -30,11 +34,8 @@ class EditWorkTime extends Component {
 export default EditWorkTime;
 
 const Style = Styled.div`
-  #EditWorkTime{
-    // .animate{
-    //   animation-name:fadeInUp;
-    //   animation-duration: 0.3s;
-    // }
-    
-  }
+  // .animate{
+  //   animation-name:fadeInUp;
+  //   animation-duration: 0.3s;
+  // }
 `

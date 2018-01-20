@@ -15,6 +15,7 @@ import Work from './pages/Work'
 import EditAbilities from './pages/EditAbilities'
 import EditProfile from './pages/EditProfile'
 import EditWorkTime from './pages/EditWorkTime'
+import StopWatch from './pages/StopWatch'
 
 import WebAddWork from './WEB/pages/AddWork' 
 import WebEditWork from './WEB/pages/EditWork'
@@ -108,7 +109,11 @@ class AppRouter extends Component {
         page: EditWorkTime,
         title: "เวลาทำงาน",
       },
-      
+      { path: '/stopwatch/:id',
+        exact: false,
+        page: StopWatch,
+        title: "จับเวลา",
+      },
       
 
       /////////////////////////////// WEB ////////////////////////////////////

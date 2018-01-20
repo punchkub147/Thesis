@@ -109,6 +109,36 @@ li.ant-time-picker-panel-select-option-selected{
 .ant-time-picker-panel-select li:hover{
   background: #f4e4d1;
 }
+
+.ant-time-picker-panel{
+  width: 100%;
+}
+.ant-time-picker-panel-narrow .ant-time-picker-panel-input-wrap{
+  width: 100%;
+}
+.ant-time-picker-panel-input-wrap{
+  min-width: 100%;
+}
+.ant-time-picker-panel-select{
+  width: 50%;
+}
+.ant-time-picker-panel-select li{
+  text-align: center;
+  font-size: 22px;
+}
+.ant-time-picker-panel-input  {
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+  
+}
+.ant-time-picker-panel-input-wrap{
+  pointer-events: none;
+  user-select: none;
+  display: none;
+}
+
+
 /* Slider */
 .ant-slider-handle{
   border-color: #eb7985;
@@ -122,6 +152,9 @@ li.ant-time-picker-panel-select-option-selected{
 .ant-slider-handle:active{
   border-color: #eb7985;
 }
+.ant-slider-rail:hover .ant-slider-handle{
+  border-color: #eb7985;
+}
 .ant-slider-track{
   background-color: #eb7985;
 }
@@ -130,4 +163,61 @@ li.ant-time-picker-panel-select-option-selected{
 }
 .ant-slider:hover .ant-slider-handle{
   border-color: #eb7985;
+}
+.ant-slider-rail{
+  background: #f3d5bc;
+}
+.ant-slider:hover .ant-slider-rail{
+  background: #f3d5bc;
+}
+.ant-slider:hover .ant-slider-handle:not(.ant-tooltip-open){
+  border-color: #eb7985;
+}
+.ant-slider-handle:focus{
+  border-color: #eb7985;
+  box-shadow: none;
+}
+
+
+/* Wheel  */
+
+.am-picker-popup{
+  background: #f4e4d1;
+}
+.am-picker-col-mask{
+  background-image: 
+  linear-gradient(to bottom, 
+  rgba(244,228,209, 0.95), 
+  rgba(244,228,209, 0.6)), 
+  linear-gradient(to top, 
+  rgba(244,228,209, 0.95), 
+  rgba(244,228,209, 0.6));
+}
+.am-picker-col-item{
+  font-size: 24px;
+  color: #603913;
+}
+.am-picker-col-item-selected{
+  font-weight: bold;
+}
+.am-picker-popup-header .am-picker-popup-header-right{
+  visibility: hidden;
+}
+.am-picker-popup-header .am-picker-popup-header-right:after{
+  content: 'ตกลง';
+  visibility: visible;
+  font-size: 22px;
+  color: #eb7985;
+  font-weight: bold;
+}
+.am-picker-popup-header .am-picker-popup-header-left{
+  visibility: hidden;
+}
+.am-picker-popup-header .am-picker-popup-header-left:after{
+  content: 'ยกเลิก';
+  visibility: visible;
+  font-size: 22px;
+  color: #603913;
+  text-align: left;
+  margin-left: -35px;
 }

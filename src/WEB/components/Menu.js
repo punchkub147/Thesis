@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router';
+import { Link, browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style'
 
@@ -28,7 +28,7 @@ class Menu extends Component {
         <div className="menu">
           {menuList.map(menu => 
             <Link to={menu.path}>
-              <div className="list">
+              <div className={`list ${menu.path===this.props.route.path&&'active'}`}>
                 {menu.name}
               </div>
             </Link>
@@ -62,6 +62,9 @@ const Style = Styled.div`
     box-sizing: border-box;
   }
   .list:hover{
+    background: ${AppStyle.color.sub};
+  }
+  .active{
     background: ${AppStyle.color.sub};
   }
   .logout{

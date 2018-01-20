@@ -3,6 +3,7 @@ const AppStyle = {
     main: "#eb7985",
     sub: "#72c6aa",
     bg: "#f4e4d1",
+    bg2: '#f3d5bc',
     card: "#fcf4e2",
     maintext: "#eb7985",
     text: "#603913",
@@ -10,6 +11,7 @@ const AppStyle = {
     white: "#fcf4e2",
     black: "#603913",
     gray: "#ccc",
+    
   },
 
   shadow: {

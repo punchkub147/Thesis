@@ -3,15 +3,17 @@ import Styled from 'styled-components'
 import AppStyle from '../../config/style'
 
 import Menu from '../components/Menu'
+import Bg from '../../components/Bg'
 
 class Layout extends Component {
 
   render() {
     return (
+      <Bg>
       <Style>
 
         <div className="left">
-          <Menu/>
+          <Menu {...this.props}/>
         </div>
 
         <div className="right">
@@ -23,6 +25,7 @@ class Layout extends Component {
         </div>
 
       </Style>
+      </Bg>
     );
   }
 }

@@ -9,11 +9,13 @@ import Layout from '../layouts'
 import { auth, db } from '../../api/firebase'
 import Button from '../../components/Button';
 
+import Table from '../components/Table';
+
 class Works extends Component {
 
   state = {
     user: {},
-    itemsList: {}
+    itemsList: []
   }
 
   async componentDidMount() {
@@ -25,8 +27,6 @@ class Works extends Component {
         browserHistory.push('/web/login')
       }
     })
-
-
   }
 
   getItems = (user) => {
@@ -46,10 +46,37 @@ class Works extends Component {
   render() {
     const { itemsList } = this.state
 
+    const columns = [{
+      title: 'ชื่องาน',
+      dataIndex: 'name',
+      key: 'name',
+      className: 'name',
+      render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
+    }, {
+      title: 'ราคา',
+      dataIndex: 'price',
+      key: 'price',
+      className: 'align-right',
+    }, {
+      title: 'จำนวนชุดที่เหลือ',
+      dataIndex: 'pack',
+      key: 'pack',
+      className: 'align-right',
+    }, {
+      title: 'แก้ไข',
+      key: 'action',
+      render: (text, item) => (
+        <span>
+          <Link to={`/web/editwork/${item.work_id}`}> แก้ไข </Link>
+        </span>
+      ),
+    }];
+
     return (
       <Style>
-        <Layout>
+        <Layout {...this.props}>
           <Link to="/web/addwork"><Button>เพิ่มงาน</Button></Link>
+          {/*
           <div className="table-items">
             <div className="row">
               <div className="col-4">
@@ -84,6 +111,9 @@ class Works extends Component {
               </div>
             )}
           </div>
+          */}
+          <Table columns={columns} dataSource={itemsList} pagination={false} />
+          
         </Layout>
       </Style>
     );
@@ -105,4 +135,14 @@ const Style = Styled.div`
       background: ${AppStyle.color.main};
     }
   }
+
+  .name{
+    a{
+      ${AppStyle.font.read1}
+    }
+  }
+  .align-right{
+    text-align: right;
+  }
+
 `

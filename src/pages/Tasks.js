@@ -163,13 +163,15 @@ class Tasks extends Component {
               <div className='row'>
                 <div className='col-6'>
                   <div className="edittime">
-                    <button>
-                      <img alt='' src={alarm2}/>
-                      {' '} {working.worktime >= 60
-                        ?'~ ' + working.worktime/60 + ' นาที'
-                        : working.worktime + ' วินาที'
-                      }
-                    </button>
+                    <Link to={`/stopwatch/${working.working_id}`}>
+                      <button>
+                        <img alt='' src={alarm2}/>
+                        {' '} {working.worktime >= 60
+                          ?'~ ' + working.worktime/60 + ' นาที'
+                          : working.worktime + ' วินาที'
+                        }
+                      </button>
+                    </Link>
                   </div>
                 </div>
                 <div className='col-6'>
@@ -264,21 +266,25 @@ class Tasks extends Component {
             </WorkDate>
             <div style={{height: '60px'}}></div>
 
+            <Modal modalIsOpen={this.state.modalIsOpen}>
+              <InsideModal>
+                <div className="modal-text">ทำงาน {this.state.doing} จาก {_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
+                {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
+                <form>
+                  <Slider min={0} max={_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')}
+                    onChange={doing => this.setState({doing})}
+                    value={this.state.doing}
+                    style={{margin: '40px 0'}}
+                    />
+                  <Button onClick={(e) => this.handleDo(e,doWork)}>ยืนยัน</Button>
+                </form>
+              </InsideModal>
+            </Modal>
+
           </Style>
         </Layout>
 
-        <Modal modalIsOpen={this.state.modalIsOpen}>
-          <div>ทำงาน {this.state.doing} จาก {_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
-          {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
-          <form>
-            <Slider min={0} max={_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')}
-              onChange={doing => this.setState({doing})}
-              value={this.state.doing}
-              style={{margin: '40px 0'}}
-              />
-            <Button onClick={(e) => this.handleDo(e,doWork)}>ยืนยัน</Button>
-          </form>
-        </Modal>
+       
 
       </div>
     )
@@ -301,6 +307,14 @@ const Style = Styled.div`
     ${AppStyle.font.read1}
     border-radius: 100px;
     margin-top: 20px;
+  }
+`
+
+const InsideModal = Styled.div`
+
+  .modal-text{
+    text-align: center;
+    ${AppStyle.font.read1}
   }
 `
 

@@ -5,13 +5,25 @@ import AppStyle from '../config/style'
 import _ from 'lodash'
 import store from 'store'
 
-import icon from '../img/next.png'
+import phone from '../img/phone2.png'
+import profile from '../img/profile2.png'
+import address from '../img/address2.png'
+import edit from '../img/edit.png'
 
 import Layout from '../layouts'
 import Content from '../components/Content'
 
 import { getUser, auth } from '../api/firebase'
 import Button from '../components/Button';
+
+const phoneFormatter = (phone) => {
+  if(phone)
+    return phone.substr(0, 3) + '-' + phone.substr(3, 3) + '-' + phone.substr(6,4)
+}
+const personIdFormatter = (id) => {
+  if(id)
+    return id.substr(0, 1) + '-' + id.substr(1, 4) + '-' + id.substr(5,5) + '-' + id.substr(10,2) + id.substr(12,1)
+}
 
 class Profile extends Component {
 
@@ -70,24 +82,26 @@ class Profile extends Component {
               </div>
 
               <div className="detail card"> 
-                <Link to='/editprofile'>แก้ไข</Link> 
-                <div className="row">
+                <Link to='/editprofile' className="edit">
+                  <img alt='' src={edit}/>
+                </Link> 
+                <div className="row list">
                   <div className="col-2">
-                    <img className="icon" alt='' src={icon}/>
+                    <img className="icon" alt='' src={phone}/>
                   </div>
-                  <div className="col-10">{_.get(data,'phone')}</div>
+                  <div className="col-8 text">{phoneFormatter(_.get(data,'phone'))}</div>
                 </div>
-                <div className="row">
+                <div className="row list">
                   <div className="col-2">
-                    <img className="icon" alt='' src={icon}/>
+                    <img className="icon" alt='' src={profile}/>
                   </div>
-                  <div className="col-10">{_.get(data,'personId')}</div>
+                  <div className="col-10 text">{personIdFormatter(_.get(data,'personId'))}</div>
                 </div>
-                <div className="row">
+                <div className="row list">
                   <div className="col-2">
-                    <img className="icon" alt='' src={icon}/>
+                    <img className="icon" alt='' src={address}/>
                   </div>
-                  <div className="col-10">
+                  <div className="col-10 text">
                   {/*
                     เลขที่บ้าน {data.homeNo&&`${data.homeNo}`}
                     ถนน {data.road?data.road:'-'}{' '}
@@ -110,7 +124,9 @@ class Profile extends Component {
                 <div className="row">
                   <div className="col-12">
                     ความสามารถ
-                    <Link to="/editabilities">แก้ไข</Link>
+                    <Link to="/editabilities" className='edit'>
+                      <img alt='' src={edit}/>
+                    </Link>
                     {data.abilities&&
                       _.map(data.abilities,(data,key) => 
                       <div>{key}</div>
@@ -150,9 +166,18 @@ const Style = Styled.div`
     ${AppStyle.font.menu}
   }
   .detail{
+    .list{
+      min-height: 30px;
+      margin-bottom: 10px;
+    }
     .icon{
-      width: 25px;
+      width: 30px;
       margin: 0 auto;
+    }
+    .text{
+      padding: 0;
+      margin-top: 4px;
+
     }
   }
   .card{
@@ -162,5 +187,12 @@ const Style = Styled.div`
     margin-bottom: 10px;
     background: ${AppStyle.color.card};
     ${AppStyle.shadow.lv1}
+  }
+  .edit{
+    position: absolute;
+    right: 10px;
+    img{
+      width: 25px;
+    }
   }
 `

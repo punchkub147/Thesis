@@ -9,10 +9,7 @@ class AppButton extends Component {
   render() {
     return (
       <Style>
-        <button 
-          onClick={this.props.onClick}
-          onSubmit={this.props.onSubmit}
-          type={this.props.type}>
+        <button {...this.props}>
           
           {this.props.children}
         </button>
