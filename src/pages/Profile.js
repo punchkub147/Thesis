@@ -16,14 +16,7 @@ import Content from '../components/Content'
 import { getUser, auth } from '../api/firebase'
 import Button from '../components/Button';
 
-const phoneFormatter = (phone) => {
-  if(phone)
-    return phone.substr(0, 3) + '-' + phone.substr(3, 3) + '-' + phone.substr(6,4)
-}
-const personIdFormatter = (id) => {
-  if(id)
-    return id.substr(0, 1) + '-' + id.substr(1, 4) + '-' + id.substr(5,5) + '-' + id.substr(10,2) + id.substr(12,1)
-}
+import { phoneFormatter, personIdFormatter } from '../functions'
 
 class Profile extends Component {
 

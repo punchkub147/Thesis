@@ -5,6 +5,9 @@ import store from 'store'
 import { setUpNoti } from './api/notification'
 import { db, auth } from './api/firebase'
 
+import { LocaleProvider } from 'antd-mobile';
+import enUS from 'antd-mobile/lib/locale-provider/en_US';
+
 window.onbeforeunload = function(){
   // PushSelf({
   //   title: "กลับมาเร็วๆนะ",
@@ -49,7 +52,9 @@ class App extends Component {
   render() {
     return (
       <div>
-        <AppRouter/>
+        <LocaleProvider locale={enUS}>
+          <AppRouter/>
+        </LocaleProvider>
       </div>
     );
   }

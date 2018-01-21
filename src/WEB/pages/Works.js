@@ -46,31 +46,36 @@ class Works extends Component {
   render() {
     const { itemsList } = this.state
 
-    const columns = [{
-      title: 'ชื่องาน',
-      dataIndex: 'name',
-      key: 'name',
-      className: 'name',
-      render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
-    }, {
-      title: 'ราคา',
-      dataIndex: 'price',
-      key: 'price',
-      className: 'align-right',
-    }, {
-      title: 'จำนวนชุดที่เหลือ',
-      dataIndex: 'pack',
-      key: 'pack',
-      className: 'align-right',
-    }, {
-      title: 'แก้ไข',
-      key: 'action',
-      render: (text, item) => (
-        <span>
-          <Link to={`/web/editwork/${item.work_id}`}> แก้ไข </Link>
-        </span>
-      ),
-    }];
+    const columns = [
+      {
+        title: 'ชื่องาน',
+        dataIndex: 'name',
+        key: 'name',
+        className: 'name',
+        render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
+      }, 
+      {
+        title: 'ราคา',
+        dataIndex: 'price',
+        key: 'price',
+        className: 'align-right',
+      }, 
+      {
+        title: 'จำนวนชุดที่เหลือ',
+        dataIndex: 'pack',
+        key: 'pack',
+        className: 'align-right',
+      }, 
+      {
+        title: 'แก้ไข',
+        key: 'action',
+        render: (text, item) => (
+          <span>
+            <Link to={`/web/editwork/${item.work_id}`}> แก้ไข </Link>
+          </span>
+        ),
+      }
+    ];
 
     return (
       <Style>
@@ -112,7 +117,7 @@ class Works extends Component {
             )}
           </div>
           */}
-          <Table columns={columns} dataSource={itemsList} pagination={false} />
+          <Table columns={columns} dataSource={itemsList} />
           
         </Layout>
       </Style>
@@ -136,13 +141,7 @@ const Style = Styled.div`
     }
   }
 
-  .name{
-    a{
-      ${AppStyle.font.read1}
-    }
-  }
   .align-right{
     text-align: right;
   }
-
 `

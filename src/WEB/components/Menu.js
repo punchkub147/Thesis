@@ -5,7 +5,11 @@ import AppStyle from '../../config/style'
 
 import { auth } from '../../api/firebase'
 
-class Menu extends Component {
+import { Menu } from 'antd';
+const SubMenu = Menu.SubMenu;
+const MenuItemGroup = Menu.ItemGroup;
+
+export default class extends Component {
 
   
   render() {
@@ -23,6 +27,13 @@ class Menu extends Component {
         name: 'คำร้องขอรับงาน',
       },
     ]
+
+    const menuAdmin = [
+      {
+        path: '/web/admin/user',
+        name: 'รายชื่อผู้รับงาน',
+      },
+    ]
     return (
       <Style>
         <div className="menu">
@@ -34,6 +45,19 @@ class Menu extends Component {
             </Link>
           )}
 
+          {//if(user === 'admin')
+          <div>
+            ADMIN
+            {menuAdmin.map(menu => 
+              <Link to={menu.path}>
+                <div className={`list ${menu.path===this.props.route.path&&'active'}`}>
+                  {menu.name}
+                </div>
+              </Link>
+            )}
+          </div>
+          }
+
           <div className="list logout" onClick={() => auth.signOut()}>
             ออกจากระบบ
           </div>
@@ -43,7 +67,6 @@ class Menu extends Component {
   }
 }
 
-export default Menu;
 
 const Style = Styled.div`
   width: 100%;

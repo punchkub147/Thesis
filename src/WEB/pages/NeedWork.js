@@ -12,6 +12,7 @@ import { auth, db } from '../../api/firebase'
 import { PushFCM } from '../../api/notification'
 
 import Table from '../components/Table'
+import { phoneFormatter } from '../../functions/index';
 
 class NeedWork extends Component {
 
@@ -95,7 +96,6 @@ class NeedWork extends Component {
         title: 'ชื่องาน',
         dataIndex: 'work_name',
         key: 'work_name',
-        className: 'name',
         render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
       }, 
       {
@@ -103,15 +103,26 @@ class NeedWork extends Component {
         dataIndex: 'employee_name',
         key: 'employee_name',
         //render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
-      }, {
+      }, 
+      {
         title: 'เบอร์ติดต่อ',
         dataIndex: 'employee_phone',
         key: 'employee_phone',
-      }, {
-        title: 'จำนวนชุดที่ต้องการ',
+        render: (text, item) => <div>{phoneFormatter(text)}</div>,
+      }, 
+      {
+        title: 'จำนวนชุด',
         dataIndex: 'pack',
         key: 'pack',
-      }, {
+      }, 
+      {
+        title: 'เมื่อวันที่',
+        dataIndex: 'createAt',
+        key: 'createAt',
+        className: 'align-right',
+        render: (text, item) => <div>{text&&moment(text).format('DD/MM/YY HH:mm')}</div>,
+      }, 
+      {
         title: 'ส่งงาน',
         key: 'action',
         render: (text, item) => (
@@ -133,7 +144,7 @@ class NeedWork extends Component {
             </div>
           )
           */}
-          <Table columns={columns} dataSource={needWorkList} pagination={false} />
+          <Table columns={columns} dataSource={needWorkList} />
         </Layout>
       </Style>
     );

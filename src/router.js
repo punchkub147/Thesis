@@ -25,6 +25,9 @@ import WebWorks from './WEB/pages/Works'
 import WebWorkOnHome from './WEB/pages/WorkOnHome'
 import WebNeedWork from './WEB/pages/NeedWork'
 
+/// ADMIN ///
+import AdminUser from './WEB/pages/Admin/User'
+
 class AppRouter extends Component {
 
   render() {
@@ -157,6 +160,14 @@ class AppRouter extends Component {
         exact: false,
         page: WebEditWork,
         title: "แก้ไขงาน",
+      },
+
+      ///////////////////////////// ADMIN //////////////////
+
+      { path: '/web/admin/user',
+        exact: false,
+        page: AdminUser,
+        title: "ผู้รับงาน",
       },
     ]
 

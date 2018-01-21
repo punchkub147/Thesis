@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import 'antd/dist/antd.css'
+//import 'antd/dist/antd.css'
+import './style/antd.css';
 import 'antd-mobile/dist/antd-mobile.css';
 
 import './style/animate.css';

@@ -8,13 +8,16 @@ import Layout from '../layouts'
 import Tabbar from '../layouts/Tabbar'
 import WorkItem from '../components/WorkItem'
 import Content from '../components/Content'
+import Carousel from '../components/Carousel'
 
 import { db } from '../api/firebase'
+import { browserHistory } from 'react-router/lib';
 
 class Search extends Component {
   
   state = {
     worksList: store.get('works'),
+    user: store.get('employee'),
   }
 
   componentDidMount() {
@@ -35,13 +38,23 @@ class Search extends Component {
 
   render() {
     //const worksList = store.get('works')
-    const { worksList } = this.state
+    const { worksList, user } = this.state
 
+    console.log(worksList, user)
     const tabs = [
       {
         render: <Content>
+                  <div style={{width: '60%', 'margin-left': '-23px'}}>
+                    <Carousel>
+                      {_.map(worksList, (work, i) => 
+                        <WorkItem data={work} i={i} big/>
+                      )}
+                    </Carousel>
+                  </div>
+                  
                   {_.map(worksList, (work, i) => 
-                    <WorkItem data={work} i={i}/>
+                    user.data.abilities[work.ability]===true&& //เลือกงานที่ถนัด
+                      <WorkItem data={work} i={i}/>
                   )}
                 </Content>,
         name: 'สำหรับคุณ',

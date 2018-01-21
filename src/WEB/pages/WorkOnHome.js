@@ -46,7 +46,6 @@ class WorkOnHome extends Component {
         title: 'ชื่องาน',
         dataIndex: 'work_name',
         key: 'work_name',
-        className: 'name',
         render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
       },
       {
@@ -89,7 +88,7 @@ class WorkOnHome extends Component {
     return (
       <Style>
         <Layout {...this.props}>
-          <Table columns={columns} dataSource={workingList} pagination={false} />
+          <Table columns={columns} dataSource={workingList} />
         </Layout>
       </Style>
     );

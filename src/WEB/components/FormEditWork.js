@@ -21,6 +21,7 @@ class FormEditWork extends Component {
     user: {},
     image64: '',
     file: '',
+    abilities: []
   }
 
   componentDidMount() {
@@ -41,6 +42,14 @@ class FormEditWork extends Component {
       })
     }
 
+    db.collection('abilities').get()
+    .then(async querySnapshot => {
+      let abilities = []
+      await querySnapshot.forEach(function(doc) {
+        abilities.push(Object.assign(doc.data(),{ability_id: doc.id}))
+      });
+      await this.setState({abilities})
+    })
   }
 
   handleInput = (e, ref) => {
@@ -129,8 +138,20 @@ class FormEditWork extends Component {
     })
   }
 
+  handleChangeAbility = (e) => {
+    const { work } = this.state
+    this.setState({
+      work: {
+        ...work,
+        ability: e.target.value
+      }
+    })
+  }
+
   render() {
-    const { image64, work } = this.state
+    const { image64, work, abilities } = this.state
+
+    console.log(abilities)
 
     let startAt = moment(new Date, 'YYYY/MM/DD')
     if(work.startAt)
@@ -198,6 +219,15 @@ class FormEditWork extends Component {
         input: <RangePicker 
                 defaultValue={[startAt, endAt]}
                 onChange={this.handleChangeDate} />,
+      },
+
+      {
+        name: 'ประเภทความถนัด',
+        input:  <select onChange={this.handleChangeAbility}>
+                {abilities.map(data => 
+                  <option value={data.name} selected={work.ability&&data.name===work.ability?true:false}>{data.name}</option>
+                )}
+                </select>,
       },
     ]
     return (

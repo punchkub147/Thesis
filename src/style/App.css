@@ -32,7 +32,7 @@ body{
   display: none; 
 }
 
-input{
+input, select{
   width: 100%;
   margin-bottom: 10px;
   height: 40px;
@@ -94,6 +94,13 @@ button:focus{
   animation-duration: 0.2s;
 }
 
+.align-right{
+  text-align: right;
+}
+.align-center{
+  text-align: center;
+}
+
 /* ////// RESET ANT /////////// */
 /* Picker */
 .ant-time-picker-icon{
@@ -141,12 +148,11 @@ li.ant-time-picker-panel-select-option-selected{
 
 /* Slider */
 .ant-slider-handle{
-  border-color: #eb7985;
   width: 20px;
   height: 20px;
   margin-top: -8px;
 }
-.ant-slider-handle:hover{
+/* .ant-slider-handle:hover{
   border-color: #eb7985;
 }
 .ant-slider-handle:active{
@@ -176,7 +182,7 @@ li.ant-time-picker-panel-select-option-selected{
 .ant-slider-handle:focus{
   border-color: #eb7985;
   box-shadow: none;
-}
+} */
 
 
 /* Wheel  */
@@ -221,3 +227,4 @@ li.ant-time-picker-panel-select-option-selected{
   text-align: left;
   margin-left: -35px;
 }
+

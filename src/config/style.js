@@ -16,7 +16,7 @@ const AppStyle = {
 
   shadow: {
     lv1: "box-shadow: 0 0 15px #ccc;",
-    lv2: "box-shadow: 3px 3px 0 #ccc;",
+    lv2: "box-shadow: 3px 3px 0 #f3d5bc;",
   },
 
   font: {
@@ -66,7 +66,6 @@ const AppStyle = {
       font-size: 24px;
     `,
   },
-
 
   animate: {
     "inLeft": `

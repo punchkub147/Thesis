@@ -11,7 +11,7 @@ export default class extends Component {
 
     return (
       <Style>
-        <Table {...this.props} />
+        <Table {...this.props} bordered pagination={false} />
       </Style>
     );
   }
@@ -19,10 +19,6 @@ export default class extends Component {
 
 const Style = Styled.div`
   margin-top: 20px;
-
-  .align-right{
-    text-align: right;
-  }
 
   .ant-table-wrapper{
     ${AppStyle.shadow.lv1}

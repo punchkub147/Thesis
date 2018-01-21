@@ -81,6 +81,7 @@ class Login extends Component {
   
         pack: 1, //user ต้องการจำนวนกี่ชิ้น 
         deviceToken: user.data.deviceToken,
+        createAt: new Date,
       }
       db.collection('needWork').add(_.pickBy(needWork, _.identity))
       .then(data => {
