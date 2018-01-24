@@ -5,8 +5,7 @@ import store from 'store'
 import { setUpNoti } from './api/notification'
 import { db, auth } from './api/firebase'
 
-import { LocaleProvider } from 'antd-mobile';
-import enUS from 'antd-mobile/lib/locale-provider/en_US';
+import 'moment/locale/th'
 
 window.onbeforeunload = function(){
   // PushSelf({
@@ -19,7 +18,7 @@ class App extends Component {
 
   async componentDidMount() {
     console.log('OPEN APP')
-    console.log(localStorage)
+    console.log('LocalStorage',localStorage)
 
     setUpNoti()
 
@@ -52,9 +51,7 @@ class App extends Component {
   render() {
     return (
       <div>
-        <LocaleProvider locale={enUS}>
-          <AppRouter/>
-        </LocaleProvider>
+        <AppRouter/>
       </div>
     );
   }

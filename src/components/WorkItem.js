@@ -11,7 +11,7 @@ class WorkItem extends Component {
 
     return (
       <Style fade={i*0.2}>
-        <Link to={`/work/${data.work_id}`}>
+        <Link to={`/work/${data._id}`}>
           <div className={this.props.big?"WorkItemBig":"WorkItem"}>
             <div className="image">
               <img alt='' src={data.image}/>
@@ -19,10 +19,10 @@ class WorkItem extends Component {
             
               <div className="data">
                 <div className="detail">
-                  <div className="name">{data.ability} {data.name}</div>
+                  <div className="name">{data.name}</div>
                   <div className="employer">{data.employer_name}</div>
                   <div className='startDate'>
-                    {moment(data.startAt).locale('th').fromNow()}
+                    {'เริ่มส่ง' + moment(data.startAt).fromNow()}
                   </div>
                 </div>
 
@@ -62,16 +62,20 @@ const Style = Styled.div`
     }
   }
   .data{
-    min-width: 70%;
+    width: 70%;
     height: auto;
     float: right;
   }
   .detail{
     float: left;
     padding: 10px;
+    width: 60%;
     .name{
       ${AppStyle.font.read1}
       text-align: left;
+      overflow: hidden; 
+      white-space: nowrap; 
+      text-overflow:ellipsis;
     }
     .employer{
       ${AppStyle.font.read2}
@@ -85,6 +89,7 @@ const Style = Styled.div`
   .price{
     float: right;
     padding: 10px;
+    width: 40%;
     ${AppStyle.font.hilight}
   }
 }
@@ -118,9 +123,13 @@ const Style = Styled.div`
   .detail{
     float: left;
     padding: 10px;
+    width: 100%;
     .name{
       ${AppStyle.font.read1}
       text-align: left;
+      overflow: hidden; 
+      white-space: nowrap; 
+      text-overflow:ellipsis;
     }
     .employer{
       display: none;

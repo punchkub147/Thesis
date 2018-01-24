@@ -53,30 +53,47 @@ export const getTasks = (user_id) => {
 }
 
 export const genNowWorking = (limitWorkTimeToDay, workingList) => {
-  let limitTimeDayWork = limitWorkTimeToDay // 3 hours
+
+  let limitTimeDayWork = limitWorkTimeToDay // 3 hours เวลาที่มีในวันนี้
   let totalTimeDayWork = 0 //เวลางานที่ต้องทำในวันนี้
+  let overTimeDayWork = 0 //เวลางานที่เกินลิมิต
+
   let nowWorking = []
   _.map(workingList, async working => {
     if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
 
     const todoWork = working.total_piece-working.anotherDayFinishedPiece //จำนวนงานนี้ที่เหลือ งานทั้งหมด-งานวันอื่น
     
+    const start = working.startAt>new Date?moment(working.startAt):moment(new Date);
+    const end = moment(working.endAt);
+    const countDay = -start.diff(end, 'days')+1
+    
+    const todoWorkOnDay = todoWork/countDay //จำนวนชิ้นที่ควรทำในวันนี้ = จำนวนชิ้น/จำนวนวันที่ต้องทำ 
+  
     let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
-    for(let i = 1; i <= todoWork; i++){
-      if(limitTimeDayWork >= working.worktime){
-        totalTimeDayWork += +working.worktime
-        limitTimeDayWork -= +working.worktime
+    let overPiece = 0 //จำนวนชิ้นที่เกินจากที่จะทำได้
+    
+    for(let i = 1; i <= todoWorkOnDay; i++){
+      if(limitTimeDayWork >= working.worktime){ //ถ้าเวลาที่กำหนดไว้ว่าจะทำ มากกว่าเวลาที่ต้องทำต่อชิ้น
+        totalTimeDayWork += +working.worktime //เวลารวมที่ต้องทำเพิ่มขึ้น
+        limitTimeDayWork -= +working.worktime //เวลาที่กำหนดไว้ลดลง
         limitTodo = i
+      }else{ //เวลานอกเหนือจากที่กำหนด
+        overPiece++
+        overTimeDayWork += +working.worktime
       }
     }
-    if(limitTodo > 0){ //ถ้ามีจำนวนงานที่ต้องทำ
+
+    if(limitTodo+overPiece > 0){ //ถ้ามีจำนวนงานที่ต้องทำ
       nowWorking.push(Object.assign(working, {
         limitTodo,
+        overPiece,
         timeTodo: limitTodo*working.worktime
       }))
     }
   })
-  return { nowWorking, limitTimeDayWork, totalTimeDayWork }
+  
+  return { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork }
 }
 
 export const genAllWorking = (workingList) => {

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
@@ -9,6 +10,8 @@ import Tabbar from '../layouts/Tabbar'
 import WorkItem from '../components/WorkItem'
 import Content from '../components/Content'
 import Carousel from '../components/Carousel'
+
+import edit from '../img/edit.png'
 
 import { db } from '../api/firebase'
 import { browserHistory } from 'react-router/lib';
@@ -25,11 +28,15 @@ class Search extends Component {
     // this.setState({
     //   worksList: store.get('works')
     // })
+
     db.collection('works')
+    .where('startAt' ,'>', new Date())
     .onSnapshot(snapshot => {
       let worksList = []
       snapshot.forEach(doc => {
-        worksList.push(Object.assign(doc.data(),{work_id: doc.id}))
+        worksList.push(
+          _.assign(doc.data(),{_id: doc.id})
+        )
       })
       this.setState({worksList})
       store.set('works', worksList)
@@ -40,10 +47,31 @@ class Search extends Component {
     //const worksList = store.get('works')
     const { worksList, user } = this.state
 
-    console.log(worksList, user)
+    let recommended = []
+    _.map(worksList, work => 
+      (user.data.abilities[work.ability] === true)&& 
+        recommended.push(work)
+    )
+
+    let workmanship = []
+    _.map(worksList, work => 
+      (work.ability && work.ability !== 'general')&& 
+        workmanship.push(work)
+    )
+
+    let general = []
+    _.map(worksList, work => 
+      (!work.ability || work.ability === 'general')&& 
+        general.push(work)
+    )
+
     const tabs = [
       {
         render: <Content>
+                  <div className="recommended">สำหรับคุณ</div>
+                  <Link to="/editabilities" className='edit'>
+                    <img alt='' src={edit}/>
+                  </Link>
                   <div style={{width: '60%', 'margin-left': '-23px'}}>
                     <Carousel>
                       {_.map(worksList, (work, i) => 
@@ -52,16 +80,15 @@ class Search extends Component {
                     </Carousel>
                   </div>
                   
-                  {_.map(worksList, (work, i) => 
-                    user.data.abilities[work.ability]===true&& //เลือกงานที่ถนัด
-                      <WorkItem data={work} i={i}/>
+                  {_.map(recommended, (work, i) => 
+                    <WorkItem data={work} i={i}/>
                   )}
                 </Content>,
         name: 'สำหรับคุณ',
       },
       {
         render: <Content>
-                  {_.map(worksList, (work, i) => 
+                  {_.map(workmanship, (work, i) => 
                     <WorkItem data={work} i={i}/>
                   )}
                 </Content>,
@@ -69,7 +96,7 @@ class Search extends Component {
       },
       {
         render: <Content>
-                  {_.map(worksList, (work, i) => 
+                  {_.map(general, (work, i) => 
                     <WorkItem data={work} i={i}/>
                   )}
                 </Content>,
@@ -90,5 +117,16 @@ class Search extends Component {
 export default Search;
 
 const Style = Styled.div`
-
+  .recommended{
+    ${AppStyle.font.main}
+    text-align: left;
+  }
+  .edit{
+    position: absolute;
+    right: 10px;
+    top: 0;
+    img{
+      width: 25px;
+    }
+  }
 `

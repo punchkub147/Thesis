@@ -15,8 +15,8 @@ import { db } from '../api/firebase'
 class Notification extends Component {
 
   state = {
-    user: {},
-    notiList: [],
+    user: store.get('employee'),
+    notiList: store.get('notifications'),
   }
 
   componentDidMount() {
@@ -29,25 +29,22 @@ class Notification extends Component {
     //     })
     //     :browserHistory.push('/login')
     // })
-    this.setState({
-      user: store.get('employee')
-    })
     this.getNotification(store.get('employee'))
   }
 
   getNotification = (user) => {
-    this.setState({
-      notiList: store.get('notifications')
-    })
-
     if(!user)return
 
-    db.collection('notifications').where('employee_id', '==', user.uid).get()
-    .then(snapshot => {
+    db.collection('notifications').where('employee_id', '==', user.uid)
+    .orderBy('createAt', 'asc')
+    .onSnapshot(snapshot => {
       let notiList = []
       snapshot.forEach(data => {
         notiList.push(Object.assign(data.data(),{noti_id: data.id}))
       })
+
+      notiList = _.orderBy(notiList, ['createAt'], ['desc']); //เรียงวันที่
+
       this.setState({notiList})
       store.set('notifications',notiList)
     })
@@ -116,6 +113,14 @@ const Noti = Styled.div`
   }
   .text{
     ${AppStyle.font.text2}
+    float: right;
+    width: 80%;
+
+    line-height: 1.5em;
+    height: 3em;
+    overflow: hidden;
+    //white-space: nowrap;
+    text-overflow: ellipsis;
   }
   .time{
     ${AppStyle.font.text2}

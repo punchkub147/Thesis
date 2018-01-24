@@ -6,7 +6,6 @@ import _ from 'lodash'
 import moment from 'moment'
 import store from 'store'
 
-
 import { Slider } from 'antd';
 
 import { getUser, db } from '../api/firebase'
@@ -23,10 +22,19 @@ import Modal from '../components/Modal'
 
 import alarm2 from '../img/alarm2.png'
 
+const setDayHilight = (day, time) => {
+  
+  if(day === moment().locale('en').format('ddd').toLowerCase()) return AppStyle.color.main
+  if(time===0) return AppStyle.color.gray
+
+  return AppStyle.color.sub
+}
+
 class Tasks extends Component {
 
   state = {
-    tasks: [],
+    user: store.get('employee'),
+    tasks: store.get('tasks'),
     limitWorkTimeToDay: 0,
     totalTimeAllWork: 0,
     doing: 0,
@@ -38,12 +46,11 @@ class Tasks extends Component {
     getUser('employee', user => {
       this.setState({user})
       store.set('employee',user)
-    })    
-    let user = await store.get('employee')
-    this.setState({user})
+    })
+    const { user } = this.state
     
     if(user.data.workTime){
-      const limitWorkTimeToDay = user.data.workTime[moment().format('ddd').toLowerCase()]
+      const limitWorkTimeToDay = user.data.workTime[moment().locale('en').format('ddd').toLowerCase()]
       this.setState({
         limitWorkTimeToDay,
       })
@@ -55,10 +62,6 @@ class Tasks extends Component {
   }
 
   getWorking = async (user) => {
-    this.setState({
-      tasks: store.get('tasks')
-    })
-
     db.collection('working')
     .where('employee_id', '==', user.uid)
     //.where('endAt', '>=', new Date())
@@ -70,7 +73,7 @@ class Tasks extends Component {
 
         const toDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
           o.updateAt >= moment().startOf('day')&& //ถ้าเป็นงานในวันนี้เท่านั้น 
-          o.updateAt <=moment().endOf('day')&&
+          o.updateAt <= moment().endOf('day')&&
             o.piece
         )// งานที่ทำเสร็จในวันนี้
         const anotherDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
@@ -89,7 +92,7 @@ class Tasks extends Component {
           worktime,
           finished_piece,
           toDayFinishedPiece,
-          anotherDayFinishedPiece
+          anotherDayFinishedPiece,
         }))
       })
       tasks = _.orderBy(tasks, ['endAt'], ['asc']); //เรียงวันที่
@@ -105,7 +108,6 @@ class Tasks extends Component {
       })
       store.set('tasks', tasks)
     })
-
   }
 
   handleDo = async (e, work) => {
@@ -134,29 +136,25 @@ class Tasks extends Component {
   }
 
   render() {
-    const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork } = this.state
+    const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user } = this.state
 
-    const { nowWorking, limitTimeDayWork, totalTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks)
-  
+    const { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks)
+    
     const nowTask = (
-      _.map(nowWorking, (working,i) => 
+      <div>
+      {_.map(nowWorking, (working,i) => 
         <NowTask fade={i*0.2}>
           <div className='row'>
             <div className='col-9'>
-              <div className='row'>
-                <div className='col-8'>
-                  <div className="name">{working.work_name}</div>
-                </div>
-                <div className='col-4'>
-                  <div className="piece">
-                    {working.toDayFinishedPiece} / {working.limitTodo}
-                  </div>
-                </div>
+              <div className="name">{working.work_name}</div>
+              <div className="piece">
+                {working.toDayFinishedPiece} / {working.limitTodo+working.overPiece}<span style={{color: 'red'}}>({working.overPiece})</span>
               </div>
-              <div className='row'>
+
+              <div className='row' style={{clear: 'both'}}>
                 <div className='col'>
                   <div className="progress">
-                    <Progress now={working.toDayFinishedPiece} max={working.limitTodo}/>
+                    <Progress now={working.toDayFinishedPiece} max={working.limitTodo+working.overPiece}/>
                   </div>
                 </div>
               </div>
@@ -176,15 +174,16 @@ class Tasks extends Component {
                 </div>
                 <div className='col-6'>
                   <div className="timing">
-                  {secToTime(working.timeTodo)}
+                  {secToTime(working.timeTodo+(working.overPiece*working.worktime))}
+                    <div style={{color: 'red'}}>{secToTime(working.overPiece*working.worktime)}</div>
                   </div>
                 </div>
               </div>
               
             </div>
             <div className='col-3'>
-            {working.toDayFinishedPiece>=working.limitTodo
-              ?<div className="finish" onClick={() => this.handleOpenModal(working)}>FINISH</div>
+            {working.toDayFinishedPiece>=working.limitTodo+working.overPiece
+              ?<div className="finish">เสร็จ</div>
               :<div className="do" onClick={() => this.handleOpenModal(working)}>ทำ</div>
             }
             </div>
@@ -195,13 +194,27 @@ class Tasks extends Component {
             <div onClick={() => this.handleDelete(working.working_id)}>DELETE</div>
           */}
         </NowTask> 
-      )
+      )}
+        {
+        <div className=''>
+          {'เวลางานที่ต้องทำทั้งหมดทุกงาน '+secToTime(totalTimeAllWork)}
+          <br/>
+          {'เวลาที่ต้องทำงานวันนี้ '+secToTime(totalTimeDayWork)}
+          <br/>
+          {'เวลาที่จำกัดวันนี้ '+secToTime(limitWorkTimeToDay)}
+          <br/>
+          <span style={{color: 'red'}}>{'เวลาที่เกินในวันนี้ '+secToTime(overTimeDayWork)}</span>
+        </div>
+        }
+
+      </div>
     )
 
     const allWorking = genAllWorking(tasks)
 
     const allTask = (
-      _.map(allWorking, (working, i) => 
+      <div>
+      {_.map(allWorking, (working, i) => 
         <AllTask fade={i*0.2}>
           <div className='row'>
             <div className='col-6'>
@@ -213,7 +226,12 @@ class Tasks extends Component {
               </div>
             </div>
             <div className='col-4'>
-              <div className="date">ส่ง {moment(working.endAt).locale('th').fromNow()}</div>
+              <div className="date">
+              {working.startAt > new Date
+                ?`เริ่มงาน${moment(working.startAt).locale('th').fromNow()}`
+                :`ส่งงาน${moment(working.endAt).locale('th').fromNow()}`
+              }
+              </div>
             </div>
           </div>
           <div className='row'>
@@ -224,7 +242,8 @@ class Tasks extends Component {
             </div>
           </div>
         </AllTask>
-      )
+      )}
+      </div>
     )
 
     const tabs = [
@@ -249,29 +268,46 @@ class Tasks extends Component {
                 <div className='message'>คุณยังไม่มีงาน</div>
               </Content>
             }
-            
+
+
+
+            <Link to="/editworktime">
             <WorkDate>
-              <div className="row">
-                <div className="col-10">
-                {'เวลางานที่ต้องทำทั้งหมดททุกงาน '+secToTime(totalTimeAllWork)}
-                <br/>
-                {'เวลาที่ต้องทำงานวันนี้ '+secToTime(totalTimeDayWork)}
-                <br/>
-                {'เวลาที่จำกัดวันนี้ '+secToTime(limitWorkTimeToDay)}
+              <Content>
+                <div className="day" style={{paddingLeft: 0}}>
+                  <div className='box' style={{borderColor: setDayHilight('sun', user.data.workTime['sun'])}}>อา.</div>
                 </div>
-                <div className="col-2">
-                  <Link to="/editworktime">แก้ไข</Link>
+                <div className="day">
+                  <div className='box' style={{borderColor: setDayHilight('mon', user.data.workTime['mon'])}}>จ.</div>
                 </div>
-              </div>
+                <div className="day">
+                  <div className='box' style={{borderColor: setDayHilight('tue', user.data.workTime['tue'])}}>อ.</div>
+                </div>
+                <div className="day">
+                  <div className='box' style={{borderColor: setDayHilight('wed', user.data.workTime['wed'])}}>พ.</div>
+                </div>
+                <div className="day">
+                  <div className='box' style={{borderColor: setDayHilight('thu', user.data.workTime['thu'])}}>พฤ.</div>
+                </div>
+                <div className="day">
+                  <div className='box' style={{borderColor: setDayHilight('fri', user.data.workTime['fri'])}}>ศ.</div>
+                </div>
+                <div className="day" style={{paddingRight: 0}}>
+                  <div className='box' style={{borderColor: setDayHilight('sat', user.data.workTime['sat'])}}>ส.</div>
+                </div>
+              </Content>
             </WorkDate>
+            </Link>
             <div style={{height: '60px'}}></div>
 
+
+            
             <Modal modalIsOpen={this.state.modalIsOpen}>
               <InsideModal>
-                <div className="modal-text">ทำงาน {this.state.doing} จาก {_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
+                <div className="modal-text">ทำงาน {this.state.doing} จาก {(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece')-_.get(doWork,'toDayFinishedPiece'))} ชิ้น</div>
                 {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
                 <form>
-                  <Slider min={0} max={_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')}
+                  <Slider min={0} max={(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')}
                     onChange={doing => this.setState({doing})}
                     value={this.state.doing}
                     style={{margin: '40px 0'}}
@@ -283,8 +319,6 @@ class Tasks extends Component {
 
           </Style>
         </Layout>
-
-       
 
       </div>
     )
@@ -329,11 +363,13 @@ const NowTask = Styled.div`
   ${AppStyle.shadow.lv1}
   .name{
     text-align: left;
+    float: left;
     ${AppStyle.font.read1}
   }
   .piece{
     ${AppStyle.font.read1}
     text-align: right;
+    float: right;
   }
   .progress{
     height: 20px;
@@ -378,10 +414,13 @@ const NowTask = Styled.div`
   .finish{
     width: 50px;
     height: 50px;
-    background: #ccc;
+    background: ${AppStyle.color.gray};
     border-radius: 100%;
     text-align: center;
     line-height: 50px;
+    ${AppStyle.font.tool}
+    color: ${AppStyle.color.main};
+    ${AppStyle.shadow.lv2}
   }
 `
 const AllTask = Styled.div`
@@ -419,4 +458,19 @@ const WorkDate = Styled.div`
   background: ${AppStyle.color.card};
   ${AppStyle.shadow.lv1}
   line-height: 20px;
+
+  .day{
+    width: ${100/7}%;
+    padding: 10px 5px;
+    float: left;
+    .box{
+      width: 100%;
+      text-align: center;
+      border: solid 2px ${AppStyle.color.gray};
+      border-radius: 4px;
+      height: 40px;
+      line-height: 40px;
+      ${AppStyle.font.read1}
+    }
+  }
 `

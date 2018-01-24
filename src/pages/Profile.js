@@ -13,7 +13,7 @@ import edit from '../img/edit.png'
 import Layout from '../layouts'
 import Content from '../components/Content'
 
-import { getUser, auth } from '../api/firebase'
+import { getUser, db, auth } from '../api/firebase'
 import Button from '../components/Button';
 
 import { phoneFormatter, personIdFormatter } from '../functions'
@@ -26,26 +26,36 @@ class Profile extends Component {
       data: {
         abilities: {}
       },
-    }
+    },
+    abilities: []
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     window.scrollTo(0, 0)
-    // db.collection('employee').where('abilities.ทอ', '==', true).get()
-    // .then( snap => {
-    //   snap.forEach(data => {
-    //     console.log(data.data().fname)
-    //   })
-    // })
 
     if(!store.get('employee'))browserHistory.push('login')
 
     this.setState({
       user: store.get('employee')
     })
-    getUser('employee', user => {
+    await getUser('employee', user => {
       store.set('employee',user)
       this.setState({user})
+    })
+
+
+    this.setState({
+      abilities: store.get('abilities')
+    })
+    
+    await db.collection('abilities')
+    .onSnapshot(snap => {
+      const abilities = []
+      snap.forEach(doc => {
+        abilities[doc.id] = doc.data()
+      })
+      this.setState({abilities})
+      store.set('abilities',abilities)
     })
   }
 
@@ -60,7 +70,11 @@ class Profile extends Component {
 
   render() {
     const { data } = this.state.user
-    console.log('abibibibqweqwei',data.abilities)
+    const { abilities } = this.state
+
+    const userAbilities = _.pick(abilities, _.keys(data.abilities))
+    const userTools = _.pick(abilities, _.keys(data.abilities))
+
     return (
       <Layout route={this.props.route}>
         <Style>
@@ -103,12 +117,12 @@ class Profile extends Component {
                     จังหวัด {data.province?data.province:'-'}{' '}
                     รหัสไปษณีย์ {data.postcode?data.postcode:'-'}{' '}
                   */}
-                    {data.homeNo&&`เลขที่บ้าน ${data.homeNo} `}
-                    {data.road&&`ถนน ${data.road} `}
-                    {data.area&&`เขต ${data.area} `}
-                    {data.district&&`แขวง ${data.district} `}
-                    {data.province&&`จังหวัด ${data.province} `}
-                    {data.postcode&&`รหัสไปรษณีย์ ${data.postcode} `}
+                    {data.homeNo&&`${data.homeNo} `}
+                    {data.road&&`ถ. ${data.road} `}
+                    {data.area&&`ข. ${data.area} `}
+                    {data.district&&`ข. ${data.district} `}
+                    {data.province&&`จ. ${data.province} `}
+                    {data.postcode&&`${data.postcode} `}
                   </div>
                 </div>
               </div>
@@ -116,13 +130,28 @@ class Profile extends Component {
               <div className="card">
                 <div className="row">
                   <div className="col-12">
-                    ความสามารถ
                     <Link to="/editabilities" className='edit'>
                       <img alt='' src={edit}/>
                     </Link>
+                    ความสามารถ<br/>
                     {data.abilities&&
-                      _.map(data.abilities,(data,key) => 
-                      <div>{key}</div>
+                      _.map(userAbilities,(data,key) => 
+                      <div style={{float: 'left'}}>{_.get(data,'name') + ', '}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="card">
+                <div className="row">
+                  <div className="col-12">
+                    <Link to="/edittools" className='edit'>
+                      <img alt='' src={edit}/>
+                    </Link>
+                    เครื่องมือ<br/>
+                    {data.tools&&
+                      _.map(userTools,(data,key) => 
+                      <div style={{float: 'left'}}>{_.get(data,'name') + ', '}</div>
                     )}
                   </div>
                 </div>

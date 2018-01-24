@@ -38,12 +38,14 @@ class NeedWork extends Component {
       await querySnapshot.forEach(function(doc) {
         needWorkList.push(Object.assign(doc.data(),{needWork_id: doc.id}))
       });
+
+      needWorkList = _.orderBy(needWorkList, ['createAt'], ['desc']); //เรียงวันที่
+
       await this.setState({needWorkList})
     })
   }
 
   handleSendWork = (data) => {
-
     db.collection('needWork').doc(data.needWork_id).delete()
     /////////////////
 
@@ -69,7 +71,7 @@ class NeedWork extends Component {
     /////////////////
 
     const title = 'บริษัทยืนยันการส่งงาน'
-    const message = `บริษัทจะจัดส่ง ${data.work_name} ให้ในวันที่ ${data.startAt}`
+    const message = `บริษัทจะจัดส่ง ${data.work_name} ให้ในวันที่ ${moment(data.startAt).format('DD/MM/YY')}`
     const notifications = {
       employee_id: data.employee_id,
       type: 'send',
@@ -77,7 +79,31 @@ class NeedWork extends Component {
       message,
       link: `${Config.host}/tasks`,
       watched: false,
-      createAt: moment().format(),
+      createAt: new Date,
+    }
+    db.collection('notifications').add(_.pickBy(notifications, _.identity))
+
+    PushFCM({
+      to: data.deviceToken,
+      title,
+      body: message,
+    })
+  }
+
+  handleCancelWork = (data) => {
+    console.log('CANCEL')
+    db.collection('needWork').doc(data.needWork_id).delete()
+
+    const title = 'บริษัทปฏิเสธการส่งงาน'
+    const message = `บริษัทปฏิเสธการส่ง ${data.work_name} ขออภัยในความไม่สะดวก`
+    const notifications = {
+      employee_id: data.employee_id,
+      type: 'send',
+      title,
+      message,
+      link: `${Config.host}/notification`,
+      watched: false,
+      createAt: new Date,
     }
     db.collection('notifications').add(_.pickBy(notifications, _.identity))
 
@@ -124,10 +150,19 @@ class NeedWork extends Component {
       }, 
       {
         title: 'ส่งงาน',
-        key: 'action',
+        key: 'send',
         render: (text, item) => (
           <span>
             <div className='click' onClick={ () => this.handleSendWork(item)}> ส่งงาน </div>
+          </span>
+        )
+      },
+      {
+        title: 'ปฏิเสธ',
+        key: 'cancel',
+        render: (text, item) => (
+          <span>
+            <div className='click' onClick={ () => this.handleCancelWork(item)}> ปฏิเสธ </div>
           </span>
         ),
       }
@@ -136,14 +171,6 @@ class NeedWork extends Component {
     return (
       <Style>
         <Layout {...this.props}>
-          {/*
-            _.map(needWorkList, (data, key) =>
-            <div className="">
-              {data.employee_name} {data.employee_phone} {data.pack}
-              <button onClick={ () => this.handleSendWork(data)}>ส่งงาน</button>
-            </div>
-          )
-          */}
           <Table columns={columns} dataSource={needWorkList} />
         </Layout>
       </Style>

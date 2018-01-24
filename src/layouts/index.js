@@ -10,15 +10,11 @@ class Layout extends Component {
   render() {
     return (
       <Style>
-        <div id="Layout">
-          <ToolBar title={this.props.route.title}/>
-          <NavBar route={this.props.route}/>
+        <ToolBar title={this.props.route.title}/>
+        <NavBar route={this.props.route}/>
 
-          <div className="page">
-            {this.props.children}
-          </div>
-
-
+        <div className="page">
+          {this.props.children}
         </div>
       </Style>
     );
@@ -28,18 +24,16 @@ class Layout extends Component {
 export default Layout;
 
 const Style = Styled.div`
-  #Layout{
-    background-image: url('${bg2}');
-    background-size: 50px 10px;
-    min-height: 100vh;
-    flex: 1;
-    .page{
-      width: 100%;
-      .content{
-        animation-name: fadeInUp;
-        animation-duration: 0.3s;
-      }
+  background-image: url('${bg2}');
+  background-size: 50px 10px;
+  min-height: 100vh;
+  width:100%;
+  flex: 1;
+  .page{
+    width: 100%;
+    .content{
+      animation-name: fadeInUp;
+      animation-duration: 0.3s;
     }
   }
-
 `

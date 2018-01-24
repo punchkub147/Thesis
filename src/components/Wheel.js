@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Styled from 'styled-components'
 import { Picker, WhiteSpace  } from 'antd-mobile';
 import _ from 'lodash'
 
@@ -48,7 +49,7 @@ export default class PickerViewExample extends React.Component {
   }
   render() {
     return (
-      <div>
+      <Style>
         <Picker
           visible={this.props.visible}
           onChange={this.onChange}
@@ -58,8 +59,12 @@ export default class PickerViewExample extends React.Component {
           cascade={false}
           onDismiss={() => this.setState({ visible: false })}
         />
-      </div>
+      </Style>
     );
   }
 }
 
+
+const Style = Styled.div`
+
+`

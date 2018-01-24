@@ -8,13 +8,18 @@ import bg12 from '../img/bg12.jpg'
 
 import Button from '../components/Button'
 import Content from '../components/Content'
+import Loading from '../components/Loading'
 
 import { auth, db } from '../api/firebase'
 import { getToken } from '../api/notification'
 
 
+
 class Login extends Component {
 
+  state = {
+    loading: false
+  }
   componentDidMount() {
     window.scrollTo(0, 0)
     auth.onAuthStateChanged(async user => {
@@ -35,23 +40,30 @@ class Login extends Component {
     })
   }
 
-  handleLogin = (e) => {
+  handleLogin = async (e) => {
     e.preventDefault()
-    auth.signInWithEmailAndPassword(this.email.value, this.password.value)
+
+    this.setState({loading: true})
+    await auth.signInWithEmailAndPassword(this.email.value, this.password.value)
     .then(async user => {
       if(user){
         this.navigateUser(user)
       }
+      this.setState({loading: false})
     })
     .catch(e => {
-      console.log('ERROR : ', e)
+      alert(e)
+      this.setState({loading: false})
     })
+    
   }
 
   navigateUser = async (user) => {
     const employerRef = await db.collection('employer').doc(user.uid)
     const employeeRef = await db.collection('employee').doc(user.uid)
-    employeeRef.get().then(async doc => {
+
+    this.setState({loading: true})
+    await employeeRef.get().then(async doc => {
       if(doc.exists){
         browserHistory.push('/search')
         await employeeRef.update({
@@ -65,11 +77,13 @@ class Login extends Component {
         })
       }
     })
+    this.setState({loading: false})
   }
 
   render() {
 
     return (
+      <Loading loading={this.state.loading}>  
       <Style>
         <div className="container">
           <div className="row justify-content-md-center">
@@ -79,27 +93,31 @@ class Login extends Component {
                   <img alt='' src={logo}/>
                 </div>
             
-            <div className="card">
-              <form onSubmit={(e) => this.handleLogin(e)}>
               
-                <input placeholder="อีเมลล์" type="email" ref={r => this.email = r }/>
+              <div className="card">
+                <form onSubmit={(e) => this.handleLogin(e)}>
+                
+                  <input placeholder="อีเมลล์" type="email" ref={r => this.email = r }/>
 
-                <input placeholder="รหัสผ่าน" type="password" ref={r => this.password = r }/>
+                  <input placeholder="รหัสผ่าน" type="password" ref={r => this.password = r }/>
 
-                <Button type="submit" onSubmit={(e) => this.handleLogin(e)}>
-                  Login
-                </Button>
+                  <Button type="submit" onSubmit={(e) => this.handleLogin(e)}>
+                    เข้าสู่ระบบ
+                  </Button>
 
-              </form>
+                </form>
 
-              <Link to="/register">
-                <div className="register">Register</div> 
-              </Link>
-            </div>
+                <Link to="/register">
+                  <div className="register">สมัครสมาชิก</div> 
+                </Link>
+              </div>
+            
+
             </Content>
           </div>
         </div>
       </Style>
+      </Loading>
     );
   }
 }

@@ -81,10 +81,10 @@ class FormEditWork extends Component {
       })
 
       if(this.props.workId){
-        await db.collection('works').doc(this.props.workId).update(data)
+        await db.collection('works').doc(this.props.workId).update(_.pickBy(data, _.identity))
         alert('แก้ไขงานเรียบร้อบ')
       }else{
-        await db.collection('works').add(data)
+        await db.collection('works').add(_.pickBy(data, _.identity))
         alert('เพิ่มงานเรียบร้อบ')
       }
       await browserHistory.push('/web/works')      
@@ -146,12 +146,11 @@ class FormEditWork extends Component {
         ability: e.target.value
       }
     })
+    
   }
 
   render() {
     const { image64, work, abilities } = this.state
-
-    console.log(abilities)
 
     let startAt = moment(new Date, 'YYYY/MM/DD')
     if(work.startAt)
@@ -206,26 +205,18 @@ class FormEditWork extends Component {
         name: 'อุปกรณ์',
         input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'tool')} value={_.get(work,'tool')} required/>,
       },
-      // {
-      //   name: 'เริ่มส่งงาน',
-      //   input: <input type="date" placeholder="" onChange={ e => this.handleInput(e, 'startAt')}/>,
-      // },
-      // {
-      //   name: 'สิ้นสุดงาน',
-      //   input: <input type="date" placeholder="" onChange={ e => this.handleInput(e, 'endAt')}/>,
-      // },
       {
         name: 'วันส่งงาน-รับงาน',
         input: <RangePicker 
                 defaultValue={[startAt, endAt]}
                 onChange={this.handleChangeDate} />,
       },
-
       {
         name: 'ประเภทความถนัด',
         input:  <select onChange={this.handleChangeAbility}>
+                  <option value={'general'} selected={work.ability==='general'?true:false}>ทั่วไป</option>
                 {abilities.map(data => 
-                  <option value={data.name} selected={work.ability&&data.name===work.ability?true:false}>{data.name}</option>
+                  <option value={data.ability_id} selected={work.ability&&data.ability_id===work.ability?true:false}>{data.name}</option>
                 )}
                 </select>,
       },

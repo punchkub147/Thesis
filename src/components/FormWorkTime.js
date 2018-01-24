@@ -176,34 +176,25 @@ class FormWorkTime extends Component {
               ชั่วโมงทำงาน
             </div>
           </div>
-          <div>
 
+
+          <div>
           {_.map(workTime, (date, day) =>
             <div className="row justify-content-center datetime" 
               onClick={() => this.handleOpenWheel(day,date)}>
-            
               <div className="col-4 day input">
-                {day}
+                {
+                  day==='sun'?'อาทิตย์'
+                  :day==='mon'?'จันทร์'
+                  :day==='tue'?'อังคาร'
+                  :day==='wed'?'พุธ'
+                  :day==='thu'?'พฤหัสบดี'
+                  :day==='fri'?'ศุกร์'
+                  :day==='sat'&&'เสาร์'
+                }
               </div>
               <div className="col-4 input">
-                {/*
-
-                <TimePicker minuteStep={15} secondStep={10}
-                  defaultValue={moment(secToMoment(date), format)}
-                  format={format}
-                  onChange={(time) => this.handleTime(time,day)}
-                  // addon={() => (
-                  //   <Button size="small" type="primary" >
-                  //     Ok
-                  //   </Button>
-                  // )}
-                />
-
-                */}
-                {
-                  moment().startOf('day').second(date).format(format)
-                  //[['00'],['00']]
-                }
+                {moment().startOf('day').second(date).format(format)}
               </div>
             </div>
           )}

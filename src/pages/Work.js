@@ -35,6 +35,8 @@ class Login extends Component {
     const work_id = this.props.routeParams.id
     const _this = this
 
+    if(!work_id)browserHistory.push('/search')
+
     auth.onAuthStateChanged(user => {
       !user
         ?console.log("กรุณาเข้าสู่ระบบ")
@@ -43,12 +45,11 @@ class Login extends Component {
         })
     })
 
+
     db.collection('works').doc(work_id)
     .onSnapshot(async work => {
-      //console.log("Current data: ", work && work.data());
       db.collection('employer').doc(work.data().employer_id)
       .onSnapshot(async employer => {
-        //console.log("Current Employer: ", employer && employer.data());
         _this.setState({
           work: {
             work_id,
@@ -99,11 +100,10 @@ class Login extends Component {
     return (
       <Style>
         <div id="Work">
-
+            <div className="goback" onClick={() => browserHistory.goBack()}>
+              <img alt='' src={Back}/>
+            </div>
             <div className="imageWork">          
-              <div className="goback" onClick={() => browserHistory.goBack()}>
-                <img alt='' src={Back}/>
-              </div>
               <img alt='' src={data.image}/>
             </div>
           
@@ -124,11 +124,11 @@ class Login extends Component {
                   {data.sendBy}
                 </div>
                 <div className="col-3 startAt">
-                  <div className='text'>เริ่มงาน</div>
+                  <div className='text'>เริ่มส่ง</div>
                   {moment(data.startAt).locale('th').fromNow()}
                 </div>
                 <div className="col-3 endAt">
-                  <div className='text'>รับงาน</div>
+                  <div className='text'>ส่งกลับ</div>
                   {moment(data.endAt).locale('th').fromNow()}
                 </div>
                 <div className="col-3 workTime">
@@ -140,6 +140,7 @@ class Login extends Component {
                 </div>
               </div>
           
+              {
               <div className="row card">
                 <div className="col-12">เครื่องมือ</div>
                 <div className="col-3">
@@ -149,6 +150,7 @@ class Login extends Component {
                   {data.tool}
                 </div>
               </div>
+              }
           
               <div className="row card">
                 <div className="col-12">
@@ -186,24 +188,26 @@ const Style = Styled.div`
     width: 100%;
     height: 230px;
     background: ${AppStyle.color.card};
-    .goback{
-      position: absolute;
-      left: 15px;
-      height: 50px;
-      width: 50px;
-      cursor: pointer;
-      img{
-        margin-top: 12.5px;
-        width: 25px;
-        height: 25px;
-      }
-    }
+
     img{
       object-fit: cover;
       width: 100%;
       height: 100%;
       animation-name: fadeInDown;
       animation-duration: 0.5s;
+    }
+  }
+  .goback{
+    position: fixed;
+    left: 15px;
+    height: 50px;
+    width: 50px;
+    cursor: pointer;
+    z-index: 1;
+    img{
+      margin-top: 12.5px;
+      width: 25px;
+      height: 25px;
     }
   }
   .container{

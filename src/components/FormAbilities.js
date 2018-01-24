@@ -12,7 +12,8 @@ class FormAbilities extends Component {
 
   state = {
     user: {},
-    abilities: []
+    abilities: [],
+    userAbilities: [],
   }
 
   async componentDidMount() {
@@ -26,16 +27,20 @@ class FormAbilities extends Component {
     await db.collection('abilities').get()
     .then(snap => {
       let abilities = []
+      let userAbilities = {}
       snap.forEach(data => {
         //abilities.push({ability_id: data.id,data: _.set(data.data(),'selected', false)})
         abilities.push({
           ability_id: data.id,
           name: data.data().name,
           image: data.data().image,
-          selected: _.get(user.data.abilities, data.data().name)!==undefined?true:false
+          selected: _.get(user.data.abilities, data.id)!==undefined?true:false
         })
+        if(_.get(user.data.abilities, data.id)!==undefined)userAbilities[data.id] = true
       })
       this.setState({abilities})
+      this.setState({userAbilities})
+      console.log('USERUSERUUUUU',userAbilities)
     })
   }
 
@@ -47,7 +52,7 @@ class FormAbilities extends Component {
     let userAbilities = {}
     abilities.map(data => {
       if(data.selected === true){
-        userAbilities[data.name] = true
+        userAbilities[data.ability_id] = true
       }
     })
     this.setState({userAbilities})
@@ -64,7 +69,8 @@ class FormAbilities extends Component {
         abilities: []
       })
 
-    browserHistory.push(this.props.push)
+    //browserHistory.push(this.props.push)
+    browserHistory.goBack()
   }
 
   render() {
