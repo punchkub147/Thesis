@@ -14,6 +14,8 @@ import { PushFCM } from '../../api/notification'
 import Table from '../components/Table'
 import { phoneFormatter } from '../../functions/index';
 
+import { message } from 'antd'
+
 class NeedWork extends Component {
 
   state = {
@@ -66,7 +68,11 @@ class NeedWork extends Component {
         createAt: new Date,
       }
       await db.collection('working').add(_.pickBy(working, _.identity))
-      console.log('ADD WORKING SUCCESS')
+
+      db.collection('works').doc(snapshot.id).update({
+        working: work.working?work.working+1:1
+      })
+      //message.info('ยันยันการส่งงานแล้ว')
     })
     /////////////////
 

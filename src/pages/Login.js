@@ -13,6 +13,7 @@ import Loading from '../components/Loading'
 import { auth, db } from '../api/firebase'
 import { getToken } from '../api/notification'
 
+import { message } from 'antd';
 
 
 class Login extends Component {
@@ -52,10 +53,10 @@ class Login extends Component {
       this.setState({loading: false})
     })
     .catch(e => {
-      alert(e)
+      message.info(e)
       this.setState({loading: false})
     })
-    
+    this.setState({loading: false})
   }
 
   navigateUser = async (user) => {
@@ -65,7 +66,13 @@ class Login extends Component {
     this.setState({loading: true})
     await employeeRef.get().then(async doc => {
       if(doc.exists){
-        browserHistory.push('/search')
+        db.collection('working').where('employee_id', '==', user.uid).get()
+        .then(async snap => {
+          snap
+            ?browserHistory.push('/tasks')
+            :browserHistory.push('/search')
+        })
+        
         await employeeRef.update({
           deviceToken: await getToken()
         })

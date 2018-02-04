@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 
+import Button from '../../components/Button'
+
 import { auth, db } from '../../api/firebase'
 import { getToken } from '../../api/notification'
 
@@ -44,7 +46,7 @@ class Register extends Component {
                 <input placeholder="password" type="password" ref={r => this.password = r }/>
                 <input placeholder="password2" type="password" ref={r => this.password2 = r }/>
     
-                <button className="" type="submit" onSubmit={e => this.handleRegister(e)}>ต่อไป</button>
+                <Button className="" type="submit" onSubmit={e => this.handleRegister(e)}>ต่อไป</Button>
               </form>
 
             </div>

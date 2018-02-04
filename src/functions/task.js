@@ -61,6 +61,7 @@ export const genNowWorking = (limitWorkTimeToDay, workingList) => {
   let nowWorking = []
   _.map(workingList, async working => {
     if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
+    if(working.startAt > new Date)return //เอาเฉพาะงานวันนี้
 
     const todoWork = working.total_piece-working.anotherDayFinishedPiece //จำนวนงานนี้ที่เหลือ งานทั้งหมด-งานวันอื่น
     
@@ -88,7 +89,8 @@ export const genNowWorking = (limitWorkTimeToDay, workingList) => {
       nowWorking.push(Object.assign(working, {
         limitTodo,
         overPiece,
-        timeTodo: limitTodo*working.worktime
+        timeTodo: limitTodo*working.worktime,
+        countDay,
       }))
     }
   })
@@ -98,9 +100,18 @@ export const genNowWorking = (limitWorkTimeToDay, workingList) => {
 
 export const genAllWorking = (workingList) => {
   let allWorking = []
+
+
   _.map(workingList, working => {
     //if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
-    allWorking.push(working)
+    
+    const start = working.startAt>new Date?moment(working.startAt):moment(new Date);
+    const end = moment(working.endAt);
+    const countDay = -start.diff(end, 'days')+1
+
+    allWorking.push(Object.assign(working, {
+      countDay
+    }))
   })
   return allWorking
 }
@@ -111,7 +122,8 @@ export const taskDoing = async (work, doing) => {
   let piece = 0 
   let total_finished_piece = _.sumBy(work.do_piece, (o) => o.piece) //จำนวนชิ้นที่ทำเสร็จแล้ว (ของเก่า)
   
-  if(newPiece>=(work.limitTodo-work.toDayFinishedPiece))newPiece=(work.limitTodo-work.toDayFinishedPiece) //ทำได้ไม่เกินจำกัดของวันนี้
+  
+  if(newPiece>=((work.limitTodo+work.overPiece)-work.toDayFinishedPiece))newPiece=((work.limitTodo+work.overPiece)-work.toDayFinishedPiece) //ทำได้ไม่เกินจำกัดของวันนี้
 
   piece = total_finished_piece+newPiece //จำนวนชิ้นงานเดิน บวก จำนวนชิ้นงานที่ทำใหม่วันนี้
 

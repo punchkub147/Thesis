@@ -69,6 +69,7 @@ class Tasks extends Component {
       let tasks = []
       await snap.forEach(doc => {
         const data = doc.data()
+        if(data.success)return //เสร็จแล้ว
         if(data.endAt <= new Date())return //ถ้าวันส่งน้อยกว่าวันนี้ให้ยกเลิก = ได้งานเฉพาะที่ต้องทำปัจจุบัน
 
         const toDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
@@ -146,15 +147,17 @@ class Tasks extends Component {
         <NowTask fade={i*0.2}>
           <div className='row'>
             <div className='col-9'>
-              <div className="name">{working.work_name}</div>
+              <Link to={`work/${working.work_id}`}>
+                <div className="name">{working.work_name}</div>
+              </Link>
               <div className="piece">
-                {working.toDayFinishedPiece} / {working.limitTodo+working.overPiece}<span style={{color: 'red'}}>({working.overPiece})</span>
+                {working.toDayFinishedPiece} /{working.limitTodo}
               </div>
 
               <div className='row' style={{clear: 'both'}}>
                 <div className='col'>
                   <div className="progress">
-                    <Progress now={working.toDayFinishedPiece} max={working.limitTodo+working.overPiece}/>
+                    <Progress now={working.toDayFinishedPiece} max={working.limitTodo}/>
                   </div>
                 </div>
               </div>
@@ -164,7 +167,8 @@ class Tasks extends Component {
                     <Link to={`/stopwatch/${working.working_id}`}>
                       <button>
                         <img alt='' src={alarm2}/>
-                        {' '} {working.worktime >= 60
+                        {' '} 
+                        {working.worktime >= 60
                           ?'~ ' + working.worktime/60 + ' นาที'
                           : working.worktime + ' วินาที'
                         }
@@ -174,26 +178,24 @@ class Tasks extends Component {
                 </div>
                 <div className='col-6'>
                   <div className="timing">
-                  {secToTime(working.timeTodo+(working.overPiece*working.worktime))}
-                    <div style={{color: 'red'}}>{secToTime(working.overPiece*working.worktime)}</div>
+                  {secToTime(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}
+                    <div style={{color: 'red'}}>{working.overPiece!==0&&secToTime(working.overPiece*working.worktime)}</div>
                   </div>
                 </div>
               </div>
               
             </div>
-            <div className='col-3'>
-            {working.toDayFinishedPiece>=working.limitTodo+working.overPiece
-              ?<div className="finish">เสร็จ</div>
-              :<div className="do" onClick={() => this.handleOpenModal(working)}>ทำ</div>
+            {working.toDayFinishedPiece>=working.limitTodo
+              ?<div className="finish"><div className='border'>เสร็จ</div></div>
+              :<div className="do" onClick={() => this.handleOpenModal(working)}><div className='border'>ทำ</div></div>
             }
-            </div>
           
           </div>
           {/*moment(working.createAt).fromNow()*/}
           {/*
             <div onClick={() => this.handleDelete(working.working_id)}>DELETE</div>
           */}
-        </NowTask> 
+        </NowTask>
       )}
         {
         <div className=''>
@@ -203,7 +205,11 @@ class Tasks extends Component {
           <br/>
           {'เวลาที่จำกัดวันนี้ '+secToTime(limitWorkTimeToDay)}
           <br/>
-          <span style={{color: 'red'}}>{'เวลาที่เกินในวันนี้ '+secToTime(overTimeDayWork)}</span>
+          {overTimeDayWork>0 &&
+            <span style={{color: 'red'}}>
+              {'เวลาที่เกินในวันนี้ '+secToTime(overTimeDayWork)+` +${(overTimeDayWork/limitWorkTimeToDay*100)}%`}
+            </span>
+          }
         </div>
         }
 
@@ -217,20 +223,19 @@ class Tasks extends Component {
       {_.map(allWorking, (working, i) => 
         <AllTask fade={i*0.2}>
           <div className='row'>
-            <div className='col-6'>
-              <div className="name">{working.work_name}</div>
-            </div>
-            <div className='col-2'>
-              <div className="piece">
-                {working.finished_piece}/{working.total_piece}
-              </div>
-            </div>
-            <div className='col-4'>
+            <div className='col-12'>
+              <Link to={`work/${working.work_id}`}>
+                <div className="name">{working.work_name}</div>
+              </Link>
+              
               <div className="date">
               {working.startAt > new Date
                 ?`เริ่มงาน${moment(working.startAt).locale('th').fromNow()}`
                 :`ส่งงาน${moment(working.endAt).locale('th').fromNow()}`
               }
+              </div>
+              <div className="piece">
+                {working.finished_piece}/{working.total_piece}
               </div>
             </div>
           </div>
@@ -269,8 +274,8 @@ class Tasks extends Component {
               </Content>
             }
 
-
-
+            
+            <div style={{width: '100%',height: '60px'}}></div>
             <Link to="/editworktime">
             <WorkDate>
               <Content>
@@ -304,10 +309,10 @@ class Tasks extends Component {
             
             <Modal modalIsOpen={this.state.modalIsOpen}>
               <InsideModal>
-                <div className="modal-text">ทำงาน {this.state.doing} จาก {(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece')-_.get(doWork,'toDayFinishedPiece'))} ชิ้น</div>
+                <div className="modal-text">ทำงาน {this.state.doing} จาก {_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
                 {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
                 <form>
-                  <Slider min={0} max={(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')}
+                  <Slider min={0} max={_.get(doWork,'limitTodo')-_.get(doWork,'toDayFinishedPiece')}
                     onChange={doing => this.setState({doing})}
                     value={this.state.doing}
                     style={{margin: '40px 0'}}
@@ -364,12 +369,18 @@ const NowTask = Styled.div`
   .name{
     text-align: left;
     float: left;
-    ${AppStyle.font.read1}
+    ${AppStyle.font.main}
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow:ellipsis;
+    width: 60%;
   }
   .piece{
-    ${AppStyle.font.read1}
+    ${AppStyle.font.main}
     text-align: right;
     float: right;
+    width: 40%;
+    font-weight: bold;
   }
   .progress{
     height: 20px;
@@ -398,29 +409,44 @@ const NowTask = Styled.div`
     text-align: right;
   }
   .do{
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     background: ${AppStyle.color.main};
     border-radius: 100%;
     text-align: center;
-    line-height: 50px;
+    line-height: 60px;
     cursor: pointer;
     ${AppStyle.font.tool}
     ${AppStyle.shadow.lv2}
+    .border{
+      border: solid 2px ${AppStyle.color.white};
+      border-radius: 100%;
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      line-height: 50px;
+    }
   }
   .do:active{
     opacity: 0.8;
   }
   .finish{
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     background: ${AppStyle.color.gray};
     border-radius: 100%;
     text-align: center;
-    line-height: 50px;
     ${AppStyle.font.tool}
-    color: ${AppStyle.color.main};
+    color: ${AppStyle.color.white};
     ${AppStyle.shadow.lv2}
+    .border{
+      border: solid 2px ${AppStyle.color.white};
+      border-radius: 100%;
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      line-height: 50px;
+    }
   }
 `
 const AllTask = Styled.div`
@@ -434,14 +460,21 @@ const AllTask = Styled.div`
   ${AppStyle.shadow.lv1}
   .name{
     text-align: left;
-    ${AppStyle.font.read1}
+    ${AppStyle.font.main}
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow:ellipsis;
+    float: left;
   }
   .piece{
     ${AppStyle.font.read1}
+    float: right;
+    margin-right: 10px;
   }
   .date{
     ${AppStyle.font.read2}
     text-align: right;
+    float: right;
   }
   .progress{
     height: 20px;

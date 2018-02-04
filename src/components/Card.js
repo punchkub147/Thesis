@@ -6,7 +6,7 @@ export default class extends Component {
 
   render() {
     return (
-      <Style>
+      <Style {...this.props}>
         {this.props.children}
       </Style>
     );

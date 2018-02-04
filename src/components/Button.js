@@ -10,7 +10,6 @@ class AppButton extends Component {
     return (
       <Style>
         <button {...this.props}>
-          
           {this.props.children}
         </button>
       </Style>
@@ -35,5 +34,10 @@ const Style = Styled.div`
   }
   button:active{
     opacity: 0.8;
+  }
+
+  button:disabled{
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `

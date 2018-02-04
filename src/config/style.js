@@ -15,7 +15,7 @@ const AppStyle = {
   },
 
   shadow: {
-    lv1: "box-shadow: 0 0 15px #ccc;",
+    lv1: "box-shadow: 0 0 10px #aaa;",
     lv2: "box-shadow: 3px 3px 0 #f3d5bc;",
   },
 
@@ -51,7 +51,7 @@ const AppStyle = {
     `,
     read3: `
       font-family: 'TH Sarabun New';
-      font-size: 20px;
+      font-size: 18px;
     `,
     hilight: `
       font-family: 'TH Sarabun New';

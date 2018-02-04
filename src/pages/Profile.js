@@ -9,6 +9,7 @@ import phone from '../img/phone2.png'
 import profile from '../img/profile2.png'
 import address from '../img/address2.png'
 import edit from '../img/edit.png'
+import education from '../img/profile2.png'
 
 import Layout from '../layouts'
 import Content from '../components/Content'
@@ -21,13 +22,8 @@ import { phoneFormatter, personIdFormatter } from '../functions'
 class Profile extends Component {
 
   state = {
-    user: {
-      uid: '',
-      data: {
-        abilities: {}
-      },
-    },
-    abilities: []
+    user: store.get('employee'),
+    abilities: store.get('abilities')
   }
 
   async componentDidMount() {
@@ -35,19 +31,11 @@ class Profile extends Component {
 
     if(!store.get('employee'))browserHistory.push('login')
 
-    this.setState({
-      user: store.get('employee')
-    })
     await getUser('employee', user => {
       store.set('employee',user)
       this.setState({user})
     })
 
-
-    this.setState({
-      abilities: store.get('abilities')
-    })
-    
     await db.collection('abilities')
     .onSnapshot(snap => {
       const abilities = []
@@ -85,7 +73,7 @@ class Profile extends Component {
               </div>
 
               <div className="name">
-                {`${_.get(data,'fname')} ${_.get(data,'lname')}`}
+                {`${_.get(data,'tname')}${_.get(data,'fname')} ${_.get(data,'lname')}`}
               </div>
 
               <div className="detail card"> 
@@ -103,6 +91,12 @@ class Profile extends Component {
                     <img className="icon" alt='' src={profile}/>
                   </div>
                   <div className="col-10 text">{personIdFormatter(_.get(data,'personId'))}</div>
+                </div>
+                <div className="row list">
+                  <div className="col-2">
+                    <img className="icon" alt='' src={education}/>
+                  </div>
+                  <div className="col-10 text">การศึกษา{_.get(data,'education')}</div>
                 </div>
                 <div className="row list">
                   <div className="col-2">

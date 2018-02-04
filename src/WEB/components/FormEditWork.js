@@ -9,7 +9,7 @@ import cuid from 'cuid'
 import { auth, db, storage } from '../../api/firebase'
 import { timeToSec } from '../../functions/moment'
 
-import { TimePicker, DatePicker } from 'antd'
+import { TimePicker, DatePicker, message } from 'antd'
 import Button from '../../components/Button';
 const { RangePicker } = DatePicker
 
@@ -76,20 +76,23 @@ class FormEditWork extends Component {
 
       const data = await Object.assign(work, {
         employer_id: user.uid,
-        createAt: new Date(),
+        updateAt: new Date(),
         image
       })
 
       if(this.props.workId){
         await db.collection('works').doc(this.props.workId).update(_.pickBy(data, _.identity))
-        alert('แก้ไขงานเรียบร้อบ')
+        message.info('แก้ไขงานเรียบร้อบ')
       }else{
+        const data = await Object.assign(data, {
+          createAt: new Date(),
+        })
         await db.collection('works').add(_.pickBy(data, _.identity))
-        alert('เพิ่มงานเรียบร้อบ')
+        message.info('เพิ่มงานเรียบร้อบ')
       }
       await browserHistory.push('/web/works')      
     }else{
-      alert('กรุณาเพิ่มรูปภาพ')
+      message.info('กรุณาเพิ่มรูปภาพ')
     }
   }
 
@@ -105,7 +108,7 @@ class FormEditWork extends Component {
       })
     };
     reader.onerror = await function (error) {
-      console.log('Error: ', error);
+      message.info(error)
     };
   }
 
@@ -174,8 +177,26 @@ class FormEditWork extends Component {
         input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'name')} value={_.get(work,'name')} required/>,
       },
       {
+        name: 'ประเภทความถนัด',
+        input:  <select onChange={this.handleChangeAbility}>
+                  <option value={'general'} selected={work.ability==='general'?true:false}>ทั่วไป</option>
+                {abilities.map(data => 
+                  <option value={data.ability_id} selected={work.ability&&data.ability_id===work.ability?true:false}>{data.name}</option>
+                )}
+                </select>,
+      },
+      {
         name: 'รายละเอียด',
         input: <textarea placeholder="" onChange={ e => this.handleInput(e, 'detail')} value={_.get(work,'detail')} required/>,
+      },
+
+      {
+        name: 'เงื่อนไข',
+        input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'condition')} value={_.get(work,'condition')}/>,
+      },
+      {
+        name: 'ค่าสมัคร',
+        input: <input type="number" placeholder="" onChange={ e => this.handleInput(e, 'cost')} value={_.get(work,'cost')} required/>,
       },
       {
         name: 'จำนวนชิ้นต่อชุด',
@@ -211,15 +232,8 @@ class FormEditWork extends Component {
                 defaultValue={[startAt, endAt]}
                 onChange={this.handleChangeDate} />,
       },
-      {
-        name: 'ประเภทความถนัด',
-        input:  <select onChange={this.handleChangeAbility}>
-                  <option value={'general'} selected={work.ability==='general'?true:false}>ทั่วไป</option>
-                {abilities.map(data => 
-                  <option value={data.ability_id} selected={work.ability&&data.ability_id===work.ability?true:false}>{data.name}</option>
-                )}
-                </select>,
-      },
+
+
     ]
     return (
       <Style>
@@ -274,7 +288,7 @@ const Style = Styled.div`
 
 .ant-time-picker-panel-inner{
   background-color: #fcf4e2;
-  left: 0;
+  //left: 0;
 }
 .ant-time-picker{
   width: 100%;

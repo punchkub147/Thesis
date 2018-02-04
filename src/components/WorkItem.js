@@ -10,7 +10,8 @@ class WorkItem extends Component {
     const { data, i } = this.props
 
     return (
-      <Style fade={i*0.2}>
+      <div className={this.props.big?'':'row'}>
+      <Style fade={i*0.2} className={this.props.big?"col-xs-12":"col-xs-12 col-md-6"} style={{float: 'left'}}>
         <Link to={`/work/${data._id}`}>
           <div className={this.props.big?"WorkItemBig":"WorkItem"}>
             <div className="image">
@@ -19,7 +20,10 @@ class WorkItem extends Component {
             
               <div className="data">
                 <div className="detail">
-                  <div className="name">{data.name}</div>
+                  <div className="name">
+                    {data.abilityName&&<span style={{color: AppStyle.color.main}}>[{data.abilityName}]</span>}
+                    {data.name}
+                  </div>
                   <div className="employer">{data.employer_name}</div>
                   <div className='startDate'>
                     {'เริ่มส่ง' + moment(data.startAt).fromNow()}
@@ -33,6 +37,7 @@ class WorkItem extends Component {
           </div>
         </Link>
       </Style>
+      </div>
     );
   }
 }

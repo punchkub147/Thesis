@@ -9,6 +9,8 @@ import { getUser, updateAt, storage } from '../api/firebase'
 
 import BottomButton from '../components/BottomButton';
 
+import defaultImage from '../img/logo-m.png'
+
 const isEmpty = (data) => {
   return data === ""?true:false
 }
@@ -24,6 +26,7 @@ class FormProfile extends Component {
         lname: '',
         phone: '',
         personId: '',
+        education: '',
         //address
         area: '',
         district: '',
@@ -31,19 +34,23 @@ class FormProfile extends Component {
         postCode: '',
         province: '',
         road: '',
+
       }
     },
     image64: '',
+    uploading: false,
   }
 
   async componentDidMount() {
-    // console.log(store.get('employee'))
     this.setState({
-      user: store.get('employee')
+      user: store.get('employee'),
     })
     await getUser('employee', user => {
       this.setState({user})
       store.set('employee',user)
+    })
+    this.setState({
+      image64: this.state.user.data.profileImage
     })
   }
 
@@ -91,13 +98,14 @@ class FormProfile extends Component {
   }
 
   storageImage = async (file) => {
+    this.setState({uploading: true})
     const { user } = this.state
     const { data } = user
     const imageId = this.state.user.uid
     const storageImage = await storage.child('employee').child(imageId);
     await storageImage.put(file);
     const imageUri = await storageImage.getDownloadURL();
-    this.setState({
+    await this.setState({
       user: {
         ...user,
         data: {
@@ -106,6 +114,7 @@ class FormProfile extends Component {
         }
       }
     })
+    this.setState({uploading: false})
   }
 
   // handleChangeAddress = (e, ref) => {
@@ -127,8 +136,9 @@ class FormProfile extends Component {
   // }
 
   render() {
-
+    const { image64, uploading } = this.state
     const user = _.get(this.state.user, 'data')
+    console.log('uploading', uploading)
 
     return (
       <Style>
@@ -140,8 +150,8 @@ class FormProfile extends Component {
                   <img 
                     alt=''
                     src={user['profileImage']
-                      ?user['profileImage']
-                      :'https://i.pinimg.com/736x/a2/e1/8c/a2e18cbfbcaa8756fe5b40f472eeff45--profile-picture-profile-pics.jpg'
+                      ?image64
+                      :defaultImage
                     }
                   />
                   <div className="iconChange">เลือกรูปภาพ</div>
@@ -154,16 +164,31 @@ class FormProfile extends Component {
                 multiple
                 style={{display: 'none'}}
               />
+
               <input type="text" 
-                value={user['fname']} 
-                placeholder="ชื่อจริง"
+                value={user['tname']} 
+                placeholder="คำนำหน้าชื่อ"
                 required
-                onChange={e => this.handleChangeProfile(e, 'fname')}/>
-              <input type="text" 
-                value={user['lname']} 
-                placeholder="นามสกุล"
-                required
-                onChange={e => this.handleChangeProfile(e, 'lname')}/>
+                onChange={e => this.handleChangeProfile(e, 'tname')}/>
+
+
+              <div className="row row-haft">
+                <div className="col-6 haft">
+                  <input type="text" 
+                    value={user['fname']} 
+                    placeholder="ชื่อจริง"
+                    required
+                    onChange={e => this.handleChangeProfile(e, 'fname')}/>
+                </div>
+                <div className="col-6 haft">
+                  <input type="text" 
+                    value={user['lname']} 
+                    placeholder="นามสกุล"
+                    required
+                    onChange={e => this.handleChangeProfile(e, 'lname')}/>
+                </div>
+              </div>
+
               <input type="text" 
                 value={user['phone']} 
                 placeholder="เบอร์โทรศัพท์"
@@ -174,6 +199,19 @@ class FormProfile extends Component {
                 placeholder="รหัสประจำตัวประชาชน"
                 required
                 onChange={e => this.handleChangeProfile(e, 'personId')}/>
+
+              <input type="text" 
+                value={user['education']} 
+                placeholder="ระดับการศึกษา"
+                required
+                onChange={e => this.handleChangeProfile(e, 'education')}/>
+
+              <input type="text" 
+                value={user['birthday']} 
+                placeholder="วัน/เดือน/ปี เกิด"
+                required
+                onChange={e => this.handleChangeProfile(e, 'birthday')}/>
+              
 
               <div>สถานที่รับงาน</div>
 
@@ -225,7 +263,7 @@ class FormProfile extends Component {
             
           </div>
         }
-        <BottomButton onClick={this.handleProfile}>ยืนยัน</BottomButton>
+        <BottomButton onClick={this.handleProfile} disabled={uploading}>ยืนยัน</BottomButton>
       </Style>
     );
   }

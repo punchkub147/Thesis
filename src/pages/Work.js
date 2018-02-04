@@ -4,6 +4,7 @@ import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 import moment from 'moment'
+import store from 'store'
 
 import BottomButton from '../components/BottomButton'
 
@@ -12,6 +13,8 @@ import Send from '../img/send.png'
 import Back from '../img/back.png'
 
 import { auth, db, getUser } from '../api/firebase'
+
+import { message } from 'antd';
 
 class Login extends Component {
 
@@ -24,13 +27,11 @@ class Login extends Component {
       employer_id: '',
       data: {},
     },
-    user: {
-      uid: '',
-      data: {},
-    }
+    user: store.get('employee'),
+    abilities: store.get('abilities')
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     window.scrollTo(0, 0)
     const work_id = this.props.routeParams.id
     const _this = this
@@ -44,7 +45,6 @@ class Login extends Component {
           this.setState({user})
         })
     })
-
 
     db.collection('works').doc(work_id)
     .onSnapshot(async work => {
@@ -62,9 +62,19 @@ class Login extends Component {
         })
       });
     });
+
+    db.collection('abilities')
+    .onSnapshot(snap => {
+      const abilities = []
+      snap.forEach(doc => {
+        abilities[doc.id] = doc.data()
+      })
+      this.setState({abilities})
+      store.set('abilities',abilities)
+    })
   }
 
-  handleNeedWork = (e) => {
+  handleNeedWork = async (e) => {
     e.preventDefault();
     const { user, work, employer } = this.state
     
@@ -84,12 +94,12 @@ class Login extends Component {
         deviceToken: user.data.deviceToken,
         createAt: new Date,
       }
-      db.collection('needWork').add(_.pickBy(needWork, _.identity))
+      await db.collection('needWork').add(_.pickBy(needWork, _.identity))
       .then(data => {
-        alert("รับงานเรียบร้อย")
+        message.info('รับงานเรียบร้อย');
       })
     }else{
-      alert("กรุณาเข้าสู่ระบบ")
+      message.info('กรุณาเข้าสู่ระบบ');
     }
   }
 
@@ -125,11 +135,11 @@ class Login extends Component {
                 </div>
                 <div className="col-3 startAt">
                   <div className='text'>เริ่มส่ง</div>
-                  {moment(data.startAt).locale('th').fromNow()}
+                  {moment(data.startAt).format('DD/MM/YY')}
                 </div>
                 <div className="col-3 endAt">
                   <div className='text'>ส่งกลับ</div>
-                  {moment(data.endAt).locale('th').fromNow()}
+                  {moment(data.endAt).format('DD/MM/YY')}
                 </div>
                 <div className="col-3 workTime">
                   <img alt='' src={Alarm}/><br/>

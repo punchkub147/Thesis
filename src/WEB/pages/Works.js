@@ -3,6 +3,7 @@ import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
+import moment from 'moment'
 
 import Layout from '../layouts'
 
@@ -36,6 +37,7 @@ class Works extends Component {
       await querySnapshot.forEach(function(doc) {
         itemsList.push(Object.assign(doc.data(),{work_id: doc.id}))
       });
+      itemsList = _.orderBy(itemsList, ['createAt'], ['desc']); //เรียงวันที่
       await this.setState({itemsList})
     })
     .catch(function(error) {
@@ -61,11 +63,30 @@ class Works extends Component {
         className: 'align-right',
       }, 
       {
-        title: 'จำนวนชุดที่เหลือ',
+        title: 'จำนวนชุดที่ประกาศ',
         dataIndex: 'pack',
         key: 'pack',
         className: 'align-right',
-      }, 
+      },
+      {
+        title: 'กำลังทำอยู่',
+        dataIndex: 'working',
+        key: 'working',
+        className: 'align-right',
+      },
+      {
+        title: 'เสร็จแล้ว',
+        dataIndex: 'success',
+        key: 'success',
+        className: 'align-right',
+      },
+      {
+        title: 'สร้างเมื่อ',
+        dataIndex: 'createAt',
+        key: 'createAt',
+        className: 'align-right',
+        render: (text, item) => <div>{text&&moment(text).format('DD/MM/YY HH:mm')}</div>,
+      },  
       {
         title: 'แก้ไข',
         key: 'action',

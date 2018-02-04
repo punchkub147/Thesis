@@ -40,7 +40,6 @@ class FormAbilities extends Component {
       })
       this.setState({abilities})
       this.setState({userAbilities})
-      console.log('USERUSERUUUUU',userAbilities)
     })
   }
 
@@ -68,9 +67,10 @@ class FormAbilities extends Component {
       :db.collection('employee').doc(user.uid).update({
         abilities: []
       })
-
-    //browserHistory.push(this.props.push)
-    browserHistory.goBack()
+    
+    this.props.push
+      ?browserHistory.push(this.props.push)  
+      :browserHistory.goBack()
   }
 
   render() {

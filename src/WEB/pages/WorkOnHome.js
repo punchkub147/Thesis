@@ -33,10 +33,25 @@ class WorkOnHome extends Component {
     .onSnapshot(async querySnapshot => {
       let workingList = []
       await querySnapshot.forEach(function(doc) {
-        workingList.push(Object.assign(doc.data(),{working_id: doc.id}))
+        !doc.data().success&&
+          workingList.push(Object.assign(doc.data(),{working_id: doc.id}))
       });
       await this.setState({workingList})
     })
+  }
+
+  handleGetedWork = (item) => {
+    db.collection('working').doc(item.working_id).update({success: true})
+
+    db.collection('works').doc(item.work_id).get()
+    .then(doc => 
+      db.collection('works').doc(doc.id).update({
+        working: doc.data().working?doc.data().working-1:0,
+        success: doc.data().success?doc.data().success+1:1
+      }) 
+    )
+
+    
   }
 
   render() {
@@ -58,7 +73,7 @@ class WorkOnHome extends Component {
         dataIndex: 'worktime',
         key: 'worktime',
         className: 'align-right',
-        render: (text, item) => <div>~ {text?text/60:0} นาที</div>,
+        render: (text, item) => <div>{text>=60?`~ ${text/60} นาที`:`${text} วินาที`}</div>,
       },
       {
         title: 'ทำเสร็จแล้ว',

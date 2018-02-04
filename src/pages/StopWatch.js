@@ -4,6 +4,7 @@ import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 import store from 'store'
+import moment from 'moment'
 
 import { db } from '../api/firebase'
 import ToolBar from '../layouts/ToolBar';
@@ -63,6 +64,14 @@ export default class extends Component {
     
   }
 
+  handleEditTime = () => {
+    const working_id = this.props.routeParams.id
+    const { time } = this.state
+
+    db.collection('working').doc(working_id).update({worktime: +time})
+    browserHistory.goBack()
+  }
+
   interval = () => {
     let {time} = this.state
     this.setState({
@@ -85,23 +94,28 @@ export default class extends Component {
             //right={this.handleUpdateAbilities}
           />
 
-          <Card>
+          <Card className='animate'>
             <Content>
               <div className="row justify-content-center">
                 <div className="col-8">
 
                   <div className='name'>{working.work_name}</div>
-                  <div className='worktime'>เวลาเดิมประมาณ {working.worktime/60} นาที</div>
+                  <div className='worktime'>เวลาทำงานประมาณ {working.worktime>60?`${working.worktime/60} นาที`:`${working.worktime} วินาที`} </div>
                   <div className="clock">
                     <img alt='' src={alarm}/>
                   </div>
                   <div className='time'>
-                    {time}
+                    {moment().startOf('day').second(time).format('HH:mm:ss')}
                   </div>
 
-                  <div className={`btn ${timing?'stop':'start'}`} onClick={this.handleTiming}>
-                    {timing?'หยุด':'เริ่ม'}
-                  </div>
+                  {timing
+                    ?<div className={`btn stop`} onClick={this.handleEditTime}>
+                      บันทึก
+                    </div>
+                    :<div className={`btn start`} onClick={this.handleTiming}>
+                      เริ่ม
+                    </div>
+                  }
                 </div>
               </div>        
             </Content>
@@ -113,6 +127,11 @@ export default class extends Component {
 }
 
 const Style = Styled.div`
+  .animate{
+    animation-name: fadeInRight;
+    animation-duration: 0.2s;
+  }
+
   .clock{
     text-align: center;
     width: 100px;

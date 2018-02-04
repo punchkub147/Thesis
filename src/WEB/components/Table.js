@@ -11,7 +11,7 @@ export default class extends Component {
 
     return (
       <Style>
-        <Table {...this.props} bordered pagination={false} />
+        <Table {...this.props} bordered pagination={false}/>
       </Style>
     );
   }

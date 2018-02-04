@@ -20,7 +20,7 @@ class EditAbilities extends Component {
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
             />
-          <FormAbilities push='/profile' />
+          <FormAbilities />
         </div>
       </Style>
     );

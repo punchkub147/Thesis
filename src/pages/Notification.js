@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
+import { browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
+import moment from 'moment'
 import store from 'store'
 
 import Layout from '../layouts'
@@ -9,6 +11,7 @@ import send from '../img/send.png'
 import Content from '../components/Content'
 
 import { getToken, PushFCM, PushSelf } from '../api/notification'
+import { auth, getUser } from '../api/firebase'
 
 import { db } from '../api/firebase'
 
@@ -21,14 +24,6 @@ class Notification extends Component {
 
   componentDidMount() {
     window.scrollTo(0, 0)
-    // auth.onAuthStateChanged(user => {
-    //   user
-    //     ?getUser('employee', user => {
-    //       this.setState({user})
-    //       this.getNotification(user)
-    //     })
-    //     :browserHistory.push('/login')
-    // })
     this.getNotification(store.get('employee'))
   }
 
@@ -36,7 +31,6 @@ class Notification extends Component {
     if(!user)return
 
     db.collection('notifications').where('employee_id', '==', user.uid)
-    .orderBy('createAt', 'asc')
     .onSnapshot(snapshot => {
       let notiList = []
       snapshot.forEach(data => {
@@ -52,7 +46,6 @@ class Notification extends Component {
   }
 
   handleSendNoti = async () => {
-    //console.log('HandleClickToken:', this.state.token)
     PushSelf({
       title: "ทดสอบแจ้งเตือน",
       body: 'ข้อความ'
@@ -60,7 +53,6 @@ class Notification extends Component {
   }
 
   handleServerNoti = async () => {
-    //console.log('HandleClickToken:', this.state.token)
     PushFCM({
       to: await getToken(),
       title: 'แจ้งเตือนจาก Firebase',
@@ -78,8 +70,11 @@ class Notification extends Component {
           {_.map(notiList, (data,i) => 
             <Noti fade={i*0.2}>
               <img alt='' src={send}/>
-              <div className="text">{data.message}</div>
-              <div className="time">{/*data.createAt*/}</div>
+              <div className="text">
+                {data.message} 
+                <span className="time"> เมื่อ {moment(data.createAt).locale('th').fromNow()}</span>
+              </div>
+              
             </Noti>
           )}
           </Content>
@@ -112,7 +107,7 @@ const Noti = Styled.div`
     margin-right: 10px;
   }
   .text{
-    ${AppStyle.font.text2}
+    ${AppStyle.font.read2}
     float: right;
     width: 80%;
 
@@ -123,7 +118,7 @@ const Noti = Styled.div`
     text-overflow: ellipsis;
   }
   .time{
-    ${AppStyle.font.text2}
+    ${AppStyle.font.read3}
   }
 
   animation-name: fadeInUp;

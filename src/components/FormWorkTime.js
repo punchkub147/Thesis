@@ -124,7 +124,9 @@ class FormWorkTime extends Component {
       }
     })
     //alert('อัพเดทวันทำงานเรียบร้อย')
-    browserHistory.push(this.props.push)
+    this.props.push
+      ?browserHistory.push(this.props.push)  
+      :browserHistory.goBack()
   }
 
   handleTime = (time,day) => {
