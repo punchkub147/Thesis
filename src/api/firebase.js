@@ -4,6 +4,8 @@ import '@firebase/firestore'
 import cuid from 'cuid';
 import moment from 'moment';
 
+import { PushFCM } from './notification'
+
 //import { userModel } from './model';
 
 import connect from './connectFirebase';
@@ -143,4 +145,27 @@ export const updateUser = async (user) => {
   // const db = await firebase.database().ref()
   await auth.currentUser.updateProfile(user)
   // db.child('users').child(user.uid).update(user)
+}
+
+
+export const sendNoti = async (title, message, type, receiver, sender, token, link, time) => {
+  console.log(token)
+  db.collection('notifications').add(_.pickBy({
+    receiver,
+    sender,
+    type,
+    title,
+    message,
+    link,
+    watched: false,
+    createAt: new Date,
+  }, _.identity))
+
+  PushFCM({
+    to: token,
+    title,
+    body: message,
+    link,
+    time
+  })
 }

@@ -9,11 +9,11 @@ class WorkItem extends Component {
   render() {
     const { data, i } = this.props
 
-    return (
-      <div className={this.props.big?'':'row'}>
-      <Style fade={i*0.2} className={this.props.big?"col-xs-12":"col-xs-12 col-md-6"} style={{float: 'left'}}>
+    const Small = (
+      <div className={''}>
+      <Style fade={i*0.2} className={"col-xs-12"} style={{float: 'left'}}>
         <Link to={`/work/${data._id}`}>
-          <div className={this.props.big?"WorkItemBig":"WorkItem"}>
+          <div className={"WorkItem"}>
             <div className="image">
               <img alt='' src={data.image}/>
             </div>
@@ -37,7 +37,44 @@ class WorkItem extends Component {
           </div>
         </Link>
       </Style>
+      </div>  
+    )
+
+    const Big = (
+      <div className={''}>
+      <Style fade={i*0.2} className={"col-xs-12"} style={{float: 'left'}}>
+        <Link to={`/work/${data._id}`}>
+          <div className={"WorkItemBig"}>
+            <div className="image">
+              <img alt='' src={data.image}/>
+            </div>
+            
+              <div className="data">
+                <div className="detail">
+                  <div className="name">
+                    {data.abilityName&&<span style={{color: AppStyle.color.main}}>[{data.abilityName}]</span>}
+                    {data.name}
+                  </div>
+                  <div className="employer">{data.employer_name}</div>
+                  <div className='startDate'>
+                    {'เริ่มส่ง ' + moment(data.startAt).fromNow()}
+                  </div>
+                </div>
+
+                <div className="price">
+                  {`${data.piece} : ${data.piece*data.price}฿`}
+                </div>
+              </div>
+          </div>
+        </Link>
+      </Style>
       </div>
+    )
+
+    return (
+      this.props.big
+        ?Big
+        :Small
     );
   }
 }
@@ -47,7 +84,7 @@ export default WorkItem;
 const Style = Styled.div`
 .WorkItem{
   animation-name: fadeInUp;
-  animation-duration: ${props => props.fade+0.2}s;
+  animation-duration: 0.2s;
 
   width: 100%;
   height: 90px;
@@ -100,8 +137,6 @@ const Style = Styled.div`
 }
 
 .WorkItemBig{
-  //animation-name: fadeInRight;
-  //animation-duration: ${props => props.fade+0.2}s;
 
   width: 100%;
   height: 220px;

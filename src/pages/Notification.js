@@ -30,7 +30,7 @@ class Notification extends Component {
   getNotification = (user) => {
     if(!user)return
 
-    db.collection('notifications').where('employee_id', '==', user.uid)
+    db.collection('notifications').where('receiver', '==', user.uid)
     .onSnapshot(snapshot => {
       let notiList = []
       snapshot.forEach(data => {

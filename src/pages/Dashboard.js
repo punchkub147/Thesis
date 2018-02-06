@@ -118,7 +118,7 @@ class Dashboard extends Component {
                   selected={this.state.selectMonth===data.date}
                   onClick={() => this.selectMonth(data)}>
                   <div className='stat'>
-                    {data.price}
+                    {data.price}.-
                   </div>
                   <div className='date'>{data.date}</div>
                 </Bar>
@@ -199,7 +199,7 @@ const Style = Styled.div`
 const Bar = Styled.div`
   width: 48px;
   height: 220px;
-  background: ${AppStyle.color.white};
+  background: ${props => props.selected?AppStyle.color.white:AppStyle.color.bg2};
   float: left;
   position: relative;
   margin-right: 10px;
@@ -217,7 +217,11 @@ const Bar = Styled.div`
   }
   .date{
     position: absolute;
+    width: 100%;
     bottom: -30px;
+    text-align: center;
+    color: ${props => props.selected?AppStyle.color.main:AppStyle.color.text};
+    font-weight: ${props => props.selected?'bold':'normal'};
   }
 `
 
@@ -268,20 +272,32 @@ const List = Styled.div`
   .name{
     float: left;
     width: 40%;
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow:ellipsis;
   }
   .piece{
     float: left;
     width: 20%;
     text-align: right;
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow:ellipsis;
   }
   .price{
     float: left;
     width: 20%;
     text-align: right;
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow:ellipsis;
   }
   .total{
     float: left;
     width: 20%;
     text-align: right;
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow:ellipsis;
   }
 `

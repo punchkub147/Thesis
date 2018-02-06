@@ -10,7 +10,7 @@ import BottomButton from '../components/BottomButton'
 
 import Alarm from '../img/alarm.png'
 import Send from '../img/send.png'
-import Back from '../img/back.png'
+import Back from '../img/back2.png'
 
 import { auth, db, getUser } from '../api/firebase'
 
@@ -94,6 +94,11 @@ class Login extends Component {
         deviceToken: user.data.deviceToken,
         createAt: new Date,
       }
+
+      await db.collection('works').doc(work.work_id).update({
+        needWork: work.needWork?work.needWork+1:1
+      })
+
       await db.collection('needWork').add(_.pickBy(needWork, _.identity))
       .then(data => {
         message.info('รับงานเรียบร้อย');

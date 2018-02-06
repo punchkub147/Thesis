@@ -139,7 +139,7 @@ class Tasks extends Component {
   render() {
     const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user } = this.state
 
-    const { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks)
+    const { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks, user)
     
     const nowTask = (
       <div>

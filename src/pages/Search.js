@@ -11,10 +11,15 @@ import WorkItem from '../components/WorkItem'
 import Content from '../components/Content'
 import Carousel from '../components/Carousel'
 
+import Slider from '../components/Slider'
+
 import edit from '../img/edit.png'
 
 import { db, getUser } from '../api/firebase'
 import { browserHistory } from 'react-router/lib';
+
+
+
 
 class Search extends Component {
   
@@ -95,7 +100,6 @@ class Search extends Component {
       (!work.ability || work.ability === 'general') && 
         general.push(work)
     )
-    
 
     const tabs = [
       {
@@ -105,14 +109,14 @@ class Search extends Component {
                   <Link to="/editabilities" className='edit'>
                     <img alt='' src={edit}/>
                   </Link>
-                  <div >
+                  <div>
                     <Carousel>
                       {_.map(recommended, (work, i) => 
                         <WorkItem data={work} i={i} big/>
                       )}
                     </Carousel>
                   </div>
-                  
+
                   {_.map(recommended, (work, i) => 
                     <WorkItem data={work} i={i}/>
                   )}

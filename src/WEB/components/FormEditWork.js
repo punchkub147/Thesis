@@ -90,7 +90,7 @@ class FormEditWork extends Component {
         await db.collection('works').add(_.pickBy(data, _.identity))
         message.info('เพิ่มงานเรียบร้อบ')
       }
-      await browserHistory.push('/web/works')      
+      await browserHistory.goBack()      
     }else{
       message.info('กรุณาเพิ่มรูปภาพ')
     }

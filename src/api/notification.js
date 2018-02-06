@@ -16,7 +16,7 @@ export const PushSelf = (data) => {
   });
 }
 
-export const PushFCM = async ({to, title, body}) => {
+export const PushFCM = async ({to, title, body, link, time}) => {
   await fetch('https://fcm.googleapis.com/fcm/send',{
     headers: {
       'Authorization': `key=${apiKey}`,
@@ -29,9 +29,11 @@ export const PushFCM = async ({to, title, body}) => {
       notification: {
         title,
         body,
-      }
+        click_action: link
+      },
     })
-  }) 
+  })
+  console.log('PUSHED MESSAGEE')
 }
 
 export const setUpNoti = () => {

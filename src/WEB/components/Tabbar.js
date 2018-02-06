@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Styled from 'styled-components'
-import AppStyle from '../config/style'
+import AppStyle from '../../config/style'
 import _ from 'lodash'
 
 import { Tabs } from 'antd';
@@ -44,14 +44,14 @@ const Style = Styled.div`
   width: 100%;
   background: ${AppStyle.color.card};
   ${AppStyle.shadow.lv1}
-  height: 50px;
-  line-height: 50px;
+  height: 40px;
+  line-height: 40px;
   text-align: center;
   .menu{
     width: ${props => 100/props.countTab}%;
     float: left;
     cursor: pointer;
-    ${AppStyle.font.menu}
+    ${AppStyle.font.read1}
   }
   margin-bottom: 2px;
 
@@ -69,16 +69,16 @@ const Style = Styled.div`
 
 
   .ant-tabs-bar{
-    margin-bottom: 10px;
+    margin-bottom: 0px;
   }
   .ant-tabs-nav{
     width: 100%;
   }
   .ant-tabs-nav .ant-tabs-tab{
-    height: 50px;
-    line-height: 50px;
+    height: 40px;
+    line-height: 40px;
     padding: 0px;
-    ${AppStyle.font.menu}
+    ${AppStyle.font.read1}
     margin: 0;
     width: ${props => 100/props.countTab}%;
   }

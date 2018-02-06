@@ -11,7 +11,10 @@ export default class extends Component {
 
     return (
       <Style>
-        <Table {...this.props} bordered pagination={false}/>
+        <Table {...this.props} 
+          bordered 
+          pagination={false} 
+        />
       </Style>
     );
   }
@@ -27,8 +30,8 @@ const Style = Styled.div`
     background: ${AppStyle.color.white};
   }
   .ant-table-thead > tr > th{
-    background: ${AppStyle.color.main};
-    color: ${AppStyle.color.white};
+    background: ${AppStyle.color.white};
+    ${AppStyle.font.read1}
   }
 
   .ant-table-placeholder{

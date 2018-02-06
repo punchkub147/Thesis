@@ -18,8 +18,9 @@ class Layout extends Component {
 
         <div className="right">
           <div className="container">
-            <div className="content">
+            <div className="con">
               {this.props.children}
+              <div style={{clear: 'both'}}></div>
             </div>
           </div>
         </div>
@@ -45,8 +46,9 @@ const Style = Styled.div`
     padding: 20px;
     box-sizing: border-box;
   }
-  .content{
+  .con{
     padding: 20px;
+    min-height: 100vh;
     box-sizing: border-box;
     background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}

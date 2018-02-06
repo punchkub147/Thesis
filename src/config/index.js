@@ -1,4 +1,4 @@
 const Config = {
-  host: 'localhost:3000'
+  host: 'thesis-c3b42.firebaseapp.com'
 }
 export default Config

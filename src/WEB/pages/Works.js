@@ -20,7 +20,7 @@ class Works extends Component {
   }
 
   async componentDidMount() {
-    await auth.onAuthStateChanged(user => {
+    await auth.onAuthStateChanged(async user => {
       if(user){
         this.setState({user})
         this.getItems(user)
@@ -31,22 +31,24 @@ class Works extends Component {
   }
 
   getItems = (user) => {
-    db.collection('works').where('employer_id', '==', user.uid).get()
-    .then(async querySnapshot => {
+    db.collection('works').where('employer_id', '==', user.uid)
+    .onSnapshot(async querySnapshot => {
       let itemsList = []
-      await querySnapshot.forEach(function(doc) {
-        itemsList.push(Object.assign(doc.data(),{work_id: doc.id}))
+      await querySnapshot.forEach(async doc => {
+
+        itemsList.push(Object.assign(doc.data(),{
+          work_id: doc.id,
+        }))
+
       });
       itemsList = _.orderBy(itemsList, ['createAt'], ['desc']); //เรียงวันที่
       await this.setState({itemsList})
     })
-    .catch(function(error) {
-      console.log("Error getting documents: ", error);
-    });
   }
 
   render() {
     const { itemsList } = this.state
+    console.log(itemsList)
 
     const columns = [
       {
@@ -54,31 +56,35 @@ class Works extends Component {
         dataIndex: 'name',
         key: 'name',
         className: 'name',
-        render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
-      }, 
-      {
-        title: 'ราคา',
-        dataIndex: 'price',
-        key: 'price',
-        className: 'align-right',
+        render: (text, item) => <Link to={`/web/work/${item.work_id}`}>{text}</Link>,
       }, 
       {
         title: 'จำนวนชุดที่ประกาศ',
         dataIndex: 'pack',
         key: 'pack',
         className: 'align-right',
+        sorter: (a, b) => a.pack - b.pack,
+      },
+      {
+        title: 'ขอรับงาน',
+        dataIndex: 'needWork',
+        key: 'needWork',
+        className: 'main align-right',
+        sorter: (a, b) => a.needWork - b.needWork,
       },
       {
         title: 'กำลังทำอยู่',
         dataIndex: 'working',
         key: 'working',
-        className: 'align-right',
+        className: 'main align-right',
+        sorter: (a, b) => a.working - b.working,
       },
       {
         title: 'เสร็จแล้ว',
         dataIndex: 'success',
         key: 'success',
         className: 'align-right',
+        sorter: (a, b) => a.success - b.success,
       },
       {
         title: 'สร้างเมื่อ',
@@ -86,59 +92,17 @@ class Works extends Component {
         key: 'createAt',
         className: 'align-right',
         render: (text, item) => <div>{text&&moment(text).format('DD/MM/YY HH:mm')}</div>,
+        sorter: (a, b) => a.createAt - b.createAt,
       },  
-      {
-        title: 'แก้ไข',
-        key: 'action',
-        render: (text, item) => (
-          <span>
-            <Link to={`/web/editwork/${item.work_id}`}> แก้ไข </Link>
-          </span>
-        ),
-      }
     ];
 
     return (
       <Style>
         <Layout {...this.props}>
+
           <Link to="/web/addwork"><Button>เพิ่มงาน</Button></Link>
-          {/*
-          <div className="table-items">
-            <div className="row">
-              <div className="col-4">
-                ชื่อ
-              </div>
-              <div className="col-2">
-                ราคา
-              </div>
-              <div className="col-2">
-                จำนวนชุดที่เหลือ
-              </div>
-              <div className="col-2">
-                แก้ไข
-              </div>
-            </div>
-            {_.map(itemsList, item => 
-              <div className="item">
-                <div className="row">
-                  <div className="col-4">
-                    {item.name}
-                  </div>
-                  <div className="col-2">
-                    {item.price}
-                  </div>
-                  <div className="col-2">
-                    {item.pack}
-                  </div>
-                  <div className="col-2">
-                    <Link to={`/web/editwork/${item.work_id}`}> แก้ไข </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          */}
-          <Table columns={columns} dataSource={itemsList} />
+
+          <Table columns={columns} dataSource={itemsList}/>
           
         </Layout>
       </Style>
@@ -164,5 +128,8 @@ const Style = Styled.div`
 
   .align-right{
     text-align: right;
+  }
+  .main{
+    color: ${AppStyle.color.main};
   }
 `

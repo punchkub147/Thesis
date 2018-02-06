@@ -8,8 +8,10 @@ import moment from 'moment'
 
 import Layout from '../layouts'
 
-import { auth, db } from '../../api/firebase'
+import { auth, db, sendNoti } from '../../api/firebase'
 import { PushFCM } from '../../api/notification'
+
+import { sendWork, cancelWork } from '../functions/work'
 
 import Table from '../components/Table'
 import { phoneFormatter } from '../../functions/index';
@@ -47,79 +49,6 @@ class NeedWork extends Component {
     })
   }
 
-  handleSendWork = (data) => {
-    db.collection('needWork').doc(data.needWork_id).delete()
-    /////////////////
-
-    db.collection('works').doc(data.work_id).get()
-    .then(async snapshot => {
-      const work = snapshot.data()
-      const working = {
-        employee_id: data.employee_id,
-        employer_id: data.employer_id,
-        work_id: snapshot.id,
-        total_piece: work.piece*data.pack,
-        finished_piece: 0,
-        worktime: work.worktime,
-        price: work.price,
-        work_name: work.name,
-        startAt: work.startAt,
-        endAt: work.endAt,
-        createAt: new Date,
-      }
-      await db.collection('working').add(_.pickBy(working, _.identity))
-
-      db.collection('works').doc(snapshot.id).update({
-        working: work.working?work.working+1:1
-      })
-      //message.info('ยันยันการส่งงานแล้ว')
-    })
-    /////////////////
-
-    const title = 'บริษัทยืนยันการส่งงาน'
-    const message = `บริษัทจะจัดส่ง ${data.work_name} ให้ในวันที่ ${moment(data.startAt).format('DD/MM/YY')}`
-    const notifications = {
-      employee_id: data.employee_id,
-      type: 'send',
-      title,
-      message,
-      link: `${Config.host}/tasks`,
-      watched: false,
-      createAt: new Date,
-    }
-    db.collection('notifications').add(_.pickBy(notifications, _.identity))
-
-    PushFCM({
-      to: data.deviceToken,
-      title,
-      body: message,
-    })
-  }
-
-  handleCancelWork = (data) => {
-    console.log('CANCEL')
-    db.collection('needWork').doc(data.needWork_id).delete()
-
-    const title = 'บริษัทปฏิเสธการส่งงาน'
-    const message = `บริษัทปฏิเสธการส่ง ${data.work_name} ขออภัยในความไม่สะดวก`
-    const notifications = {
-      employee_id: data.employee_id,
-      type: 'send',
-      title,
-      message,
-      link: `${Config.host}/notification`,
-      watched: false,
-      createAt: new Date,
-    }
-    db.collection('notifications').add(_.pickBy(notifications, _.identity))
-
-    PushFCM({
-      to: data.deviceToken,
-      title,
-      body: message,
-    })
-  }
-
   render() {
     const { needWorkList } = this.state
 
@@ -128,7 +57,7 @@ class NeedWork extends Component {
         title: 'ชื่องาน',
         dataIndex: 'work_name',
         key: 'work_name',
-        render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
+        render: (text, item) => <Link to={`/web/work/${item.work_id}`}>{text}</Link>,
       }, 
       {
         title: 'ชื่อผู้รับงาน',
@@ -159,7 +88,7 @@ class NeedWork extends Component {
         key: 'send',
         render: (text, item) => (
           <span>
-            <div className='click' onClick={ () => this.handleSendWork(item)}> ส่งงาน </div>
+            <div className='click' onClick={ () => sendWork(item)}> ส่งงาน </div>
           </span>
         )
       },
@@ -168,7 +97,7 @@ class NeedWork extends Component {
         key: 'cancel',
         render: (text, item) => (
           <span>
-            <div className='click' onClick={ () => this.handleCancelWork(item)}> ปฏิเสธ </div>
+            <div className='click' onClick={ () => cancelWork(item)}> ปฏิเสธ </div>
           </span>
         ),
       }

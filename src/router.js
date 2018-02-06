@@ -23,8 +23,10 @@ import WebEditWork from './WEB/pages/EditWork'
 import WebLogin from './WEB/pages/Login'
 import WebRegister from './WEB/pages/Register' 
 import WebWorks from './WEB/pages/Works'
+import WebWork from './WEB/pages/Work'
 import WebWorkOnHome from './WEB/pages/WorkOnHome'
 import WebNeedWork from './WEB/pages/NeedWork'
+import WebEditProfile from './WEB/pages/EditProfile'
 
 /// ADMIN ///
 import AdminUser from './WEB/pages/Admin/User'
@@ -147,6 +149,11 @@ class AppRouter extends Component {
         page: WebWorks,
         title: "งาน",
       },
+      { path: '/web/work/:id',
+        exact: false,
+        page: WebWork,
+        title: "งาน",
+      },
       { path: '/web/workonhome',
         exact: false,
         page: WebWorkOnHome,
@@ -166,6 +173,11 @@ class AppRouter extends Component {
         exact: false,
         page: WebEditWork,
         title: "แก้ไขงาน",
+      },
+      { path: '/web/profile/:id',
+        exact: false,
+        page: WebEditProfile,
+        title: "แก้โปรไฟล์",
       },
 
       ///////////////////////////// ADMIN //////////////////

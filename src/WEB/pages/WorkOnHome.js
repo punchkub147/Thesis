@@ -9,6 +9,8 @@ import Layout from '../layouts'
 import { auth, db } from '../../api/firebase'
 import { PushFCM } from '../../api/notification'
 
+import { getedWork } from '../functions/work'
+
 import Table from '../components/Table'
 
 class WorkOnHome extends Component {
@@ -40,19 +42,6 @@ class WorkOnHome extends Component {
     })
   }
 
-  handleGetedWork = (item) => {
-    db.collection('working').doc(item.working_id).update({success: true})
-
-    db.collection('works').doc(item.work_id).get()
-    .then(doc => 
-      db.collection('works').doc(doc.id).update({
-        working: doc.data().working?doc.data().working-1:0,
-        success: doc.data().success?doc.data().success+1:1
-      }) 
-    )
-
-    
-  }
 
   render() {
     const { workingList } = this.state
@@ -61,7 +50,7 @@ class WorkOnHome extends Component {
         title: 'ชื่องาน',
         dataIndex: 'work_name',
         key: 'work_name',
-        render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
+        render: (text, item) => <Link to={`/web/work/${item.work_id}`}>{text}</Link>,
       },
       {
         title: 'รหัสผู้ทำงาน',
@@ -94,7 +83,7 @@ class WorkOnHome extends Component {
         key: 'action',
         render: (text, item) => (
           <span>
-            <div className='click' onClick={ () => this.handleGetedWork(item)}> รับงาน </div>
+            <div className='click' onClick={ () => getedWork(item)}> รับงาน </div>
           </span>
         ),
       }

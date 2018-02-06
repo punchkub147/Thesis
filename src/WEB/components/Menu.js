@@ -3,7 +3,8 @@ import { Link, browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style'
 
-import { auth } from '../../api/firebase'
+import { auth, getUser } from '../../api/firebase'
+import store from 'store'
 
 import { Menu } from 'antd';
 const SubMenu = Menu.SubMenu;
@@ -11,8 +12,20 @@ const MenuItemGroup = Menu.ItemGroup;
 
 export default class extends Component {
 
-  
+  state = {
+    user: store.get('employer')
+  }
+
+  async componentDidMount() {
+    await getUser('employer', user => {
+      store.set('employer',user)
+      this.setState({user})
+    })
+  }
+
   render() {
+    const { user } = this.state
+
     const menuList = [
       {
         path: '/web/works',
@@ -34,9 +47,19 @@ export default class extends Component {
         name: 'รายชื่อผู้รับงาน',
       },
     ]
+
     return (
       <Style>
         <div className="menu">
+
+          <Link to={`/web/profile/${user.uid}`}>
+            <div className='profile'>
+              <img src={user.data.imageProfile?user.data.imageProfile:'https://raw.githubusercontent.com/Infernus101/ProfileUI/0690f5e61a9f7af02c30342d4d6414a630de47fc/icon.png'} alt=''/>
+              <div className='name'>{user.data.name}</div>
+            </div>
+          </Link>
+
+
           {menuList.map(menu => 
             <Link to={menu.path}>
               <div className={`list ${menu.path===this.props.route.path&&'active'}`}>
@@ -73,9 +96,22 @@ const Style = Styled.div`
   height: 100vh;
   background: ${AppStyle.color.main};
   .menu{
-    padding-top: 200px;
-
+    padding-top: 60px;
+    .profile{
+      width: 100%;
+      margin-bottom: 20px;
+      text-align: center;
+      img{
+        width: 140px;
+      }
+      .name{
+        ${AppStyle.font.tool}
+      }
+    }
   }
+
+
+
   .list{
     width: 100%;
     height: 40px;

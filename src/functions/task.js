@@ -1,58 +1,59 @@
 import _ from 'lodash'
 import moment from 'moment'
-import { db } from '../api/firebase'
+import { db, sendNoti } from '../api/firebase'
 import store from 'store'
 
+import Config from '../config'
+import { PushFCM } from '../api/notification'
+
 export const getTasks = (user_id) => {
-  let workingList = []
-  let totalTimeAllWork = 0 //เวลาที่ต้องทำทั้งหมดทุกงาน
+  // let workingList = []
+  // let totalTimeAllWork = 0 //เวลาที่ต้องทำทั้งหมดทุกงาน
 
-  db.collection('working')
-  .where('employee_id', '==', user_id)
-  //.where('endAt', '>=', new Date())
-  .onSnapshot(async snap => {
-    await snap.forEach(doc => {
-      const data = doc.data()
-      if(data.endAt <= new Date())return //ถ้าวันส่งน้อยกว่าวันนี้ให้ยกเลิก = ได้งานเฉพาะที่ต้องทำปัจจุบัน
+  // db.collection('working')
+  // .where('employee_id', '==', user_id)
+  // //.where('endAt', '>=', new Date())
+  // .onSnapshot(async snap => {
+  //   await snap.forEach(doc => {
+  //     const data = doc.data()
+  //     if(data.endAt <= new Date())return //ถ้าวันส่งน้อยกว่าวันนี้ให้ยกเลิก = ได้งานเฉพาะที่ต้องทำปัจจุบัน
 
-      const toDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
-        o.updateAt >= moment().startOf('day')&& //ถ้าเป็นงานในวันนี้เท่านั้น 
-        o.updateAt <=moment().endOf('day')&&
-          o.piece
-      )// งานที่ทำเสร็จในวันนี้
-      const anotherDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
-        o.updateAt < moment().startOf('day')&& //ถ้าเป็นงานในวันอื่น
-          o.piece
-      )// งานที่ทำเสร็จในวันอื่น
+  //     const toDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
+  //       o.updateAt >= moment().startOf('day')&& //ถ้าเป็นงานในวันนี้เท่านั้น 
+  //       o.updateAt <=moment().endOf('day')&&
+  //         o.piece
+  //     )// งานที่ทำเสร็จในวันนี้
+  //     const anotherDayFinishedPiece = _.sumBy(data.do_piece, (o) => 
+  //       o.updateAt < moment().startOf('day')&& //ถ้าเป็นงานในวันอื่น
+  //         o.piece
+  //     )// งานที่ทำเสร็จในวันอื่น
 
-      let finished_piece = _.sumBy(data.do_piece, (o) => o.piece)
-      if(finished_piece===undefined)finished_piece=0 //debug
+  //     let finished_piece = _.sumBy(data.do_piece, (o) => o.piece)
+  //     if(finished_piece===undefined)finished_piece=0 //debug
 
-      let worktime = 0
-      if(data.worktime!==undefined)worktime=data.worktime //debug
+  //     let worktime = 0
+  //     if(data.worktime!==undefined)worktime=data.worktime //debug
 
-      workingList.push(Object.assign(data,{
-        working_id: doc.id,
-        worktime,
-        finished_piece,
-        toDayFinishedPiece,
-        anotherDayFinishedPiece
-      }))
-    })
-    workingList = _.orderBy(workingList, ['endAt'], ['asc']); //เรียงวันที่
+  //     workingList.push(Object.assign(data,{
+  //       working_id: doc.id,
+  //       worktime,
+  //       finished_piece,
+  //       toDayFinishedPiece,
+  //       anotherDayFinishedPiece
+  //     }))
+  //   })
+  //   workingList = _.orderBy(workingList, ['endAt'], ['asc']); //เรียงวันที่
 
-    workingList.map(working => {
-      totalTimeAllWork += (working.worktime)*(working.total_piece-working.finished_piece)
-    })
-    store.set('tasks', workingList)
+  //   workingList.map(working => {
+  //     totalTimeAllWork += (working.worktime)*(working.total_piece-working.finished_piece)
+  //   })
+  //   store.set('tasks', workingList)
   
-    return {workingList, totalTimeAllWork}
-  })
-
-  
+  //   return {workingList, totalTimeAllWork}
+  // })  
 }
 
-export const genNowWorking = (limitWorkTimeToDay, workingList) => {
+export const genNowWorking = (limitWorkTimeToDay, workingList, user) => {
 
   let limitTimeDayWork = limitWorkTimeToDay // 3 hours เวลาที่มีในวันนี้
   let totalTimeDayWork = 0 //เวลางานที่ต้องทำในวันนี้
@@ -95,6 +96,18 @@ export const genNowWorking = (limitWorkTimeToDay, workingList) => {
     }
   })
   
+  const now = moment()
+  const trigger = moment(`${moment().add(1, 'days').format('YYYY-MM-DD')}T07:00:00.000`).toString()//ส่งตอน 7 โมงเช้า
+  const time = -now.diff(trigger, 'seconds')
+
+  const title = 'งานที่ต้องทำในวันนี้'
+  const message = `งานที่ต้องทำในวันนี้`
+  const type = 'tasks'
+  const receiver = user.uid
+  const sender = 'self'
+  const token = user.data.deviceToken
+  const link = `${Config.host}/tasks`
+  //sendNoti(title, message, type, receiver, sender, token, link, time)
   return { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork }
 }
 
