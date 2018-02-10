@@ -13,6 +13,7 @@ export default class extends Component {
       <Style>
         <Table {...this.props} 
           bordered 
+          size='middle'
           pagination={false} 
         />
       </Style>
@@ -21,7 +22,6 @@ export default class extends Component {
 }
 
 const Style = Styled.div`
-  margin-top: 20px;
 
   .ant-table-wrapper{
     ${AppStyle.shadow.lv1}
@@ -40,5 +40,14 @@ const Style = Styled.div`
 
   .ant-table-thead > tr.ant-table-row-hover > td, .ant-table-tbody > tr.ant-table-row-hover > td, .ant-table-thead > tr:hover > td, .ant-table-tbody > tr:hover > td{
     background: ${AppStyle.color.bg}; //HOVER
+  }
+
+
+  tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover{
+    background: ${AppStyle.color.white};
+  }
+
+  .ant-table-row-expand-icon{
+    background: none;
   }
 `

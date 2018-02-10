@@ -130,6 +130,7 @@ const Style = Styled.div`
   }
   .price{
     float: right;
+    text-align: right;
     padding: 10px;
     width: 40%;
     ${AppStyle.font.hilight}

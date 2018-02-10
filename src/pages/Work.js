@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
@@ -112,83 +112,104 @@ class Login extends Component {
     const { work, employer } = this.state
     const { data } = work
 
+    console.log('employer', employer)
+
     return (
       <Style>
-        <div id="Work">
-            <div className="goback" onClick={() => browserHistory.goBack()}>
-              <img alt='' src={Back}/>
-            </div>
-            <div className="imageWork">          
-              <img alt='' src={data.image}/>
-            </div>
-          
-            <div className="container">
-          
-              <div className="row card">
-                <div className="col-7 name">
-                  {data.name}
-                </div>
-                <div className="col-5 price">
-                  {data.piece} ชิ้น {data.price*data.piece} บาท
-                </div>
-              </div>
-          
-              <div className="row card">
-                <div className="col-3 sendBy">
-                  <img alt='' src={Send}/><br/>
-                  {data.sendBy}
-                </div>
-                <div className="col-3 startAt">
-                  <div className='text'>เริ่มส่ง</div>
-                  {moment(data.startAt).format('DD/MM/YY')}
-                </div>
-                <div className="col-3 endAt">
-                  <div className='text'>ส่งกลับ</div>
-                  {moment(data.endAt).format('DD/MM/YY')}
-                </div>
-                <div className="col-3 workTime">
-                  <img alt='' src={Alarm}/><br/>
-                  {(data.worktime>=60)
-                    ?'~ ' + data.worktime/60 + ' นาที'
-                    :data.worktime + ' วินาที'
-                  }
-                </div>
-              </div>
-          
-              {
-              <div className="row card">
-                <div className="col-12">เครื่องมือ</div>
-                <div className="col-3">
-                  <img className="imageTool" alt='' src=""/>
-                </div>
-                <div className="col-9">
-                  {data.tool}
-                </div>
-              </div>
-              }
-          
-              <div className="row card">
-                <div className="col-12">
-                  รายละเอียด<br/>
-                  {data.detail}
-                </div>
-              </div>
-          
-              <div className="row">
-                <div className="col-3">
-                  <img className="imageEmployer" alt='' src={employer.data.image}/>
-                </div>
-                <div className="col-3">
-                  {employer.data.name}
-                  {employer.data.phone}
-                  {employer.data.address}
-                </div>
-              </div>
-            </div>
-
-          <BottomButton onClick={e => this.handleNeedWork(e)}>รับงาน</BottomButton>
-          
+        <div className="goback" onClick={() => browserHistory.goBack()}>
+          <img alt='' src={Back}/>
         </div>
+        <div className="imageWork">          
+          <img alt='' src={data.image}/>
+        </div>
+        
+        <div className="container">
+        
+          <div className="row card">
+            <div className="col-7 name">
+              {data.name}
+            </div>
+            <div className="col-5 price">
+              {data.piece} ชิ้น {data.price*data.piece} บาท
+            </div>
+          </div>
+
+          <div className="row card">
+            <div className="col-7 name">
+            </div>
+            <div className="col-5 price">
+              เหลือ {data.pack} ชุด
+            </div>
+          </div>
+        
+          <div className="row card">
+            <div className="col-3 sendBy">
+              <img alt='' src={Send}/><br/>
+              {data.sendBy}
+            </div>
+            <div className="col-3 startAt">
+              <div className='text'>เริ่มส่ง</div>
+              {moment(data.startAt).format('DD/MM/YY')}
+            </div>
+            <div className="col-3 endAt">
+              <div className='text'>ส่งกลับ</div>
+              {moment(data.endAt).format('DD/MM/YY')}
+            </div>
+            <div className="col-3 workTime">
+              <img alt='' src={Alarm}/><br/>
+              {(data.worktime>=60)
+                ?'~ ' + data.worktime/60 + ' นาที'
+                :data.worktime + ' วินาที'
+              }
+            </div>
+          </div>
+        
+          {
+          <div className="row card">
+            <div className="col-12">เครื่องมือ</div>
+            <div className="col-3">
+              <img className="imageTool" alt='' src=""/>
+            </div>
+            <div className="col-9">
+              {data.tool}
+            </div>
+          </div>
+          }
+        
+          <div className="row card">
+            <div className="col-12">
+              รายละเอียด<br/>
+              {data.detail}
+            </div>
+          </div>
+        
+          <Link to={`/employer/${employer.employer_id}`}>
+          <div className="employer row card">
+            <div className="imageEmployer">
+              <img className="" alt='' src={employer.data.imageProfile}/>
+            </div>
+            <div className="detail">
+              <div className='name'>
+                {employer.data.name}
+              </div>
+              <div className='phone'>
+                {employer.data.phone}
+              </div>
+              <div className='address'>
+                {employer.data.homeNo&&`${employer.data.homeNo} `}
+                {employer.data.road&&`ถ. ${employer.data.road} `}
+                {employer.data.area&&`ข. ${employer.data.area} `}
+                {employer.data.district&&`ข. ${employer.data.district} `}
+                {employer.data.province&&`จ. ${employer.data.province} `}
+                {employer.data.postcode&&`${employer.data.postcode} `}
+              </div>
+            </div>
+          </div>
+          </Link>
+
+        </div>
+
+        <BottomButton onClick={e => this.handleNeedWork(e)}>รับงาน</BottomButton>
       </Style>
     );
   }
@@ -197,7 +218,6 @@ class Login extends Component {
 export default Login;
 
 const Style = Styled.div`
-#Work{
   .imageWork{
     position: relative;
     width: 100%;
@@ -208,19 +228,19 @@ const Style = Styled.div`
       object-fit: cover;
       width: 100%;
       height: 100%;
-      animation-name: fadeInDown;
-      animation-duration: 0.5s;
+      // animation-name: fadeInDown;
+      // animation-duration: 0.5s;
     }
   }
   .goback{
     position: fixed;
-    left: 15px;
+    left: 10px;
+    top: 10px;
     height: 50px;
     width: 50px;
     cursor: pointer;
     z-index: 1;
     img{
-      margin-top: 12.5px;
       width: 25px;
       height: 25px;
     }
@@ -228,10 +248,13 @@ const Style = Styled.div`
   .container{
     animation-name: fadeInUp;
     animation-duration: 0.5s;
+    position: relative;
+    margin-top: -25px; 
   }
   .card{
     background: ${AppStyle.color.card};
     padding: 10px 0;
+    margin: 0;
     margin-bottom: 10px;
     ${AppStyle.shadow.lv1}
   }
@@ -268,5 +291,37 @@ const Style = Styled.div`
       height: 30px;
     }
   }
-}
+
+
+  .employer{
+    padding: 10px;
+    .imageEmployer{
+      width: 75px;
+      height: 75px;
+      float: left;
+      img{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    .detail{
+      width: 200px;
+      float: left;
+      margin-left: 10px;
+      .name{
+        ${AppStyle.font.read1}
+        float: left;
+      }
+      .phone{
+        ${AppStyle.font.read2}
+        float: left;
+        margin-left: 10px;
+      }
+      .address{
+        clear: both;
+        ${AppStyle.font.read2}
+      }
+    }
+  }
 `

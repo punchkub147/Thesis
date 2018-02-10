@@ -77,7 +77,8 @@ class FormEditWork extends Component {
       const data = await Object.assign(work, {
         employer_id: user.uid,
         updateAt: new Date(),
-        image
+        image,
+        total_pack: work.pack,
       })
 
       if(this.props.workId){

@@ -177,13 +177,21 @@ const Style = Styled.div`
 .cardGraph{
   background: ${AppStyle.color.bg};
   width: 300px;
-  min-height: 260px;
+  max-height: 260px;
   ${AppStyle.shadow.lv1}
-  overflow: hidden;
   position: fixed;
   top: 100px;
   padding-top: 10px;
   padding-left: 10px;
+
+
+  overflow: hidden;
+  // width: 260px;
+  // max-height: 300px;
+  // scroll-direction: horizontal;
+  // transform: rotate(-90deg);
+  // transform-origin: right top;
+  // transform:rotate(-90deg) translateY(-100px);
 }
 .statlist{
   width: 100%;
@@ -197,6 +205,11 @@ const Style = Styled.div`
 `
 
 const Bar = Styled.div`
+
+  // transform: rotate(90deg);
+  // transform-origin: right top;
+
+
   width: 48px;
   height: 220px;
   background: ${props => props.selected?AppStyle.color.white:AppStyle.color.bg2};

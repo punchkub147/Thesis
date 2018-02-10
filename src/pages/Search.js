@@ -6,7 +6,9 @@ import _ from 'lodash'
 import store from 'store'
 
 import Layout from '../layouts'
-import Tabbar from '../layouts/Tabbar'
+
+import Tabbar from '../layouts/Tabs'
+
 import WorkItem from '../components/WorkItem'
 import Content from '../components/Content'
 import Carousel from '../components/Carousel'
@@ -52,6 +54,9 @@ class Search extends Component {
     .onSnapshot(snapshot => {
       let worksList = []
       snapshot.forEach(doc => {
+        if(doc.data().pack <= 0)return
+
+
         worksList.push(
           _.assign(
             doc.data(),
@@ -75,8 +80,6 @@ class Search extends Component {
   render() {
     const { worksList, user, abilities } = this.state
 
-    console.log(worksList,user.data.abilities)
-
     let recommended = []
     _.map(worksList, work => 
       (user.data.abilities[work.ability] === true)&& 
@@ -87,7 +90,6 @@ class Search extends Component {
         (!work.ability || work.ability === 'general')&& 
           recommended.push(work)
       )}
-      console.log(recommended)
     //////////////////////////////////////////////////
     let workmanship = []
     _.map(worksList, work => 
@@ -109,7 +111,7 @@ class Search extends Component {
                   <Link to="/editabilities" className='edit'>
                     <img alt='' src={edit}/>
                   </Link>
-                  <div>
+                  <div style={{overflow: 'hidden', 'max-width': '100%'}}>
                     <Carousel>
                       {_.map(recommended, (work, i) => 
                         <WorkItem data={work} i={i} big/>

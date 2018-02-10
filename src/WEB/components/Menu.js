@@ -103,6 +103,8 @@ const Style = Styled.div`
       text-align: center;
       img{
         width: 140px;
+        height: 140px;
+        object-fit: cover;
       }
       .name{
         ${AppStyle.font.tool}

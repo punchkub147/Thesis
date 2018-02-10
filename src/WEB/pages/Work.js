@@ -4,6 +4,7 @@ import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
 import moment from 'moment'
+import store from 'store'
 import { phoneFormatter } from '../../functions/index';
 
 import Layout from '../layouts'
@@ -19,7 +20,7 @@ import Tabbar from '../components/Tabbar'
 export default class extends Component {
 
   state = {
-    work: {},
+    work: _.find(store.get('works'), ['work_id', this.props.params.id]),
     needWorkList: [],
     workingList: [],
     workSuccessList: [],
@@ -62,9 +63,13 @@ export default class extends Component {
       let workingList = []
       let workSuccessList = []
       await querySnapshot.forEach(function(doc) {
+        const data = Object.assign(doc.data(),{
+          working_id: doc.id,
+          finished_piece: doc.data().finished_piece?doc.data().finished_piece:0
+        })
         !doc.data().success
-          ?workingList.push(Object.assign(doc.data(),{working_id: doc.id}))
-          :workSuccessList.push(Object.assign(doc.data(),{working_id: doc.id}))
+          ?workingList.push(data)
+          :workSuccessList.push(data)
       });
       await this.setState({workingList})
       await this.setState({workSuccessList})
@@ -77,7 +82,6 @@ export default class extends Component {
 
   render() {
     const { work, needWorkList, workingList, workSuccessList } = this.state
-    console.log(work)
 
     const needWorkColumns = [
       {
@@ -96,6 +100,7 @@ export default class extends Component {
         title: 'จำนวนชุด',
         dataIndex: 'pack',
         key: 'pack',
+        className: 'align-right',
       }, 
       {
         title: 'เมื่อวันที่',
@@ -138,7 +143,7 @@ export default class extends Component {
         render: (text, item) => <div>{text>=60?`~ ${text/60} นาที`:`${text} วินาที`}</div>,
       },
       {
-        title: 'ทำเสร็จแล้ว',
+        title: 'ทำงานได้',
         dataIndex: 'finished_piece',
         key: 'finished_piece',
         className: 'align-right',
@@ -156,10 +161,54 @@ export default class extends Component {
         key: 'action',
         render: (text, item) => (
           <span>
-            <div className='click' onClick={ () => getedWork(item)}> รับงาน </div>
+          {item.total_piece-item.finished_piece > 0
+            ?<div>เหลือ {item.total_piece-item.finished_piece} ชิ้น</div>
+            :<div className='click' onClick={ () => getedWork(item)}> รับงาน </div>
+          }
           </span>
         ),
       }
+    ];
+
+    const workSuccessColumns = [
+      {
+        title: 'รหัสผู้ทำงาน',
+        dataIndex: 'employee_id',
+        key: 'employee_id',
+      },
+      {
+        title: 'เวลาทำงานต่อชิ้น',
+        dataIndex: 'worktime',
+        key: 'worktime',
+        className: 'align-right',
+        render: (text, item) => <div>{text>=60?`~ ${text/60} นาที`:`${text} วินาที`}</div>,
+      },
+      {
+        title: 'ทำงานได้',
+        dataIndex: 'finished_piece',
+        key: 'finished_piece',
+        className: 'align-right',
+        render: (text, item) => <div>{text?text:0} ชิ้น</div>,
+      }, 
+      {
+        title: 'ชิ้นงานทั้งหมด',
+        dataIndex: 'total_piece',
+        key: 'total_piece',
+        className: 'align-right',
+        render: (text, item) => <div>{text?text:0} ชิ้น</div>,
+      },
+      {
+        title: 'สำเร็จ',
+        className: 'align-right',
+        render: (text, item) => (
+          <div>
+          {item.total_piece-item.finished_piece > 0
+            ?`เหลือ ${item.total_piece-item.finished_piece} ชิ้น`
+            :'เสร็จครบ'
+          }
+          </div>
+        ),
+      },
     ];
 
     const tabs = [
@@ -181,7 +230,7 @@ export default class extends Component {
         name: `งานที่สำเร็จแล้ว (${workSuccessList.length})`,
         render: 
           <div className='contentTab'>
-            <Table columns={workingColumns} dataSource={workSuccessList} />
+            <Table columns={workSuccessColumns} dataSource={workSuccessList} />
           </div>,
       },
     ]
@@ -203,10 +252,7 @@ export default class extends Component {
             </div>
           </div>
 
-
           <Tabbar tabs={tabs} style={{clear: 'both'}}/>
-
-
 
         </Layout>
       </Style>

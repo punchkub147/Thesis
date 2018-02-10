@@ -30,7 +30,6 @@ export default class extends Component {
           autoplay
           infinite
           dots={false}
-          beforeChange={(from, to) => console.log(`slide from ${from} to ${to}`)}
           afterChange={index => this.setState({ slideIndex: index })}
         >
           {this.props.children}

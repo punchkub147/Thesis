@@ -33,7 +33,8 @@ export const sendWork = (data) => {
 
     db.collection('works').doc(snapshot.id).update({
       working: work.working?work.working+1:1,
-      needWork: work.needWork?work.needWork-1:0
+      needWork: work.needWork?work.needWork-1:0,
+      pack: work.pack?work.pack-1:0,
     })
     //message.info('ยันยันการส่งงานแล้ว')
   })
@@ -45,7 +46,7 @@ export const sendWork = (data) => {
   const receiver = data.employee_id
   const sender = user.uid
   const token = data.deviceToken
-  const link = `${Config.host}/tasks`
+  const link = `/tasks`
   const time = 0
   sendNoti(title, message, type, receiver, sender, token, link, time)
 }
@@ -59,7 +60,7 @@ export const cancelWork = (data) => {
   const receiver = data.employee_id
   const sender = user.uid
   const token = data.deviceToken
-  const link = `${Config.host}/notification`
+  const link = `/notification`
   const time = 0
   sendNoti(title, message, type, receiver, sender, token, link, time)
 }
@@ -82,7 +83,7 @@ export const getedWork = async (data) => {
   const receiver = data.employee_id
   const sender = user.uid
   
-  const link = `${Config.host}/dashboard`
+  const link = `/dashboard`
   const time = 0
 
   const token = await db.collection('employee').doc(data.employee_id).get()

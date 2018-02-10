@@ -4,6 +4,8 @@ import '@firebase/firestore'
 import cuid from 'cuid';
 import moment from 'moment';
 
+import Config from '../config' 
+
 import { PushFCM } from './notification'
 
 //import { userModel } from './model';
@@ -156,7 +158,8 @@ export const sendNoti = async (title, message, type, receiver, sender, token, li
     type,
     title,
     message,
-    link,
+    link: `${Config.host}${link}`,
+    path: link,
     watched: false,
     createAt: new Date,
   }, _.identity))

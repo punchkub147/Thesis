@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
@@ -62,20 +62,24 @@ class Notification extends Component {
 
   render() {
     const { notiList } = this.state
+    console.log(notiList)
+
     return (
       <Layout route={this.props.route}>
         <Style>
         
           <Content>
           {_.map(notiList, (data,i) => 
-            <Noti fade={i*0.2}>
-              <img alt='' src={send}/>
-              <div className="text">
-                {data.message} 
-                <span className="time"> เมื่อ {moment(data.createAt).locale('th').fromNow()}</span>
-              </div>
-              
-            </Noti>
+            <Link to={data.path}>
+              <Noti fade={i*0.2}>
+                <img alt='' src={send}/>
+                <div className="text">
+                  {data.message} 
+                  <span className="time"> เมื่อ {moment(data.createAt).locale('th').fromNow()}</span>
+                </div>
+                
+              </Noti>
+            </Link>
           )}
           </Content>
           {/*}
