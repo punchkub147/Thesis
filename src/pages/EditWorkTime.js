@@ -22,7 +22,7 @@ class EditWorkTime extends Component {
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
             />
-          <Card>
+          <Card style={{marginTop: 10}}>
             <FormWorkTime push='/tasks' />
           </Card>
         </Style>

@@ -19,7 +19,7 @@ class EditAbilities extends Component {
             title='ความสามารถ'
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
-            />
+          />
           <FormAbilities />
         </div>
       </Style>

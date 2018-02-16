@@ -109,10 +109,23 @@ class Login extends Component {
   }
 
   render() {
-    const { work, employer } = this.state
+    const { work, employer, user } = this.state
     const { data } = work
+    const countAllDay = -moment(data.startAt).diff(data.endAt, 'days')+1
 
-    console.log('employer', employer)
+    console.log('workData', data)
+    console.log('userrr', user.data.holiday)
+    console.log('จำนวนวัน',countAllDay)
+
+    let worktimeBetween = 0
+    for(let i = 0; i< countAllDay; i++){
+      const day = moment(data.startAt).add(i, 'days').locale('en')//วัน
+      let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
+      if(user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
+
+      worktimeBetween += dayWorkTime
+    }
+    const canRequest = Math.floor(worktimeBetween/(data.piece*data.worktime))
 
     return (
       <Style>
@@ -132,14 +145,32 @@ class Login extends Component {
             <div className="col-5 price">
               {data.piece} ชิ้น {data.price*data.piece} บาท
             </div>
+            <div className="col-6 cost">
+              เหลือ {data.pack} ชุด
+            </div>
+            <div className="col-6 pack">
+              ค่ามัดจำ {data.cost} บาท
+            </div>
           </div>
 
           <div className="row card">
-            <div className="col-7 name">
+            
+            <div className="col-6 cost">
+              มีเวลทำ {countAllDay} วัน
             </div>
-            <div className="col-5 price">
-              เหลือ {data.pack} ชุด
+            <div className="col-6 pack">
+            {canRequest>0
+              ?`สามารถรับได้ ${canRequest} ชุด`
+              :'เวลาว่างไม่พอทำงาน'
+            }
             </div>
+            <div className="col-6 cost">
+              คุณว่าง {worktimeBetween} วินาที
+            </div>
+            <div className="col-6 pack">
+              เวลาต่อชุด {data.piece*data.worktime} วินาที
+            </div>
+            
           </div>
         
           <div className="row card">
@@ -223,6 +254,7 @@ const Style = Styled.div`
     width: 100%;
     height: 230px;
     background: ${AppStyle.color.card};
+    ${AppStyle.shadow.lv1}
 
     img{
       object-fit: cover;
@@ -264,6 +296,10 @@ const Style = Styled.div`
   }
   .name{
     ${AppStyle.font.main}
+  }
+  .pack{
+    ${AppStyle.font.read1}
+    text-align: right;
   }
   .sendBy{
     text-align: center;

@@ -18,5 +18,4 @@ const Style = Styled.div`
   ${AppStyle.shadow.lv1};
   background: ${AppStyle.color.bg};
   padding: 10px 0;
-  margin-top: 10px;
 `

@@ -13,11 +13,16 @@ import Button from '../../components/Button';
 
 import Table from '../components/Table';
 
+import { Menu, Icon } from 'antd'
+const SubMenu = Menu.SubMenu;
+const MenuItemGroup = Menu.ItemGroup;
+
 class Works extends Component {
 
   state = {
     user: {},
-    worksList: store.get('works')
+    worksList: store.get('works'),
+    filter: 'all',
   }
 
   async componentDidMount() {
@@ -48,7 +53,7 @@ class Works extends Component {
   }
 
   render() {
-    const { worksList, searchName } = this.state
+    let { worksList, searchName, filter } = this.state
     
     let searchNameList = []
     if(searchName){
@@ -58,9 +63,18 @@ class Works extends Component {
       )
     }
 
+    if(filter==='startAt'){
+      worksList = _.filter(worksList, (o) => o.startAt>new Date)
+      worksList = _.orderBy(worksList, ['startAt'], ['asc']);
+    }
+    if(filter==='endAt'){
+      worksList = _.filter(worksList, (o) => o.endAt>new Date)
+      worksList = _.orderBy(worksList, ['endAt'], ['asc']);
+    }
+
     const columns = [
       {
-        title: 'ชื่องาน',
+        title: `ชื่องาน`,
         dataIndex: 'name',
         key: 'name',
         className: 'name',
@@ -98,11 +112,33 @@ class Works extends Component {
         render: (text, item) => <span>{text>0&&text}</span>,
         sorter: (a, b) => a.success - b.success,
       }, 
+      {
+        title: 'วันที่ส่ง',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <span>
+          {moment(text)>new Date
+            ?moment(text).fromNow()
+            :'ส่งแล้ว'
+          }
+          </span>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      },
+      {
+        title: 'วันที่รับ',
+        dataIndex: 'endAt',
+        key: 'endAt',
+        className: 'align-right',
+        render: (text, item) => <span>{moment(text).fromNow()}</span>,
+        sorter: (a, b) => a.endAt - b.endAt,
+      },
     ];
 
     const subColumns = [
       {
-        title: 'สร้างเมื่อ',
+        title: 'วันที่สร้าง',
         dataIndex: 'createAt',
         key: 'createAt',
         className: 'align-right',
@@ -130,8 +166,32 @@ class Works extends Component {
         <Layout {...this.props}>
 
           <Link to="/web/addwork"><Button>เพิ่มงาน</Button></Link>
-          <input type='text' placeholder='ค้นหาชื่อ' onChange={(e) => this.setState({searchName: e.target.value})}/>
           
+
+
+          <div className='search'>
+            <input type='text' placeholder='ค้นหาชื่อ' onChange={(e) => this.setState({searchName: e.target.value})}/>
+            <Icon type="search" className='icon' style={{fontSize: 18}}/>
+          </div>
+
+          <Menu
+            onClick={(e) => this.setState({filter: e.key})}
+            selectedKeys={[this.state.filter]}
+            mode="horizontal"
+          >
+            <Menu.Item key="all">
+              ทั้งหมด
+            </Menu.Item>
+            <Menu.Item key="startAt">
+              <Icon type="mail" style={{fontSize: 18}} />ใกล้เวลาส่ง
+            </Menu.Item>
+            <Menu.Item key="endAt">
+              <Icon type="inbox" style={{fontSize: 18}} />ใกล้เวลารับ
+            </Menu.Item>
+          </Menu>
+
+
+
           <Table 
             columns={columns} 
             dataSource={searchName?searchNameList:worksList}
@@ -171,5 +231,24 @@ const Style = Styled.div`
   }
   .main{
     color: ${AppStyle.color.main};
+  }
+  .search{
+    position: relative;
+    width: 200px; 
+    float: right;
+    input{
+      margin: 0;
+      margin-top: 7px;
+    }
+    .icon{
+      position: absolute;
+      right: 10px;
+      top: 17px;
+    }
+  }
+
+
+  .ant-menu{
+    background: ${AppStyle.color.bg};
   }
 `

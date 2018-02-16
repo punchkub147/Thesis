@@ -14,6 +14,7 @@ class FormAbilities extends Component {
     user: {},
     abilities: [],
     userAbilities: [],
+    modalIsOpen: false,
   }
 
   async componentDidMount() {

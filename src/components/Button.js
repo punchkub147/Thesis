@@ -24,7 +24,7 @@ const Style = Styled.div`
   width: 150px;
   button{
     cursor: pointer;
-    width: 100%;
+    width: 150px;
     background: none;
     background-image: url('${buttonimg}');
     background-size: auto 40px;

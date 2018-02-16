@@ -38,7 +38,6 @@ export const genNowWorking = (limitWorkTimeToDay, workingList, user) => {
     const countDay = -start.diff(end, 'days')+1
 
 
-
     //////////////////ALGORITHM V1////////////////////
     // const todoWorkOnDay = todoWork/countDay //จำนวนชิ้นที่ควรทำในวันนี้ = จำนวนชิ้น/จำนวนวันที่ต้องทำ 
     // let limitTodo = 0 //จำนวนงานนี้ที่ต้องทำวันนี้
@@ -71,128 +70,129 @@ export const genNowWorking = (limitWorkTimeToDay, workingList, user) => {
     ////////////////////////NEW ALGORITHM////////////////////////////
     //if(working.work_name == 'พับริบบิ้นพวงมาลัย'){
 
-      const countAllDay = -moment(working.startAt).diff(end, 'days')+1
+    const countAllDay = -moment(working.startAt).diff(end, 'days')+1
 
-      const devidePiece = Math.floor(working.total_piece/countAllDay)
-      const devideTime = devidePiece*working.worktime
+    const devidePiece = Math.floor(working.total_piece/countAllDay)
+    const devideTime = devidePiece*working.worktime
 
-      const devideModPiece = working.total_piece%countAllDay
-      const devideModTime = devideModPiece*working.worktime
-      
-      const remindDevidePiece = Math.floor(todoTotalPiece/countDay)
-      const remindDevideTime = remindDevidePiece*working.worktime
+    const devideModPiece = working.total_piece%countAllDay
+    const devideModTime = devideModPiece*working.worktime
+    
+    const remindDevidePiece = Math.floor(todoTotalPiece/countDay)
+    const remindDevideTime = remindDevidePiece*working.worktime
 
-      let remindModPiece = (todoTotalPiece%countDay)
-      const remindModTime = remindModPiece*working.worktime
-
-
-
-      let limitTodo = 0
-      let overPiece = 0
-
-      let remindPiece = 0
-      let total = todoTotalPiece
-      for(let i = 0; i<countDay; i++){
-        if(total > 0){
-          const day = moment(start).add(i, 'days').locale('en').format('ddd')
-          let dayWorkTime = user.data.workTime[day.toLowerCase()]
-          if(limitTimeDayWork<dayWorkTime)dayWorkTime=limitTimeDayWork
-
-          let todayTodoPiece = Math.floor(dayWorkTime/working.worktime)
-          if(todayTodoPiece > remindDevidePiece) todayTodoPiece = remindDevidePiece
+    let remindModPiece = (todoTotalPiece%countDay)
+    const remindModTime = remindModPiece*working.worktime
 
 
-          //ถ้าเวลาเหลือ ทำเศษงาน
-          if(dayWorkTime - todayTodoPiece*working.worktime >= working.worktime && remindModPiece>0){
-            todayTodoPiece+=1
-            remindModPiece-=1
-          }
 
+    let limitTodo = 0
+    let overPiece = 0
+    let remindPiece = 0
+    let total = todoTotalPiece
+    
+    for(let i = 0; i<countDay; i++){
+      if(total > 0){
+        const day = moment(start).add(i, 'days').locale('en')//วัน
+
+        let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
+        if(limitTimeDayWork<dayWorkTime)dayWorkTime=limitTimeDayWork //ลิมิตเวลา
+        if(user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
+
+        let todayTodoPiece = Math.floor(dayWorkTime/working.worktime)
+        if(todayTodoPiece > remindDevidePiece) todayTodoPiece = remindDevidePiece
+
+
+        //ถ้าเวลาเหลือ ทำเศษงาน
+        if(dayWorkTime - todayTodoPiece*working.worktime >= working.worktime && remindModPiece>0){
+          todayTodoPiece+=1
+          remindModPiece-=1
+        }
+
+        
+        const remindTime = dayWorkTime-(todayTodoPiece*working.worktime)
+
+        let todayExtraPiece = Math.floor(remindTime/working.worktime)
+        if(todayExtraPiece > total-todayTodoPiece)todayExtraPiece = total-todayTodoPiece>0?total-todayTodoPiece:0
+
+        let shouldDoPiece = remindDevidePiece-todayTodoPiece>0?remindDevidePiece-todayTodoPiece:0
+
+        let todayRemindTime = dayWorkTime-((todayTodoPiece+todayExtraPiece)*working.worktime)
+        
+
+        if(shouldDoPiece > 0) remindPiece+=shouldDoPiece
+        if(shouldDoPiece < 0) remindPiece+=shouldDoPiece
+
+
+        if(i === 0){ //งานวันนี้
+          limitTodo = todayTodoPiece+todayExtraPiece
           
-          const remindTime = dayWorkTime-(todayTodoPiece*working.worktime)
 
-          let todayExtraPiece = Math.floor(remindTime/working.worktime)
-          if(todayExtraPiece > total-todayTodoPiece)todayExtraPiece = total-todayTodoPiece>0?total-todayTodoPiece:0
-
-          let shouldDoPiece = remindDevidePiece-todayTodoPiece>0?remindDevidePiece-todayTodoPiece:0
-
-          let todayRemindTime = dayWorkTime-((todayTodoPiece+todayExtraPiece)*working.worktime)
+          limitTimeDayWork -= ((todayTodoPiece+todayExtraPiece+overPiece)*working.worktime)
           
+          if(limitTodo+overPiece > 0){
+            //วันที่ต้องทำงานนี้
+            console.log(
+              'ชื่องาน', working.work_name, '\n',
+              'ต้องทำ', working.total_piece, 'ชิ้น', '\n',
+              'ภายใน', countAllDay, 'วัน', '\n',
+              'เหลือวันต้องทำ', countDay, 'วัน', '\n',
 
-          if(shouldDoPiece > 0) remindPiece+=shouldDoPiece
-          if(shouldDoPiece < 0) remindPiece+=shouldDoPiece
+              'เวลาต่อชิ้น', working.worktime, 'วินาที', '\n',
+              'เวลาที่ต้องทำทุกชิ้น', working.total_piece*working.worktime, 'วินาที', '\n',
+              'ต้องทำวันละอย่างน้อย', devidePiece, 'ชิ้น', ' เศษ', devideModPiece, 'ชิ้น', '\n',
+              'ทำงานวันละ', devideTime, 'วินาที', ' เศษ', devideModTime, 'วินาที', '\n',
 
+              'จากงานที่เหลือควรทำวันละอย่างน้อย', remindDevidePiece, 'ชิ้น เศษ', remindModPiece, 'ชิ้น', '\n',
+              'สรุปต้องทำงานวันละ', remindDevideTime, 'วินาที', ' เศษ',remindModTime , 'วินาที', '\n',
 
-          if(i === 0){ //งานวันนี้
-            limitTodo = todayTodoPiece+todayExtraPiece
+              'วันนี้ทำไปแล้ว', toDayFinishedPiece, 'ชิ้น', '\n',
+              'วันอื่นทำไปแล้ว', anotherDayFinishedPiece, 'ชิ้น', '\n',
+              'เหลือ', todoTotalPiece, 'ชิ้น', '\n',
+
+              'วันที่เริ่มทำ', moment(working.startAt).format('DD/MM/YY'), '\n',
+              'วันที่สิ้นส่ง', moment(working.endAt).format('DD/MM/YY'), '\n',
             
-
-            limitTimeDayWork -= ((todayTodoPiece+todayExtraPiece+overPiece)*working.worktime)
-            
-            if(limitTodo+overPiece > 0){
-              //วันที่ต้องทำงานนี้
-              console.log(
-                'ชื่องาน', working.work_name, '\n',
-                'ต้องทำ', working.total_piece, 'ชิ้น', '\n',
-                'ภายใน', countAllDay, 'วัน', '\n',
-                'เหลือวันต้องทำ', countDay, 'วัน', '\n',
-
-                'เวลาต่อชิ้น', working.worktime, 'วินาที', '\n',
-                'เวลาที่ต้องทำทุกชิ้น', working.total_piece*working.worktime, 'วินาที', '\n',
-                'ต้องทำวันละอย่างน้อย', devidePiece, 'ชิ้น', ' เศษ', devideModPiece, 'ชิ้น', '\n',
-                'ทำงานวันละ', devideTime, 'วินาที', ' เศษ', devideModTime, 'วินาที', '\n',
-
-                'จากงานที่เหลือควรทำวันละอย่างน้อย', remindDevidePiece, 'ชิ้น เศษ', remindModPiece, 'ชิ้น', '\n',
-                'สรุปต้องทำงานวันละ', remindDevideTime, 'วินาที', ' เศษ',remindModTime , 'วินาที', '\n',
-
-                'วันนี้ทำไปแล้ว', toDayFinishedPiece, 'ชิ้น', '\n',
-                'วันอื่นทำไปแล้ว', anotherDayFinishedPiece, 'ชิ้น', '\n',
-                'เหลือ', todoTotalPiece, 'ชิ้น', '\n',
-
-                'วันที่เริ่มทำ', moment(working.startAt).format('DD/MM/YY'), '\n',
-                'วันที่สิ้นส่ง', moment(working.endAt).format('DD/MM/YY'), '\n',
+              'วันนี้เป็นวัน', moment().locale('th').format('dddที่DD').toLowerCase(), '\n',
               
-                'วันนี้เป็นวัน', moment().locale('th').format('dddที่DD').toLowerCase(), '\n',
-                
-              )
-              console.log(
-                day,
-                'มีเวลาทำงาน', dayWorkTime, 'วินาที',
-                'ต้องทำงานให้ได้', todayTodoPiece, 'ชิ้น',
-                'ภายในเวลา', todayTodoPiece*working.worktime, 'วินาที',
-                'วันนี้เหลือเวลาว่างทำงานนี้อีก', remindTime, 'วินาที',
-                'สามารถทำได้อีก', todayExtraPiece,'ชิ้น',
-                'ควรจะต้องทำงานอีก(จะนำไปบวกวันอื่น)', shouldDoPiece, 
-    
-                'วันนี้เหลือเวลาว่างทำงานอื่นอีก', todayRemindTime,
-    
-                'งานที่เหลือ', total ,'ชิ้น',
-                'ถ้าทำเสร็จแล้วจะเหลืองานอีก', total-=(todayTodoPiece+todayExtraPiece) ,'ชิ้น',
-              )
-              console.log('ทำงานหนักกว่าตั้งไว้', total, 'ชิ้น')
-              console.log('------------------สรุป-------------------')
-              console.log(
-                'วันนี้ต้องทำงานชิ้นนี้อย่างน้อย', limitTodo, '\n',
-                'งานเกินลิมิตวันนี้', overPiece, 'ชิ้น', '\n',
-              )
-              console.log('limitTimeDayWork',limitTimeDayWork)
-              console.log('-------------------------------------')
-              overPiece = Math.floor(total/countDay)
-              let timeTodo = (limitTodo+overPiece)*working.worktime
-              nowWorking.push(Object.assign(working, {
-                limitTodo,
-                overPiece,
-                timeTodo,
-                countDay,
-                toDayFinishedPiece,
-                anotherDayFinishedPiece,
-              }))
-              totalTimeDayWork += timeTodo
-            }
+            )
+            console.log(
+              day.format('DD/MM/YY'),
+              'มีเวลาทำงาน', dayWorkTime, 'วินาที',
+              'ต้องทำงานให้ได้', todayTodoPiece, 'ชิ้น',
+              'ภายในเวลา', todayTodoPiece*working.worktime, 'วินาที',
+              'วันนี้เหลือเวลาว่างทำงานนี้อีก', remindTime, 'วินาที',
+              'สามารถทำได้อีก', todayExtraPiece,'ชิ้น',
+              'ควรจะต้องทำงานอีก(จะนำไปบวกวันอื่น)', shouldDoPiece, 
+  
+              'วันนี้เหลือเวลาว่างทำงานอื่นอีก', todayRemindTime,
+  
+              'งานที่เหลือ', total ,'ชิ้น',
+              'ถ้าทำเสร็จแล้วจะเหลืองานอีก', total-=(todayTodoPiece+todayExtraPiece) ,'ชิ้น',
+            )
+            console.log('ทำงานหนักกว่าตั้งไว้', total, 'ชิ้น')
+            console.log('------------------สรุป-------------------')
+            console.log(
+              'วันนี้ต้องทำงานชิ้นนี้อย่างน้อย', limitTodo, '\n',
+              'งานเกินลิมิตวันนี้', overPiece, 'ชิ้น', '\n',
+            )
+            console.log('limitTimeDayWork',limitTimeDayWork)
+            console.log('-------------------------------------')
+            overPiece = Math.floor(total/countDay)
+            let timeTodo = (limitTodo+overPiece)*working.worktime
+            nowWorking.push(Object.assign(working, {
+              limitTodo,
+              overPiece,
+              timeTodo,
+              countDay,
+              toDayFinishedPiece,
+              anotherDayFinishedPiece,
+            }))
+            totalTimeDayWork += timeTodo
           }
         }
-      }//for loop
-      
+      }
+    }//for loop
       
     //}
     ////////////////////////////////////////////////////

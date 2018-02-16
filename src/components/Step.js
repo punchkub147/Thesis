@@ -89,7 +89,6 @@ const Style = Styled.div`
     border-radius: 100%;
     background: ${AppStyle.color.main};
     position: relative;
-    z-index: 10;
   }
   .x{
     width: 15px;

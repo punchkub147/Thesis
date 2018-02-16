@@ -28,9 +28,11 @@ import WebWork from './WEB/pages/Work'
 import WebWorkOnHome from './WEB/pages/WorkOnHome'
 import WebNeedWork from './WEB/pages/NeedWork'
 import WebEditProfile from './WEB/pages/EditProfile'
+import WebEmployees from './WEB/pages/Employees'
 
 /// ADMIN ///
-import AdminUser from './WEB/pages/Admin/User'
+import AdminEmployees from './WEB/pages/Admin/Employees'
+import AdminEmployers from './WEB/pages/Admin/Employers'
 
 class AppRouter extends Component {
 
@@ -185,13 +187,23 @@ class AppRouter extends Component {
         page: WebEditProfile,
         title: "แก้โปรไฟล์",
       },
-
+      { path: '/web/employees',
+        exact: false,
+        page: WebEmployees,
+        title: "ลูกจ้าง",
+      },
+      
       ///////////////////////////// ADMIN //////////////////
 
-      { path: '/web/admin/user',
+      { path: '/web/admin/employees',
         exact: false,
-        page: AdminUser,
+        page: AdminEmployees,
         title: "ผู้รับงาน",
+      },
+      { path: '/web/admin/employers',
+        exact: false,
+        page: AdminEmployers,
+        title: "ผู้ประกอบการ",
       },
     ]
 

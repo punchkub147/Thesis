@@ -32,12 +32,18 @@ class Dashboard extends Component {
     .onSnapshot(snap => {
       let working = []
       snap.forEach(doc => {
+        const total_price = doc.data().total_piece*doc.data().price
+        const total_time = doc.data().total_piece*doc.data().worktime
+        const value = Number((total_price)/((total_time)/60)).toFixed(1)
         working.push(Object.assign(doc.data(), {
           working_id: doc.id,
-          total_price: doc.data().total_piece*doc.data().price,
-          total_time: doc.data().total_piece*doc.data().worktime
+          total_price,
+          total_time,
+          value,
         }))
       })
+      
+
       this.setState({working})
       store.set('working', working)
     })
@@ -75,6 +81,7 @@ class Dashboard extends Component {
   render() {
     let { working, page, selectMonth } = this.state
     working = _.orderBy(working, ['endAt'], ['asc']); //เรียงวันที่
+    
 
     let chartData = []
     _.map(working, work => {
@@ -96,9 +103,13 @@ class Dashboard extends Component {
     let workMonth = []
     {_.map(working, work => {
       const date = moment(work.endAt).format('MMM/YY')
-      if(date === selectMonth)
+      if(date === selectMonth){
         workMonth.push(work)
+      }else if(selectMonth === 0){
+        workMonth.push(work)
+      }
     })}
+    workMonth = _.orderBy(workMonth, ['value'], ['desc']); //เรียงความคุ้มค่า
     
     return (
       <Layout route={this.props.route}>
@@ -133,7 +144,7 @@ class Dashboard extends Component {
 
           <div className='statlist'>
             <Content>
-            {_.map(selectMonth!==0?workMonth:working, work =>
+            {_.map(workMonth, work =>
               <List>
                 <div className='name'><Link to={`/work/${work.work_id}`}>{work.work_name}</Link></div>
                 <div className='piece'>
@@ -144,7 +155,7 @@ class Dashboard extends Component {
                 </div>
                 <div className='price'>{work.total_price}.-</div>
 
-                <div className='total'>{(work.total_price)/((work.total_time)/60)} #</div>
+                <div className='total'>{work.value} #</div>
               </List>
             )}
             </Content>
@@ -177,13 +188,12 @@ const Style = Styled.div`
 .cardGraph{
   background: ${AppStyle.color.bg};
   width: 300px;
-  max-height: 260px;
+  height: 260px;
   ${AppStyle.shadow.lv1}
   position: fixed;
   top: 100px;
   padding-top: 10px;
   padding-left: 10px;
-
 
   overflow: hidden;
   // width: 260px;
@@ -218,6 +228,7 @@ const Bar = Styled.div`
   margin-right: 10px;
   margin-bottom: 30px;
   box-sizing: border-box;
+  ${props => props.selected&&AppStyle.shadow.lv1}
   .stat{
     width: 100%;
     height: ${props => 220*(props.data/props.max*100)/100}px;

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import { browserHistory, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import _ from 'lodash'
@@ -14,6 +14,7 @@ import Button from '../../components/Button';
 const { RangePicker } = DatePicker
 
 const format = 'HH:mm'
+const dateFormat = 'YYYY/MM/DD'
 
 class FormEditWork extends Component {
   state = {
@@ -25,6 +26,8 @@ class FormEditWork extends Component {
   }
 
   componentDidMount() {
+
+
     auth.onAuthStateChanged(user => {
       user
         ?this.setState({user})
@@ -156,13 +159,15 @@ class FormEditWork extends Component {
   render() {
     const { image64, work, abilities } = this.state
 
-    let startAt = moment(new Date, 'YYYY/MM/DD')
-    if(work.startAt)
-      startAt = moment(moment(work.startAt).format('YYYY/MM/DD'), 'YYYY/MM/DD')
+    if(window.location.pathname!=='/web/addwork' && !work.startAt)return<div/>
 
-    let endAt = moment(new Date, 'YYYY/MM/DD')
+    let startAt = new Date
+    if(work.startAt)
+      startAt = work.startAt
+
+    let endAt = new Date
     if(work.endAt)
-      endAt = moment(moment(work.endAt).format('YYYY/MM/DD'), 'YYYY/MM/DD')
+      endAt = work.endAt
 
     let worktime = '00:00'
     if(work.worktime)
@@ -227,14 +232,12 @@ class FormEditWork extends Component {
         name: 'อุปกรณ์',
         input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'tool')} value={_.get(work,'tool')} required/>,
       },
-      {
-        name: 'วันส่งงาน-รับงาน',
-        input: <RangePicker 
-                defaultValue={[startAt, endAt]}
-                onChange={this.handleChangeDate} />,
-      },
-
-
+      // {
+      //   name: 'วันส่งงาน-รับงาน',
+      //   input: <RangePicker 
+      //           defaultValue={[moment(startAt, dateFormat), moment(endAt, dateFormat)]}
+      //           onChange={this.handleChangeDate} />,
+      // },
     ]
     return (
       <Style>

@@ -20,6 +20,7 @@ import Progress from '../components/Progress'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 
+
 import alarm2 from '../img/alarm2.png'
 
 const setDayHilight = (day, time) => {
@@ -294,7 +295,7 @@ class Tasks extends Component {
 
 
             
-            <Modal modalIsOpen={this.state.modalIsOpen}>
+            <Modal modalIsOpen={this.state.modalIsOpen} mini>
               <InsideModal>
                 <div className="modal-text">ทำงาน {this.state.doing} จาก {(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
                 {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}

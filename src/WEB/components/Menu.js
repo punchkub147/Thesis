@@ -6,7 +6,7 @@ import AppStyle from '../../config/style'
 import { auth, getUser } from '../../api/firebase'
 import store from 'store'
 
-import { Menu } from 'antd';
+import { Menu, Icon } from 'antd';
 const SubMenu = Menu.SubMenu;
 const MenuItemGroup = Menu.ItemGroup;
 
@@ -30,21 +30,35 @@ export default class extends Component {
       {
         path: '/web/works',
         name: 'งานทั้งหมด',
+        icon: 'shop',
       },
       {
         path: '/web/workonhome',
         name: 'งานที่มอบหมาย',
+        icon: 'schedule',
       },
       {
         path: '/web/needwork',
         name: 'คำร้องขอรับงาน',
+        icon: 'solution',
+      },
+      {
+        path: '/web/employees',
+        name: 'ลูกจ้าง',
+        icon: 'team',
       },
     ]
 
     const menuAdmin = [
       {
-        path: '/web/admin/user',
+        path: '/web/admin/employees',
         name: 'รายชื่อผู้รับงาน',
+        icon: 'team',
+      },
+      {
+        path: '/web/admin/employers',
+        name: 'รายชื่อบริษัท',
+        icon: 'shop',
       },
     ]
 
@@ -63,7 +77,7 @@ export default class extends Component {
           {menuList.map(menu => 
             <Link to={menu.path}>
               <div className={`list ${menu.path===this.props.route.path&&'active'}`}>
-                {menu.name}
+                <Icon type={menu.icon} style={{fontSize: 18}} /> {menu.name}
               </div>
             </Link>
           )}
@@ -74,7 +88,7 @@ export default class extends Component {
             {menuAdmin.map(menu => 
               <Link to={menu.path}>
                 <div className={`list ${menu.path===this.props.route.path&&'active'}`}>
-                  {menu.name}
+                  <Icon type={menu.icon} style={{fontSize: 18}} /> {menu.name}
                 </div>
               </Link>
             )}

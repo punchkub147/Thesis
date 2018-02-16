@@ -10,6 +10,7 @@ import { auth, db } from '../../../api/firebase'
 import Button from '../../../components/Button';
 
 import Table from '../../components/Table';
+import { Popconfirm  } from 'antd'
 
 class Works extends Component {
 
@@ -32,8 +33,11 @@ class Works extends Component {
     })
   }
 
-  deleteUser = (employee_id) => {
+  banUser = (employee_id) => {
     //db.collection('employee').doc(employee_id).delete()
+    db.collection('employee').doc(employee_id).update({
+      baned: true
+    })
   }
 
   render() {
@@ -70,13 +74,15 @@ class Works extends Component {
         dataIndex: 'phone',
       },
       {
-        title: 'ลบ',
+        title: 'ระงับการใช้งาน',
         key: 'action',
-        render: (text, item) => (
-          <span>
-            <div onClick={() => this.deleteUser(item.employee_id) }>ลบ</div>
-          </span>
-        ),
+        render: (text, item) => {
+          return (
+            <Popconfirm title="Sure to ban?" onConfirm={() => this.banUser(item.employee_id)}>
+              <a href="#">BAN</a>
+            </Popconfirm>
+          );
+        },
       }
     ];
 

@@ -6,15 +6,19 @@ import _ from 'lodash'
 import moment from 'moment'
 import store from 'store'
 
+import jsonHoliday from '../config/holiday'
 import enUS from 'antd-mobile/lib/locale-provider/en_US';
 
 import { db, getUser } from '../api/firebase'
 import { timeToSec } from '../functions/moment'
 
 import Button from './Button';
+import Modal from './Modal'
 
 import { TimePicker } from 'antd';
 import { LocaleProvider, Picker } from 'antd-mobile';
+
+import Loading from './Loading'
 
 let hour = -1
 const hours = _.times(24, () => {
@@ -60,23 +64,29 @@ class FormWorkTime extends Component {
 
   state = {
     workTime: {
-      // sun: secToMoment(0),
-      // mon: secToMoment(0),
-      // tue: secToMoment(0),
-      // wed: secToMoment(0),
-      // thu: secToMoment(0),
-      // fri: secToMoment(0),
-      // sat: secToMoment(0),
+      sun: 0,
+      mon: 0,
+      tue: 0,
+      wed: 0,
+      thu: 0,
+      fri: 0,
+      sat: 0,
     },
+    holiday: {},
     open: false,
-    value: ['00','00']
+    value: ['00','00'],
+    loading: false,
   }
 
   async componentDidMount() {
     const user = store.get('employee')
     this.setState({
       user,
+      workTime: user.data.workTime,
+      holiday: user.data.holiday
     })
+
+    this.setState({loading: true})
     getUser('employee', user => {
       if(user.data.workTime){
         const { sun, mon, tue, wed, thu, fri, sat } = user.data.workTime
@@ -106,21 +116,26 @@ class FormWorkTime extends Component {
           }
         })
       }
-      
+      this.setState({loading: false})
+
       store.set('employee',user)
     })
+
   }
 
   handleUpdateWorkTime = async () => {
-    const { workTime, user } = this.state
+    const { workTime, user, holiday } = this.state
+
     db.collection('employee').doc(user.uid).update({
-      workTime
+      workTime,
+      holiday
     })
     await store.set('employee',{
       uid: user.uid,
       data: {
         ...user.data,
-        workTime
+        workTime,
+        holiday
       }
     })
     //alert('อัพเดทวันทำงานเรียบร้อย')
@@ -165,10 +180,40 @@ class FormWorkTime extends Component {
     })
   }
 
+  handleSelectHoliday = (date) => {
+    let { holiday } = this.state
+
+    holiday[date] = !holiday[date]
+
+    this.setState({
+      holiday,
+    })
+  }
+
+  handleSelectAllHoliday = () => {
+    let { holiday } = this.state
+
+    console.log(holiday)
+    _.map(jsonHoliday, day => {
+      holiday = {
+        ...holiday,
+        [day.date]: true
+      }
+      //holiday[day.date] = true
+    })
+
+    this.setState({
+      holiday,
+    })
+  }
+
   render() {   
-    const {workTime} = this.state
-    
+    const { workTime, holiday } = this.state
+    console.log('jsonHoliday',jsonHoliday)
+    console.log('holiday',holiday)
+
     return (
+      <Loading loading={this.state.loading}>  
       <Style>
           <div className="row justify-content-center text">
             <div className="col-4">
@@ -178,7 +223,6 @@ class FormWorkTime extends Component {
               ชั่วโมงทำงาน
             </div>
           </div>
-
 
           <div>
           {_.map(workTime, (date, day) =>
@@ -202,6 +246,28 @@ class FormWorkTime extends Component {
           )}
           </div>
 
+          <div className='btn-holiday'
+            onClick={() => this.setState({modalIsOpen: true})}
+          >
+            ดูตารางวันหยุด
+          </div>
+          <Modal modalIsOpen={this.state.modalIsOpen}>
+            <InsideModal>
+              <div onClick={this.handleSelectAllHoliday} 
+                className='selectAllHoliday'>หยุดทั้งหมด</div>
+              {_.map(jsonHoliday, day => 
+                <div className='holiday' onClick={() => this.handleSelectHoliday(day.date)}>
+                  <div className='date'>{day.date} {day.name}</div>
+                  <div className='right'>
+                    {holiday!==undefined
+                      &&holiday[day.date]?'หยุด':'ทำงาน'
+                    }
+                  </div>
+                </div>
+              )}
+              <Button className='button' onClick={() => this.setState({modalIsOpen: false})}>ปิด</Button>
+            </InsideModal>
+          </Modal>
 
           <LocaleProvider locale={enUS}>
             <Picker
@@ -215,9 +281,9 @@ class FormWorkTime extends Component {
             />
           </LocaleProvider>
 
-
           <Button onClick={this.handleUpdateWorkTime}>ยืนยัน</Button>
       </Style>
+      </Loading>
     );
   }
 }
@@ -225,10 +291,9 @@ class FormWorkTime extends Component {
 export default FormWorkTime;
 
 const Style = Styled.div`
-  padding-top: 20px;
   text-align: center;
   .text{
-    margin: 0 0 20px 0;
+    margin: 0 0 10px 0;
     ${AppStyle.font.read1}
   }
   .datetime{
@@ -249,6 +314,44 @@ const Style = Styled.div`
   }
   .day{
     ${AppStyle.font.read2}
+  }
+
+  .btn-holiday{
+    margin-bottom: 10px;
+    ${AppStyle.font.hilight}
+  }
+`
+
+const InsideModal = Styled.div`
+  height: calc(100% - 60px);
+  overflow: scroll;
+  .animate{
+    animation-name:fadeInUp;
+    animation-duration: 0.3s;
+  }
+  .button{
+    position: fixed;
+    bottom: 60px;
+  }
+
+  .selectAllHoliday{
+    text-align: right;
+  }
+  .holiday{
+    height: 40px;
+    line-height: 40px;
+    border-bottom: solid 1px #ccc;
+    .date{
+      float: left;
+      width: 220px;
+      overflow: hidden; 
+      white-space: nowrap; 
+      text-overflow:ellipsis;
+    }
+    .right{
+      text-align: right;
+      float: right;
+    }
   }
 
 `

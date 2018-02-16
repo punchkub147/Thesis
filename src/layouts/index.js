@@ -26,6 +26,7 @@ export default Layout;
 const Style = Styled.div`
   // background-image: url('${bg2}');
   // background-size: 50px 10px;
+  
   min-height: 100vh;
   width:100%;
   flex: 1;

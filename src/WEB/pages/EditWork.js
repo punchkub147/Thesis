@@ -8,6 +8,9 @@ import FormEditWork from '../components/FormEditWork';
 
 class EditWork extends Component {
 
+  componentDidMount() {
+    window.scrollTo(0, 0)
+  }
   render() {
     const workId = this.props.params.id
     return (

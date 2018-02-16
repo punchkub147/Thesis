@@ -10,7 +10,7 @@ class WorkItem extends Component {
     const { data, i } = this.props
 
     const Small = (
-      <div className={''}>
+      <div>
       <Style fade={i*0.2} className={"col-xs-12"} style={{float: 'left'}}>
         <Link to={`/work/${data._id}`}>
           <div className={"WorkItem"}>
@@ -26,7 +26,10 @@ class WorkItem extends Component {
                   </div>
                   <div className="employer">{data.employer_name}</div>
                   <div className='startDate'>
-                    {'เริ่มส่ง' + moment(data.startAt).fromNow()}
+                    {data.startAt>new Date
+                      ?'เริ่มส่ง ' + moment(data.startAt).fromNow()
+                      :'เลยเวลาส่งแล้ว'
+                    }
                   </div>
                 </div>
 
@@ -57,7 +60,10 @@ class WorkItem extends Component {
                   </div>
                   <div className="employer">{data.employer_name}</div>
                   <div className='startDate'>
-                    {'เริ่มส่ง ' + moment(data.startAt).fromNow()}
+                    {moment(data.startAt)<new Date
+                      ?'เริ่มส่ง ' + moment(data.startAt).fromNow()
+                      :'เลยเวลาแล้ว'
+                    }
                   </div>
                 </div>
 

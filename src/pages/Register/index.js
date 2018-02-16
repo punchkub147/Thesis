@@ -12,16 +12,18 @@ import Button from '../../components/Button'
 import Bg from '../../components/Bg'
 
 class Register extends Component {
+
   handleRegister = async (e) => {
     e.preventDefault();
-
-    const data = {
-      deviceToken: await getToken()
-    }
 
     const email = this.email.value
     const password = this.password.value
     const password2 = this.password2.value
+
+    const data = {
+      deviceToken: await getToken(),
+      email,
+    }
 
     if(password === password2 && password !== ''){
       const user = await auth.createUserWithEmailAndPassword(email, password)
