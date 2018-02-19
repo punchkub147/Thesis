@@ -19,6 +19,7 @@ import edit from '../img/edit.png'
 
 import { db, getUser } from '../api/firebase'
 import { browserHistory } from 'react-router/lib';
+import TopStyle from '../components/TopStyle'
 
 
 

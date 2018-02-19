@@ -64,7 +64,6 @@ const Style = Styled.div`
       float: left;
       width: 80%;
       text-align: center;
-      color: ${AppStyle.color.card};
       ${AppStyle.font.tool}
     }
     .right{

@@ -17,8 +17,8 @@ class Bg extends Component {
 export default Bg;
 
 const Style = Styled.div`
-  width: 100%;
-  min-height: 100vh;
-  background-image: url('${bg2}');
-  background-size: 50px 10px;
+  // width: 100%;
+  // min-height: 100vh;
+  // background-image: url('${bg2}');
+  // background-size: 50px 10px;
 `

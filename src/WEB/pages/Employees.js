@@ -12,11 +12,18 @@ import Table from '../components/Table';
 import { auth, db } from '../../api/firebase'
 import EmployeeData from '../components/EmployeeData';
 
+import { secToText } from '../../functions/moment'
+
+import { Modal, Button } from 'antd';
+
+
 export default class extends Component {
   
   state = {
     employer: store.get('employer'),
-    employees: []
+    employees: [],
+    modalVisible: false,
+    selectEmployee: '',
   }
 
   async componentDidMount() {
@@ -24,36 +31,102 @@ export default class extends Component {
     
     const { employer } = this.state
 
-    let employees = []
+    let es = []
     await db.collection('working').where('employer_id', '==', employer.uid)
     .get().then(snap => {
       snap.forEach(doc => {
-        employees.push({employee_id: doc.data().employee_id})
+        es.push(doc.data().employee_id)
       })
     })
-    //employees = _.uniqWith(employees, _.isEqual)
+    es = _.uniq(es)
 
-    this.setState({
-      employees
+
+    await db.collection('employee')
+    .onSnapshot(snap => {
+      let employees = []
+      snap.forEach(doc => {
+        const { workTime } = doc.data()
+        if(_.indexOf(es, doc.id) !== -1){
+          employees.push(Object.assign(doc.data(),{
+            employee_id: doc.id,
+            sumWorktime: workTime.sun+workTime.mon+workTime.tue+workTime.wed+workTime.thu+workTime.fri+workTime.sat
+          }))
+        }
+      })
+      this.setState({
+        employees
+      })
     })
+
   }
   render() {
-    const { employees } = this.state
-
-    console.log('Stateee', employees)
+    const { employees, selectEmployee } = this.state
+    const columns = [
+      {
+        title: `ชื่อ`,
+        dataIndex: 'name',
+        key: 'name',
+        className: 'name',
+        render: (text, item) => 
+          <span onClick={() => this.setState({modalVisible: true,selectEmployee: item.employee_id})}>{item.tname + item.fname + ' ' + item.lname}</span>,
+      },
+      {
+        title: `เบอรโทรศัพท์`,
+        dataIndex: 'phone',
+        key: 'phone',
+      },
+      {
+        title: `เวลาทำงานต่อสัปดาห์`,
+        dataIndex: 'workTime',
+        key: 'workTime',
+        render: (text, item) => 
+          <span>{
+            secToText(item.sumWorktime)
+          }</span>,
+      },
+      {
+        title: `ทำงานสำเร็จ`,
+        dataIndex: 'workSuccess',
+        key: 'workSuccess',
+      },
+      {
+        title: `ทำงานไม่สำเร็จ`,
+        dataIndex: 'workFail',
+        key: 'workFail',
+      },
+    ];
+    console.log('FFFFFF',employees)
 
     return (
       <Style>
         <Layout {...this.props}>
-          <div className="row">
              
-            {_.map(employees, employee =>
-              <div className="col-md-3 card">
-                <EmployeeData uid={employee.employee_id}/>
-              </div>
-            )}
+          <Table 
+            columns={columns} 
+            dataSource={employees}
+            expandedRowRender={data => 
+              <span>
+                ที่อยู่{' '}
+                {data.homeNo&&`${data.homeNo} `}
+                {data.road&&`ถ.${data.road} `}
+                {data.area&&`ข.${data.area} `}
+                {data.district&&`ข.${data.district} `}
+                {data.province&&`จ.${data.province} `}
+                {data.postcode&&`${data.postcode} `}
+              </span>
+            }
+          />
+
+          <Modal
+            style={{ top: 20 }}
+            visible={this.state.modalVisible}
+            onOk={() => this.setState({modalVisible: false})}
+            onCancel={() => this.setState({modalVisible: false})}
+            footer={false}
+          >
+            <EmployeeData uid={selectEmployee}/>
+          </Modal>
               
-          </div>
         </Layout>
       </Style>
     );
@@ -61,8 +134,8 @@ export default class extends Component {
 }
 
 const Style = Styled.div`
-  .card{
-    padding: 0 -5px;
-    margin-bottom: 10px;
+  .name{
+    ${AppStyle.font.hilight}
+    cursor: pointer;
   }
 `

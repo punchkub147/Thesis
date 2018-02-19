@@ -8,6 +8,8 @@ import { db, getUser } from '../api/firebase'
 
 import BottomButton from '../components/BottomButton';
 
+import frame from '../img/frame.png'
+
 class FormAbilities extends Component {
 
   state = {
@@ -86,13 +88,15 @@ class FormAbilities extends Component {
                 className="col-6 col-xs-6 col-sm-6 col-md-4" style={{padding: '10px 5px 0 5px'}}>
 
                 <Card className="frame" display={data.selected?'block':'none'}>
+                  <img src={frame} className='frame-top'/>
                   <div className="incard">
                     <div className="cover">
                       <div className="text">เลือกแล้ว</div>
                     </div>
                     <img alt='' src={data.image}/>
-                  {data.name}
+                    <div className='name'>{data.name}</div>
                   </div>
+                  <img src={frame} className='frame-bottom'/>
                 </Card>
 
               </div>
@@ -116,35 +120,56 @@ const Style = Styled.div`
   }
 `
 const Card = Styled.div`
+  position: relative;
   background: white;
-  padding: 10px;
+  padding: 10px 10px 0 10px;
   box-sizing: border-box;
   text-align: center;
+  ${AppStyle.shadow.lv1}
   .incard{
     width: 100%;  
     position: relative;
     img{
       width: 100%;
-      height: 140px;
+      height: 120px;
       object-fit: cover;
     }
     .cover{
       display: ${props => props.display};
       position: absolute;
       width: 100%;
-      height: 140px;
-      background: rgba(0,0,0,0.5);
+      height: 120px;
+      background: rgba(96,60,28,0.5);
 
       animation-name: fadeIn;
       animation-duration: 0.1s;
       .text{
         font-size: 28px;
-        transform: rotate(-10deg);
-        margin-top: 50px;
+        transform: rotate(-30deg);
+        margin-top: 40px;
         color: ${AppStyle.color.white};
-        font-family: 'Anchan';
+        font-family: ${AppStyle.family.main};
         animation-name: zoomIn;
         animation-duration: 0.3s;
       }
     }
+    .name{
+      ${AppStyle.font.read1}
+    }
+  }
+  .frame-top{
+    width: 27px;
+    height: 27px;
+    position: absolute;
+    top: -3px;
+    left: -3px;
+  }
+  .frame-bottom{
+    width: 27px;
+    height: 27px;
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    transform: rotate(180deg);
+  }
 `

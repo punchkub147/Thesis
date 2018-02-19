@@ -121,7 +121,7 @@ class Works extends Component {
           <span>
           {moment(text)>new Date
             ?moment(text).fromNow()
-            :'ส่งแล้ว'
+            :'กำลังทำงาน'
           }
           </span>,
         sorter: (a, b) => a.startAt - b.startAt,

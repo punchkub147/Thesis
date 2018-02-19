@@ -3,7 +3,7 @@ import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 
-import logo from '../img/logo-xl.png'
+import logo from '../img/logo-5.png'
 import bg12 from '../img/bg12.jpg'
 
 import Button from '../components/Button'
@@ -101,7 +101,7 @@ class Login extends Component {
                 </div>
             
               
-              <div className="card">
+              <div className="wrap">
                 <form onSubmit={(e) => this.handleLogin(e)}>
                 
                   <input placeholder="อีเมลล์" type="email" ref={r => this.email = r }/>
@@ -115,7 +115,7 @@ class Login extends Component {
                 </form>
 
                 <Link to="/register">
-                  <div className="register">สมัครสมาชิก</div> 
+                  <div className="register">ลงทะเบียน</div> 
                 </Link>
               </div>
             
@@ -132,9 +132,9 @@ class Login extends Component {
 export default Login;
 
 const Style = Styled.div`
-  transition: 1s;
-  background-image: url('${bg12}');
-  background-size: 50px 10px;
+  // transition: 1s;
+  // background-image: url('${bg12}');
+  // background-size: 50px 10px;
   min-height: 100vh;
 
   .content{
@@ -146,6 +146,9 @@ const Style = Styled.div`
     background: ${AppStyle.color.bg};
     padding: 10px;
     ${AppStyle.shadow.lv1}
+  }
+  .wrap{
+    padding: 0 30px;
   }
 
   .logo{
@@ -166,5 +169,7 @@ const Style = Styled.div`
     width: 100%;
     text-align: center;
     margin-top: 20px;
+    color: ${AppStyle.color.black};
+    font-weight: bold;
   }
 `

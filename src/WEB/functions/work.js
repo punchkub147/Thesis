@@ -67,18 +67,44 @@ export const cancelWork = (data) => {
 
   
 export const getedWork = async (data) => {
-  db.collection('working').doc(data.working_id).update({success: true})
+  if(data.endAt > new Date){
+    console.log('ยังไม่ถึงเวลารับงาน')
+    return
+  }
+
+  console.log(data)
+  let status = true
+  let price = data.finished_piece*data.price
+
+  if(data.total_piece - data.finished_piece > 0){//fail
+    status = false
+  }
+
+  const updateWorking = status?{success: true, fail: true}:{success: true}
+  db.collection('working').doc(data.working_id).update(updateWorking)
 
   db.collection('works').doc(data.work_id).get()
   .then(doc => 
     db.collection('works').doc(doc.id).update({
       working: doc.data().working?doc.data().working-1:0,
-      success: doc.data().success?doc.data().success+1:1
+      success: doc.data().success?doc.data().success+1:1,
+      fail: !status&&doc.data().fail?doc.data().fail+1:1
     }) 
   )
 
+  db.collection('employee').doc(data.employee_id).get()
+  .then(doc => {
+    const updateEmployee = status
+      ?{workSuccess: doc.data().workSuccess?doc.data().workSuccess+1:1}
+      :{workFail: doc.data().workFail?doc.data().workFail+1:1}
+    db.collection('employee').doc(doc.id).update(updateEmployee) 
+  })
+
   const title = 'บริษัทได้รับงานของคุณแล้ว'
-  const message = `บริษัทได้รับงาน ${data.work_name} คุณได้ทำครบกำหนด`
+  const message = status
+    ?`บริษัทได้รับงาน ${data.work_name} คุณทำครบกำหนด จะได้รับเงิน ${price} บาท`
+    :`บริษัทได้รับงาน ${data.work_name} คุณทำไม่ครบกำหนด จะได้รับเงิน ${price} บาท`
+  
   const type = 'send'
   const receiver = data.employee_id
   const sender = user.uid

@@ -25,6 +25,7 @@
     "react-scripts": "1.0.12",
     "react-scroll": "^1.7.5",
     "react-slick": "^0.17.1",
+    "react-thailand-address-typeahead": "^1.0.0",
     "react-times": "^2.2.8",
     "store": "^2.0.12",
     "styled-components": "^2.2.4",

@@ -19,7 +19,7 @@ class Register4 extends Component {
         <Style>
           <ToolBar 
             title={this.props.route.title} 
-            left={() => browserHistory.push('/register2')} 
+            left={() => browserHistory.push('/register3')} 
             //right={this.handleUpdateAbilities}
             />
           <div className='card'>
@@ -37,11 +37,10 @@ export default Register4;
 const Style = Styled.div`
   .card{
     position: relative;
-    margin-top: 10px;
     width: 100%;
     background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}
-    padding: 10px 0;
+    padding-bottom: 10px;
     padding-bottom: -20px;
   }
 `

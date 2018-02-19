@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 
-import buttonimg from '../img/button.png'
+import buttonimg from '../img/button2.png'
 
 class AppButton extends Component {
 

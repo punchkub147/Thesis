@@ -15,3 +15,16 @@ export const secToTime = (sec) => {
   else if (sec/60/60 > 24)
     return '~'+parseInt(sec/60/60)+'hour'
 }
+
+export const secToText = (sec) => {
+  let text = ''
+  if(sec >= 60*60){
+    text = '~ ' + Math.floor(sec/60/60) + ' ชั่วโมง'
+  }else if(sec >= 60){
+    text = '~ ' + Math.floor(sec/60) + ' นาที'
+  }else{
+    text = sec + ' วินาที'
+  }
+
+  return text
+}

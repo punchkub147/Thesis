@@ -1,4 +1,6 @@
-const color = { //Mood lady hobby retro
+const fontFamily = 'SILPAKORN70yr'
+
+const color2 = { //Mood lady hobby retro
   main: "#eb7985",
   sub: "#72c6aa",
   bg: "#f4e4d1",
@@ -11,30 +13,17 @@ const color = { //Mood lady hobby retro
   black: "#603913",
   gray: "#ccc",
 }
-const color2 = { //Mood2
-  main: "#d2282c",
-  sub: "#163b4c",
-  bg: "#ece0a0",
-  bg2: '#dea93e',
-  card: "#ece0a0",
+const color = { //YELLOW
+  main: "#9c2828",
+  sub: "#2e5388",
+  bg: "#faf5b2",
+  bg2: '#f4cc72',
+  card: "#faf5b2",
   maintext: "#d2282c",
-  text: "#603913",
-  subtext: "#ece0a0",
+  text: "#442916",
+  subtext: "#fcf4e2",
   white: "#fcf4e2",
-  black: "#603913",
-  gray: "#ccc",
-}
-const color3 = { //Mood3
-  main: "#e3242e",
-  sub: "#f9db95",
-  bg: "#b65656",
-  bg2: '#b05c5b',
-  card: "#e3242e",
-  maintext: "#f9db95",
-  text: "#f9db95",
-  subtext: "#f9db95",
-  white: "#f9db95",
-  black: "#603913",
+  black: "#442916",
   gray: "#ccc",
 }
 
@@ -61,22 +50,22 @@ const AppStyle = {
 
   font: {
     tool: `
-      font-family: 'Anchan';
+      font-family: ${fontFamily};
       font-weight: normal; 
       color: ${color.subtext};
-      font-size: 24px;
+      font-size: 20px;
     `,
     main: `
-      font-family: 'Anchan';
+      font-family: ${fontFamily};
       font-weight: normal; 
       color: ${color.text};
-      font-size: 22px;
+      font-size: 18px;
     `,
     menu: `
-      font-family: 'Anchan';
+      font-family: ${fontFamily};
       font-weight: normal; 
       color: ${color.text};
-      font-size: 22px;
+      font-size: 18px;
     `,
     read1: `
       font-family: 'TH Sarabun New';
@@ -100,11 +89,15 @@ const AppStyle = {
       font-size: 20px;
     `,
     button: `
-      font-family: 'Anchan';
+      font-family: ${fontFamily};
       font-weight: normal; 
-      color: ${color.bg};
-      font-size: 24px;
+      color: ${color.white};
+      font-size: 20px;
     `,
+  },
+
+  family: {
+    main: fontFamily,
   },
 
   animate: {
@@ -127,4 +120,6 @@ const AppStyle = {
     `,
   }
 }
+
+
 export default AppStyle

@@ -7,7 +7,7 @@ import Loading from '../../components/Loading'
 import Content from '../../components/Content'
 import Button from '../../components/Button'
 
-import logo from '../../img/logo-xl.png'
+import logo from '../../img/logo-5.png'
 import bg12 from '../../img/bg12.jpg'
 
 import { auth, db } from '../../api/firebase'
@@ -89,8 +89,8 @@ export default Login;
 
 const Style = Styled.div`
   transition: 1s;
-  background-image: url('${bg12}');
-  background-size: 50px 10px;
+  //background-image: url('${bg12}');
+  //background-size: 50px 10px;
   min-height: 100vh;
 
   .content{

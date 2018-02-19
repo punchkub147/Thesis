@@ -82,7 +82,6 @@ const Style = Styled.div`
   }
   .card{
     position: relative;
-    margin-top: 10px;
     width: 100%;
     background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}

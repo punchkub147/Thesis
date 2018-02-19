@@ -18,6 +18,8 @@ class Register2 extends Component {
             // left={() => browserHistory.push({pathname: '/register', state: { goNext: false }})} 
             // right={e => this.handleProfile(e)}
             />
+          
+
           <div className='card'>
             <Step step='2'/>
             <FormProfile push='/register3'/>
@@ -33,11 +35,11 @@ export default Register2;
 const Style = Styled.div`
   .card{
     position: relative;
-    margin-top: 10px;
     width: 100%;
     background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}
-    padding: 10px 0;
+    padding-bottom: 10px;
     padding-bottom: -20px;
+    margin-bottom: 40px;
   }
 `

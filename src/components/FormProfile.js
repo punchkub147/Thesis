@@ -4,16 +4,29 @@ import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import store from 'store'
 import _ from 'lodash'
+import moment from 'moment'
 
 import { getUser, updateAt, storage } from '../api/firebase'
 
 import BottomButton from '../components/BottomButton';
+import Button from '../components/Button';
 
-import defaultImage from '../img/logo-m.png'
+import defaultImage from '../img/logo-5.png'
+import { amphoes, changwats, tambons } from '../config/address'
 
 const isEmpty = (data) => {
   return data === ""?true:false
 }
+
+
+const days = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม']
+const year = +moment().format('YYYY')+543-18
+let years = []
+for(let i = year; i > year-80; i--){
+  years.push(i)
+}
+
 
 class FormProfile extends Component {
 
@@ -138,12 +151,14 @@ class FormProfile extends Component {
   render() {
     const { image64, uploading } = this.state
     const user = _.get(this.state.user, 'data')
-    console.log('uploading', uploading)
+
+    const filterAmphoes = 'พระ'
+    const autoAmphoes = _.filter(amphoes.th.amphoes, amphoes => amphoes.name.search(filterAmphoes)!=-1 && amphoes)
 
     return (
       <Style>
         {user&&
-          <div className="container">
+          <div className="content">
             <form className="" onSubmit={this.handleProfile}>
               <div className="row justify-content-center">
                 <label htmlFor="raised-button-file" className="profileImage">
@@ -165,12 +180,11 @@ class FormProfile extends Component {
                 style={{display: 'none'}}
               />
 
-              <input type="text" 
-                value={user['tname']} 
-                placeholder="คำนำหน้าชื่อ"
-                required
-                onChange={e => this.handleChangeProfile(e, 'tname')}/>
-
+              <select onChange={e => this.handleChangeProfile(e, 'tname')}>
+                <option value='นาย' selected={user['tname']==='นาย'||!user['tname']}>นาย</option>
+                <option value='นาง' selected={user['tname']==='นาง'}>นาง</option>
+                <option value='นางสาว' selected={user['tname']==='นางสาว'}>นางสาว</option>
+              </select>
 
               <div className="row row-haft">
                 <div className="col-6 haft">
@@ -193,26 +207,52 @@ class FormProfile extends Component {
                 value={user['phone']} 
                 placeholder="เบอร์โทรศัพท์"
                 required
+                minlength="9" maxlength="10"
                 onChange={e => this.handleChangeProfile(e, 'phone')}/>
               <input type="text" 
                 value={user['personId']} 
                 placeholder="รหัสประจำตัวประชาชน"
                 required
+                minlength="13" maxlength="13"
                 onChange={e => this.handleChangeProfile(e, 'personId')}/>
 
-              <input type="text" 
-                value={user['education']} 
-                placeholder="ระดับการศึกษา"
-                required
-                onChange={e => this.handleChangeProfile(e, 'education')}/>
+              <select onChange={e => this.handleChangeProfile(e, 'education')}>
+                <option value='ไม่ระบุ' selected={user['education']==='ไม่ระบุ'||!user['education']}>ไม่ระบุ</option>
+                <option value='ประถมศึกษา' selected={user['education']==='ประถมศึกษา'}>ประถมศึกษา</option>
+                <option value='มัธยมศึกษาตอนต้น' selected={user['education']==='มัธยมศึกษาตอนต้น'}>มัธยมศึกษาตอนต้น</option>
+                <option value='มัธยมศึกษาตอนปลาย' selected={user['education']==='มัธยมศึกษาตอนปลาย'}>มัธยมศึกษาตอนปลาย</option>
+                <option value='การศึกษานอกโรงเรียน' selected={user['education']==='การศึกษานอกโรงเรียน'}>การศึกษานอกโรงเรียน</option>                
+                <option value='ปวช.' selected={user['education']==='ปวช.'}>ปวช.</option>
+                <option value='ปวส.' selected={user['education']==='ปวส.'}>ปวส.</option>
+                <option value='ปริญญาตรี' selected={user['education']==='ปริญญาตรี'}>ปริญญาตรี</option>
+                <option value='ปริญญาโท' selected={user['education']==='ปริญญาโท'}>ปริญญาโท</option>
+                <option value='ปริญญาเอก' selected={user['education']==='ปริญญาเอก'}>ปริญญาเอก</option>
+              </select>
 
-              <input type="text" 
-                value={user['birthday']} 
-                placeholder="วัน/เดือน/ปี เกิด"
-                required
-                onChange={e => this.handleChangeProfile(e, 'birthday')}/>
-              
-
+              <div className="row row-haft">
+                <div className="col-4 haft">
+                  <select onChange={e => this.handleChangeProfile(e, 'birthDay')}>
+                    {_.map(days, day => 
+                      <option selected={user['birthDay']===day}>{day}</option>
+                    )}
+                  </select>
+                </div>
+                <div className="col-4 haft">
+                  <select onChange={e => this.handleChangeProfile(e, 'birthMonth')}>
+                    {_.map(months, month => 
+                      <option selected={user['birthMonth']===month}>{month}</option>
+                    )}
+                  </select>
+                </div>
+                <div className="col-4 haft">
+                  <select onChange={e => this.handleChangeProfile(e, 'birthYear')}>
+                    {_.map(years, year => 
+                      <option selected={user['birthYear']===year}>{year}</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+          
               <div>สถานที่รับงาน</div>
 
               <div className="row row-haft">
@@ -233,13 +273,13 @@ class FormProfile extends Component {
                 <div className="col-6 haft">
                   <input type="text" 
                     value={user['area']} 
-                    placeholder="เขต"
+                    placeholder="ตำบล"
                     onChange={e => this.handleChangeProfile(e, 'area')}/>
                 </div>
                 <div className="col-6 haft">
                   <input type="text" 
                     value={user['district']} 
-                    placeholder="แขวง"
+                    placeholder="อำเภอ"
                     onChange={e => this.handleChangeProfile(e, 'district')}/>
                 </div>
               </div>
@@ -258,12 +298,11 @@ class FormProfile extends Component {
                 </div>
               </div>
 
-              {/*<button type="submit" onSubmit={this.handleProfile}>ต่อไป</button>*/}
+              <Button className='btn-fall' type="submit" onSubmit={this.handleProfile} disabled={uploading}>ต่อไป</Button>
             </form>
-            
           </div>
         }
-        <BottomButton onClick={this.handleProfile} disabled={uploading}>ยืนยัน</BottomButton>
+        {/*<BottomButton onClick={this.handleProfile} disabled={uploading}>ยืนยัน</BottomButton>*/}
       </Style>
     );
   }
@@ -287,7 +326,7 @@ margin-top: 85px;
   margin: 0 auto;
   text-align: center;
   margin-bottom: 10px;
-  margin-top: -70px;
+  margin-top: -80px;
   ${AppStyle.shadow.lv1}
   .iconChange{
     position: relative;
@@ -315,7 +354,20 @@ margin-top: 85px;
 button{
   width: 100%;
 }
+.btn-fall{
+  position: relative;
+  top: 30px;
+}
 .error{
   border: solid 2px red;
+}
+
+.autoComplete{
+  position: absolute;
+  background: ${AppStyle.color.white};
+  z-index: 10;
+  height: 180px;
+  width: 100%;
+  overflow: scroll;
 }
 `

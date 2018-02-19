@@ -2,18 +2,21 @@ import React, { Component } from 'react';
 import Styled from 'styled-components'
 import AppStyle from '../config/style'
 
+import TopStyle from './TopStyle'
+
 class Step extends Component {
 
   render() {
     const { step } = this.props
     return (
       <Style>
+        <TopStyle/>
           <div className="step">
             {step >= 1
               ?<div className="o"/>
               :<div className="x"/>
             }
-            {step >= 2
+            {step >= 1
               ?<div className='line-o'/>     
               :<div className='line-x'/>   
             }     
@@ -24,7 +27,7 @@ class Step extends Component {
               ?<div className="o"/>
               :<div className="x"/>
             }
-            {step >= 3
+            {step >= 2
               ?<div className='line-o'/>     
               :<div className='line-x'/>   
             }  
@@ -35,7 +38,7 @@ class Step extends Component {
               ?<div className="o"/>
               :<div className="x"/>
             }
-            {step >= 4
+            {step >= 3
               ?<div className='line-o'/>     
               :<div className='line-x'/>   
             }  
@@ -58,43 +61,44 @@ export default Step;
 
 const Style = Styled.div`
   width: 100%;
-  padding: 10px;
+  
   .step{
+    margin-top: 10px;
     position: relative;
     width: 25%;
     text-align: center;
     float: left;
     .line-o{
-      height: 2px;
+      height: 5px;
       width: 100%;
       position: relative;
       left: 50%;
-      top: -18px;
+      top: -25px;
       background: ${AppStyle.color.main};
     }
     .line-x{
-      height: 2px;
+      height: 5px;
       width: 100%;
       position: relative;
       left: 50%;
-      top: -18px;
-      background: ${AppStyle.color.gray};
+      top: -25px;
+      background: ${AppStyle.color.bg2};
     }
   }
 
   .o{
-    width: 15px;
-    height: 15px;
+    width: 25px;
+    height: 25px;
     margin: 10px auto;
     border-radius: 100%;
     background: ${AppStyle.color.main};
     position: relative;
   }
   .x{
-    width: 15px;
-    height: 15px;
+    width: 25px;
+    height: 25px;
     margin: 10px auto;
     border-radius: 100%;
-    background: ${AppStyle.color.gray};
+    background: ${AppStyle.color.bg2};
   }
 `

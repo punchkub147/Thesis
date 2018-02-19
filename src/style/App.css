@@ -12,12 +12,25 @@
   font-weight: normal;
   font-style: normal;
 }
-
+@font-face {
+  font-family: 'SILPAKORN70yr';
+  src: url('font/SILPAKORN70yr.woff2') format('woff2'),
+      url('font/SILPAKORN70yr.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
 
 body{
-  background: #dea93e;
+  /* background: #dea93e;
   background-image: url('../img/bg2.jpg');
-  background-size: 50px 10px;
+  background-size: 50px 10px; */
+
+  background: #faf5b2;
+  background-image: url('../img/bg3.jpg');
+  background-position: center;
+  background-attachment: fixed;
+  background-size: cover;
+
 
   margin: 0;
   padding: 0;
@@ -41,10 +54,11 @@ input, select{
   height: 40px;
   padding-left: 10px;
   border: none;
-  border-bottom: solid 2px #72c6aa;
+  border-bottom: solid 5px #72c6aa;
   background: #fcf4e2;
   font-size: 20px; 
   font-family: 'TH Sarabun New';
+  border-radius: 7px 7px 0 0;
 }
 textarea{
   width: 100%;
@@ -52,10 +66,11 @@ textarea{
   height: 120px;
   padding-left: 10px;
   border: none;
-  border-bottom: solid 2px #72c6aa;
+  border-bottom: solid 5px #72c6aa;
   background: #fcf4e2;
   font-size: 20px; 
   font-family: 'TH Sarabun New';
+  border-radius: 7px 7px 0 0;
 }
 
 textarea:focus, input:focus{
@@ -72,7 +87,7 @@ button:focus{
 }
 
 .content{
-  padding: 0 15px;
+  padding: 0 30px;
   box-sizing: border-box;
   margin-top: 20px;
 }
@@ -235,4 +250,8 @@ li.ant-time-picker-panel-select-option-selected{
 
 .ant-time-picker-input{
   font-size: 20px;
+}
+
+.ant-btn{
+  width: auto;
 }

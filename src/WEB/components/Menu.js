@@ -143,6 +143,6 @@ const Style = Styled.div`
     background: ${AppStyle.color.sub};
   }
   .logout{
-    margin-top: 200px;
+    margin-top: 40px;
   }
 `

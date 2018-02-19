@@ -8,14 +8,18 @@ import Layout from '../../layouts'
 
 import { auth, db } from '../../../api/firebase'
 import Button from '../../../components/Button';
-
 import Table from '../../components/Table';
-import { Popconfirm  } from 'antd'
+import EmployeeData from '../../components/EmployeeData';
+
+import { Popconfirm, Modal } from 'antd'
 
 class Works extends Component {
 
   state = {
-    userList: []
+    userList: [],
+
+    modalVisible: false,
+    selectEmployee: '',
   }
 
   async componentDidMount() {
@@ -41,7 +45,7 @@ class Works extends Component {
   }
 
   render() {
-    const { userList } = this.state
+    const { userList, selectEmployee } = this.state
 
     // const colList = [] 
     // _.mapKeys(userList[0], (value, key) => {
@@ -58,8 +62,11 @@ class Works extends Component {
 
     const columns = [
       {
-        title: 'employee_ID',
+        title: 'รหัสผู้รับงาน',
         dataIndex: 'employee_id',
+        key: 'employee_id',
+        className: 'click',
+        render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text}</span>,
       }, 
       {
         title: 'ชื่อผู้รับงาน',
@@ -85,7 +92,7 @@ class Works extends Component {
         },
       }
     ];
-
+    console.log(selectEmployee)
     return (
       <Style>
         <Layout {...this.props}>
@@ -93,6 +100,19 @@ class Works extends Component {
           <Table columns={columns} dataSource={userList} />
           
         </Layout>
+
+
+        <Modal
+            style={{ top: 20 }}
+            visible={this.state.modalVisible}
+            onOk={() => this.setState({modalVisible: false, selectEmployee: ''})}
+            onCancel={() => this.setState({modalVisible: false, selectEmployee: ''})}
+            footer={false}
+          >
+            <EmployeeData uid={selectEmployee}/>
+          </Modal>
+
+        
       </Style>
     );
   }
@@ -101,5 +121,7 @@ class Works extends Component {
 export default Works;
 
 const Style = Styled.div`
-
+  .click{
+    ${AppStyle.font.hilight}
+  }
 `
