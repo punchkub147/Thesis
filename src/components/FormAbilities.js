@@ -82,7 +82,7 @@ class FormAbilities extends Component {
       <Style>
         <div className="container">
 
-          <div className="row" style={{margin: '0 -5px'}}>
+          <div className="row" style={{margin: '0 15px'}}>
             {abilities.map((data, key) =>
               <div onClick={() => this.handleSelect(key)}
                 className="col-6 col-xs-6 col-sm-6 col-md-4" style={{padding: '10px 5px 0 5px'}}>
@@ -118,6 +118,8 @@ const Style = Styled.div`
     animation-name:fadeInUp;
     animation-duration: 0.3s;
   }
+  
+  margin-bottom: 40px;
 `
 const Card = Styled.div`
   position: relative;
@@ -126,6 +128,8 @@ const Card = Styled.div`
   box-sizing: border-box;
   text-align: center;
   ${AppStyle.shadow.lv1}
+
+
   .incard{
     width: 100%;  
     position: relative;

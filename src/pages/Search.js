@@ -22,8 +22,6 @@ import { browserHistory } from 'react-router/lib';
 import TopStyle from '../components/TopStyle'
 
 
-
-
 class Search extends Component {
   
   state = {
@@ -56,17 +54,21 @@ class Search extends Component {
       let worksList = []
       snapshot.forEach(doc => {
         if(doc.data().pack <= 0)return
+        if(!doc.data().round)return
 
+        const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+        if(!nextRound)return
+        
+        worksList.push(_.assign(doc.data(),
+          { 
+            _id: doc.id,
+            abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
 
-        worksList.push(
-          _.assign(
-            doc.data(),
-            {
-              _id: doc.id,
-              abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
-            }
-          )
-        )
+            startAt: nextRound.startAt,
+            endAt: nextRound.endAt,
+            workAllTime: doc.data().worktime*doc.data().piece
+          }
+        ))
       })
 
       worksList = _.orderBy(worksList, ['startAt'], ['asc']); //เรียงวันที่
@@ -147,6 +149,7 @@ class Search extends Component {
       <Layout route={this.props.route}>
         <Style>
           <Tabbar tabs={tabs}/>
+          <TopStyle/>
         </Style>
       </Layout>
     );
@@ -159,6 +162,7 @@ const Style = Styled.div`
   .recommended{
     ${AppStyle.font.main}
     text-align: left;
+    margin-bottom: 10px;
   }
   .edit{
     position: absolute;

@@ -97,7 +97,7 @@ export const genNowWorking = (limitWorkTimeToDay, workingList, user) => {
 
         let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
         if(limitTimeDayWork<dayWorkTime)dayWorkTime=limitTimeDayWork //ลิมิตเวลา
-        if(user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
+        if(user.data.holiday&&user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
 
         let todayTodoPiece = Math.floor(dayWorkTime/working.worktime)
         if(todayTodoPiece > remindDevidePiece) todayTodoPiece = remindDevidePiece

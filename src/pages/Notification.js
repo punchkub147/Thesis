@@ -7,8 +7,13 @@ import moment from 'moment'
 import store from 'store'
 
 import Layout from '../layouts'
+
 import send from '../img/send.png'
+import work from '../img/search.png'
+import stat from '../img/dashboard.png'
+
 import Content from '../components/Content'
+import TopStyle from '../components/TopStyle'
 
 import { getToken, PushFCM, PushSelf } from '../api/notification'
 import { auth, getUser } from '../api/firebase'
@@ -38,7 +43,9 @@ class Notification extends Component {
       })
 
       notiList = _.orderBy(notiList, ['createAt'], ['desc']); //เรียงวันที่
-
+      notiList = _.chunk(notiList, 10)[0];
+      //notiList = notiList[0]
+      console.log('qweqwe',notiList)
       this.setState({notiList})
       store.set('notifications',notiList)
     })
@@ -60,24 +67,35 @@ class Notification extends Component {
     })
   }
 
+  handleViewed = (id,pathName) => {
+    db.collection('notifications').doc(id).update({viewed: true})
+    browserHistory.push(pathName)
+  }
+
   render() {
     const { notiList } = this.state
     console.log(notiList)
 
     return (
       <Layout route={this.props.route}>
+        <TopStyle/>
         <Style>
-        
+          
           <Content>
+          
           {_.map(notiList, (data,i) => 
-            <Link to={data.path}>
-              <Noti fade={i*0.2}>
-                <img alt='' src={send}/>
+            <Link>
+              <Noti fade={i>2?3:i} viewed={data.viewed} onClick={() => this.handleViewed(data.noti_id, data.path)}>
+                <img alt='' src={
+                  data.type=='send'?send
+                  :data.type=='work'?work
+                  :data.type=='stat'?stat
+                  :send
+                }/>
                 <div className="text">
                   {data.message} 
                   <span className="time"> เมื่อ {moment(data.createAt).locale('th').fromNow()}</span>
                 </div>
-                
               </Noti>
             </Link>
           )}
@@ -101,7 +119,7 @@ const Noti = Styled.div`
   width: 100%;
   min-height: 70px;
   background: ${AppStyle.color.card};
-  margin-bottom: 10px;
+  opacity: ${props => props.viewed?0.7:1};
   padding: 10px;
   box-sizing: border-box;
   ${AppStyle.shadow.lv1}
@@ -123,8 +141,11 @@ const Noti = Styled.div`
   }
   .time{
     ${AppStyle.font.read3}
+    float: right;
   }
 
+  margin-bottom: 10px;
+
   animation-name: fadeInUp;
-  animation-duration: ${props => props.fade+0.2}s;
+  animation-duration: ${props => (props.fade*0.2)+0.2}s;
 `

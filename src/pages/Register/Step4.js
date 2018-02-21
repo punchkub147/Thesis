@@ -40,7 +40,6 @@ const Style = Styled.div`
     width: 100%;
     background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}
-    padding-bottom: 10px;
-    padding-bottom: -20px;
+    margin-bottom: 40px;
   }
 `

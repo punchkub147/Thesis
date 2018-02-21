@@ -60,6 +60,15 @@ const secToMoment = (sec) => {
   return moment(time, format)
 }
 
+const setDayHilight = (day, time) => {
+  
+  if(day === moment().locale('en').format('ddd').toLowerCase())return 'today'
+  
+  if(time>0) return 'workday'
+
+  return ''
+}
+
 class FormWorkTime extends Component {
 
   state = {
@@ -126,10 +135,12 @@ class FormWorkTime extends Component {
   handleUpdateWorkTime = async () => {
     const { workTime, user, holiday } = this.state
 
-    db.collection('employee').doc(user.uid).update({
+    const update = _.pickBy({
       workTime,
       holiday
-    })
+    }, _.identity)
+
+    db.collection('employee').doc(user.uid).update(update)
     await store.set('employee',{
       uid: user.uid,
       data: {
@@ -209,80 +220,83 @@ class FormWorkTime extends Component {
 
   render() {   
     const { workTime, holiday } = this.state
-    console.log('jsonHoliday',jsonHoliday)
-    console.log('holiday',holiday)
 
     return (
       <Loading loading={this.state.loading}>  
-      <Style>
-          <div className="row justify-content-center text">
-            <div className="col-4">
-              วันที่ทำงาน
-            </div>
-            <div className="col-4">
-              ชั่วโมงทำงาน
-            </div>
-          </div>
-
-          <div>
-          {_.map(workTime, (date, day) =>
-            <div className="row justify-content-center datetime" 
-              onClick={() => this.handleOpenWheel(day,date)}>
-              <div className="col-4 day input">
-                {
-                  day==='sun'?'อาทิตย์'
-                  :day==='mon'?'จันทร์'
-                  :day==='tue'?'อังคาร'
-                  :day==='wed'?'พุธ'
-                  :day==='thu'?'พฤหัสบดี'
-                  :day==='fri'?'ศุกร์'
-                  :day==='sat'&&'เสาร์'
-                }
+        <Style>
+          
+            <div className="row justify-content-center text">
+              <div className="" style={{marginRight: 45, marginLeft: -28}}>
+                วันที่ทำงาน
               </div>
-              <div className="col-4 input">
-                {moment().startOf('day').second(date).format(format)}
+              <div className="">
+                ชั่วโมงทำงาน
               </div>
             </div>
-          )}
-          </div>
 
-          <div className='btn-holiday'
-            onClick={() => this.setState({modalIsOpen: true})}
-          >
-            ดูตารางวันหยุด
-          </div>
-          <Modal modalIsOpen={this.state.modalIsOpen}>
-            <InsideModal>
-              <div onClick={this.handleSelectAllHoliday} 
-                className='selectAllHoliday'>หยุดทั้งหมด</div>
-              {_.map(jsonHoliday, day => 
-                <div className='holiday' onClick={() => this.handleSelectHoliday(day.date)}>
-                  <div className='date'>{day.date} {day.name}</div>
-                  <div className='right'>
-                    {holiday!==undefined
-                      &&holiday[day.date]?'หยุด':'ทำงาน'
-                    }
-                  </div>
+            <div>
+            {_.map(workTime, (time, day) =>
+              <div className="row justify-content-center datetime" 
+                onClick={() => this.handleOpenWheel(day,time)}>
+                <div className={`day ${setDayHilight(day, time)}`}>
+                  {
+                    day==='sun'?'อา.'
+                    :day==='mon'?'จ.'
+                    :day==='tue'?'อ.'
+                    :day==='wed'?'พ.'
+                    :day==='thu'?'พฤ.'
+                    :day==='fri'?'ศ.'
+                    :day==='sat'&&'ส.'
+                  }
                 </div>
-              )}
-              <Button className='button' onClick={() => this.setState({modalIsOpen: false})}>ปิด</Button>
-            </InsideModal>
-          </Modal>
+                <div className="input time">
+                  {moment().startOf('day').second(time).format('HH : mm')}
+                </div>
+              </div>
+            )}
+            </div>
 
-          <LocaleProvider locale={enUS}>
-            <Picker
-              visible={this.state.visible}
-              onChange={this.onWheelChange}
-              value={this.state.value}
-              data={data}
-              cascade={false}
-              onOk={() => this.setState({ visible: false })}
-              onDismiss={() => this.setState({ visible: false })}
-            />
-          </LocaleProvider>
+            <div className='btn-holiday'
+              onClick={() => this.setState({modalIsOpen: true})}
+            >
+              ตารางวันหยุด
+            </div>
+            <Modal modalIsOpen={this.state.modalIsOpen}>
+              <InsideModal>
+                <div onClick={this.handleSelectAllHoliday} 
+                  className='selectAllHoliday'>หยุดทั้งหมด</div>
+                {_.map(jsonHoliday, day => 
+                  moment(day.date,'DD/MM/YY')>new Date&&
+                  <div className='holiday' onClick={() => this.handleSelectHoliday(day.date)}>
+                    <div className='date'>{day.date} {day.name}</div>
+                    <div className='right'>
+                      {holiday!==undefined
+                        &&holiday[day.date]
+                          ?<span className='stop'>หยุด</span>
+                          :<span className='work'>ทำงาน</span>
+                      }
+                    </div>
+                  </div>
+                )}
+                <Button className='button' onClick={() => this.setState({modalIsOpen: false})}>ปิด</Button>
+              </InsideModal>
+            </Modal>
 
-          <Button onClick={this.handleUpdateWorkTime}>ยืนยัน</Button>
-      </Style>
+            <LocaleProvider locale={enUS}>
+              <Picker
+                visible={this.state.visible}
+                onChange={this.onWheelChange}
+                value={this.state.value}
+                data={data}
+                cascade={false}
+                onOk={() => this.setState({ visible: false })}
+                onDismiss={() => this.setState({ visible: false })}
+              />
+            </LocaleProvider>
+
+            <Button className='btn-fall' onClick={this.handleUpdateWorkTime}>ยืนยัน</Button>
+          
+        </Style>
       </Loading>
     );
   }
@@ -291,6 +305,8 @@ class FormWorkTime extends Component {
 export default FormWorkTime;
 
 const Style = Styled.div`
+  position: relative;
+  padding: 10px 0;
   text-align: center;
   .text{
     margin: 0 0 10px 0;
@@ -308,17 +324,42 @@ const Style = Styled.div`
     border-radius: 0;
     text-align: center;
     background: ${AppStyle.color.card};
-    border-bottom: solid 2px ${AppStyle.color.sub};
+    border-bottom: solid 5px ${AppStyle.color.border};
     ${AppStyle.font.read2}
-
+  }
+  .time{
+    font-size: 24px;
   }
   .day{
     ${AppStyle.font.read2}
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    margin-right: 40px;
+  }
+  .today{
+    background: ${AppStyle.color.main};
+    color: ${AppStyle.color.white};
+    ${AppStyle.shadow.lv2}
+  }
+  .workday{
+    background: ${AppStyle.color.sub};
+    color: ${AppStyle.color.white};
+    ${AppStyle.shadow.lv2}
   }
 
   .btn-holiday{
-    margin-bottom: 10px;
-    ${AppStyle.font.hilight}
+    width: 140px;
+    margin: 20px auto;
+    color: ${AppStyle.color.sub};
+    height: 30px;
+    line-height: 30px;
+    font-weight: bold;
+    ${AppStyle.shadow.lv1}
+  }
+  .btn-fall{
+    position: relative;
+    //top: 20px;
   }
 `
 
@@ -341,16 +382,27 @@ const InsideModal = Styled.div`
     height: 40px;
     line-height: 40px;
     border-bottom: solid 1px #ccc;
+    
     .date{
       float: left;
-      width: 220px;
+      width: 198px;
       overflow: hidden; 
       white-space: nowrap; 
       text-overflow:ellipsis;
+      font-weight: bold;
     }
     .right{
-      text-align: right;
+      text-align: center;
+      width: 60px;
       float: right;
+      .stop{
+        color: ${AppStyle.color.red};
+        font-weight: bold;
+      } 
+      .work{
+        color: ${AppStyle.color.green};
+        font-weight: bold;
+      }
     }
   }
 

@@ -12,6 +12,7 @@ const color2 = { //Mood lady hobby retro
   white: "#fcf4e2",
   black: "#603913",
   gray: "#ccc",
+  border: "#72c6aa",
 }
 const color = { //YELLOW
   main: "#9c2828",
@@ -21,10 +22,14 @@ const color = { //YELLOW
   card: "#faf5b2",
   maintext: "#d2282c",
   text: "#442916",
-  subtext: "#fcf4e2",
-  white: "#fcf4e2",
+  subtext: "#faf5b2",
+  white: "#faf5b2",
   black: "#442916",
   gray: "#ccc",
+  border: "#72c6aa",
+
+  green: '#72c6aa',
+  red: '#9c2828',
 }
 
 
@@ -41,6 +46,10 @@ const AppStyle = {
     white: color.white,
     black: color.black,
     gray: color.gray,
+    border: color.border,
+
+    green: color.green,
+    red: color.red,
   },
 
   shadow: {

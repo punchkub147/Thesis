@@ -11,6 +11,8 @@ import address from '../img/address2.png'
 import edit from '../img/edit.png'
 import education from '../img/profile2.png'
 
+import defaultImage from '../img/profile2.png'
+
 import Layout from '../layouts'
 import Content from '../components/Content'
 import TopStyle from '../components/TopStyle'
@@ -71,7 +73,7 @@ class Profile extends Component {
           <div id="Profile">
             <Content>
               <div className="row justify-content-center" style={{margin: '0 10px'}}>
-                <img className="profileImage" alt='' src={_.get(data,'profileImage')}/>
+                <img className="profileImage" alt='' src={data['profileImage']?_.get(data,'profileImage'):defaultImage}/>
               </div>
 
               <div className="name">
@@ -138,6 +140,7 @@ class Profile extends Component {
                 </div>
               </div>
 
+              {/*
               <div className="card">
                 <div className="row">
                   <div className="col-12">
@@ -152,6 +155,7 @@ class Profile extends Component {
                   </div>
                 </div>
               </div>
+              */}
 
             </Content>
             <Button onClick={this.logout}>ออกจากระบบ</Button>
@@ -169,21 +173,32 @@ export default Profile;
 const Style = Styled.div`
   color: ${AppStyle.color.text};
   padding: 10px 0;
+
+
   .profileImage{
     width: 140px;
     height: 140px;
-    background: ${AppStyle.color.white};
+    background: ${AppStyle.color.card};
     border-radius: 100%;
     object-fit: cover;
     ${AppStyle.shadow.lv1}
+    
+    animation-name:fadeInUp;
+    animation-duration: 0.2s;
   }
   .name{
     height: 40px;
     line-height: 40px;
     text-align: center;
     ${AppStyle.font.menu}
+    
+    animation-name:fadeInUp;
+    animation-duration: 0.2s;
   }
   .detail{
+      
+    animation-name:fadeInUp;
+    animation-duration: 0.2s;
     .list{
       min-height: 30px;
       margin-bottom: 10px;
@@ -199,6 +214,9 @@ const Style = Styled.div`
     }
   }
   .card{
+    
+    animation-name:fadeInUp;
+    animation-duration: 0.2s;
     width: 100%;
     padding: 10px;
     box-sizing: border-box;

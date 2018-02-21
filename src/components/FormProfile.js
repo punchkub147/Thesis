@@ -6,13 +6,16 @@ import store from 'store'
 import _ from 'lodash'
 import moment from 'moment'
 
+import { Icon } from 'antd'
+
 import { getUser, updateAt, storage } from '../api/firebase'
 
 import BottomButton from '../components/BottomButton';
 import Button from '../components/Button';
 
-import defaultImage from '../img/logo-5.png'
+import defaultImage from '../img/profile2.png'
 import { amphoes, changwats, tambons } from '../config/address'
+
 
 const isEmpty = (data) => {
   return data === ""?true:false
@@ -35,6 +38,7 @@ class FormProfile extends Component {
       uid: '',
       data: {
         profileImage: '',
+        tname: '',
         fname: '',
         lname: '',
         phone: '',
@@ -69,17 +73,22 @@ class FormProfile extends Component {
 
   handleProfile = async (e) => {
     e.preventDefault();
-    const { user } = this.state
+    let { user } = this.state
 
-    if(isEmpty(user.data.fname) && isEmpty(user.data.lname) && isEmpty(user.data.phone) && isEmpty(user.data.personId)) {
-      console.log('ERRORRRR')
-    }else{
-      await updateAt('employee', user.uid, user.data)
-      browserHistory.push(this.props.push)
-    }
+    if(!user.data.tname)user.data.tname = 'นาย'
+    if(!user.data.education)user.data.education = 'ไม่ระบุ'
+    console.log(user.education)
+
+    await updateAt('employee', user.uid, user.data)
+    browserHistory.push(this.props.push)
+
   }
 
   handleChangeProfile = (e, ref) => {
+
+    if(ref == 'phone' && e.target.value.length > 10)return
+    if(ref == 'personId' && e.target.value.length > 13)return
+
     const { user } = this.state
     const { data } = user
     this.setState({
@@ -162,14 +171,11 @@ class FormProfile extends Component {
             <form className="" onSubmit={this.handleProfile}>
               <div className="row justify-content-center">
                 <label htmlFor="raised-button-file" className="profileImage">
-                  <img 
-                    alt=''
-                    src={user['profileImage']
-                      ?image64
-                      :defaultImage
-                    }
-                  />
-                  <div className="iconChange">เลือกรูปภาพ</div>
+                  {user['profileImage']
+                    ?<img alt='' src={image64}/>
+                    :<div className='iconChange'><Icon type="camera-o" /><br/>อัพโหลดรูป</div>
+                  }
+                  
                 </label>
               </div>
               <input type="file" 
@@ -181,7 +187,7 @@ class FormProfile extends Component {
               />
 
               <select onChange={e => this.handleChangeProfile(e, 'tname')}>
-                <option value='นาย' selected={user['tname']==='นาย'||!user['tname']}>นาย</option>
+                <option value='นาย' selected={user['tname']==='นาย'}>นาย</option>
                 <option value='นาง' selected={user['tname']==='นาง'}>นาง</option>
                 <option value='นางสาว' selected={user['tname']==='นางสาว'}>นางสาว</option>
               </select>
@@ -217,7 +223,7 @@ class FormProfile extends Component {
                 onChange={e => this.handleChangeProfile(e, 'personId')}/>
 
               <select onChange={e => this.handleChangeProfile(e, 'education')}>
-                <option value='ไม่ระบุ' selected={user['education']==='ไม่ระบุ'||!user['education']}>ไม่ระบุ</option>
+                <option value='ไม่ระบุ' selected={user['education']==='ไม่ระบุ'}>ไม่ระบุ</option>
                 <option value='ประถมศึกษา' selected={user['education']==='ประถมศึกษา'}>ประถมศึกษา</option>
                 <option value='มัธยมศึกษาตอนต้น' selected={user['education']==='มัธยมศึกษาตอนต้น'}>มัธยมศึกษาตอนต้น</option>
                 <option value='มัธยมศึกษาตอนปลาย' selected={user['education']==='มัธยมศึกษาตอนปลาย'}>มัธยมศึกษาตอนปลาย</option>
@@ -321,7 +327,7 @@ margin-top: 85px;
   width: 140px;
   height: 140px;
   border-radius: 100%;
-  background: #ccc;
+  background: ${AppStyle.color.card};
   object-fit: cover;
   margin: 0 auto;
   text-align: center;
@@ -330,18 +336,17 @@ margin-top: 85px;
   ${AppStyle.shadow.lv1}
   .iconChange{
     position: relative;
-    top: -140px;
-    line-height: 140px;
+    top: 40px;
     width: 140px;
     text-align: center;
-    ${AppStyle.font.hilight}
-    font-size: 30px;
+    i{
+      font-size: 30px;
+    }
   }
   img{
     width: 100%;
     height: 140px;
     border-radius: 100%;
-    opacity: 0.5;
   }
 }
 
@@ -356,7 +361,7 @@ button{
 }
 .btn-fall{
   position: relative;
-  top: 30px;
+  top: 20px;
 }
 .error{
   border: solid 2px red;

@@ -17,6 +17,7 @@ export const PushSelf = (data) => {
 }
 
 export const PushFCM = async ({to, title, body, link, time}) => {
+  console.log('push',to)
   await fetch('https://fcm.googleapis.com/fcm/send',{
     headers: {
       'Authorization': `key=${apiKey}`,
@@ -24,7 +25,7 @@ export const PushFCM = async ({to, title, body, link, time}) => {
     },
     method: "POST",
     body: JSON.stringify({
-      to, // "registration_ids" : ["Token1","Token2","Token3"],
+      "registration_ids" : to,
       priority: "high",
       notification: {
         title,

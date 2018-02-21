@@ -38,6 +38,12 @@ export const sendWork = (data) => {
     })
     //message.info('ยันยันการส่งงานแล้ว')
   })
+  db.collection('employee').doc(data.employee_id).get()
+  .then(doc => {
+    db.collection('employee').doc(doc.id).update({
+      working: doc.data().working?doc.data().working+1:1
+    }) 
+  })
   /////////////////
 
   const title = 'บริษัทยืนยันการส่งงาน'
@@ -45,7 +51,7 @@ export const sendWork = (data) => {
   const type = 'send'
   const receiver = data.employee_id
   const sender = user.uid
-  const token = data.deviceToken
+  const token = [data.deviceToken]
   const link = `/tasks`
   const time = 0
   sendNoti(title, message, type, receiver, sender, token, link, time)
@@ -59,7 +65,7 @@ export const cancelWork = (data) => {
   const type = 'send'
   const receiver = data.employee_id
   const sender = user.uid
-  const token = data.deviceToken
+  const token = [data.deviceToken]
   const link = `/notification`
   const time = 0
   sendNoti(title, message, type, receiver, sender, token, link, time)
@@ -105,7 +111,7 @@ export const getedWork = async (data) => {
     ?`บริษัทได้รับงาน ${data.work_name} คุณทำครบกำหนด จะได้รับเงิน ${price} บาท`
     :`บริษัทได้รับงาน ${data.work_name} คุณทำไม่ครบกำหนด จะได้รับเงิน ${price} บาท`
   
-  const type = 'send'
+  const type = 'stat'
   const receiver = data.employee_id
   const sender = user.uid
   
@@ -113,7 +119,7 @@ export const getedWork = async (data) => {
   const time = 0
 
   const token = await db.collection('employee').doc(data.employee_id).get()
-  .then(doc => doc.data().deviceToken)
+  .then(doc => [doc.data().deviceToken])
 
 
   sendNoti(title, message, type, receiver, sender, token, link, time)

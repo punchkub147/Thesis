@@ -121,7 +121,7 @@ class Login extends Component {
     for(let i = 0; i< countAllDay; i++){
       const day = moment(data.startAt).add(i, 'days').locale('en')//วัน
       let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
-      if(user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
+      if(user.data.holiday&&user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
 
       worktimeBetween += dayWorkTime
     }
@@ -195,7 +195,7 @@ class Login extends Component {
             </div>
           </div>
         
-          {
+          {/*
           <div className="row card">
             <div className="col-12">เครื่องมือ</div>
             <div className="col-3">
@@ -205,7 +205,7 @@ class Login extends Component {
               {data.tool}
             </div>
           </div>
-          }
+          */}
         
           <div className="row card">
             <div className="col-12">
@@ -278,8 +278,7 @@ const Style = Styled.div`
     }
   }
   .container{
-    animation-name: fadeInUp;
-    animation-duration: 0.5s;
+    
     position: relative;
     margin-top: -25px; 
   }
@@ -289,6 +288,9 @@ const Style = Styled.div`
     margin: 0;
     margin-bottom: 10px;
     ${AppStyle.shadow.lv1}
+
+    animation-name: fadeInUp;
+    animation-duration: 0.5s;
   }
   .price{
     text-align: right;

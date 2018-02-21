@@ -85,6 +85,11 @@ export default class extends Component {
           }</span>,
       },
       {
+        title: `ทำลังทำงาน`,
+        dataIndex: 'working',
+        key: 'working',
+      },
+      {
         title: `ทำงานสำเร็จ`,
         dataIndex: 'workSuccess',
         key: 'workSuccess',

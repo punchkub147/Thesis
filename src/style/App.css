@@ -25,12 +25,11 @@ body{
   background-image: url('../img/bg2.jpg');
   background-size: 50px 10px; */
 
-  background: #faf5b2;
-  background-image: url('../img/bg3.jpg');
-  background-position: center;
+  background: #f4cc72;
+  /* background-image: url('../img/bg3.jpg');
+  background-position: center -280px;
   background-attachment: fixed;
-  background-size: cover;
-
+  background-size: auto 150%; */
 
   margin: 0;
   padding: 0;
@@ -255,3 +254,4 @@ li.ant-time-picker-panel-select-option-selected{
 .ant-btn{
   width: auto;
 }
+

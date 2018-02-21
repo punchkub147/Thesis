@@ -6,7 +6,7 @@ import _ from 'lodash'
 import moment from 'moment'
 import cuid from 'cuid'
 
-import { auth, db, storage } from '../../api/firebase'
+import { auth, db, storage, sendNoti } from '../../api/firebase'
 import { timeToSec } from '../../functions/moment'
 
 import { TimePicker, DatePicker, message } from 'antd'
@@ -88,11 +88,28 @@ class FormEditWork extends Component {
         await db.collection('works').doc(this.props.workId).update(_.pickBy(data, _.identity))
         message.info('แก้ไขงานเรียบร้อบ')
       }else{
-        const data = await Object.assign(data, {
+        const createData = Object.assign(data, {
           createAt: new Date(),
         })
-        await db.collection('works').add(_.pickBy(data, _.identity))
-        message.info('เพิ่มงานเรียบร้อบ')
+        let newId = ''
+        await db.collection('works').add(_.pickBy(createData, _.identity)).then(data => {
+          newId = data.id
+        })
+        const title = 'แนะนำ งานใหม่สำหรับคุณ'
+        const message = `${work.name} จำนวน ${work.piece} ชิ้น ราคา ${work.price}`
+        const type = 'work'
+        const sender = user.uid
+        const link = `/work/${newId}`
+        const time = 0
+        await db.collection('employee').get()
+        .then(snap => {
+          snap.forEach(doc => {
+            const receiver = doc.id
+            const token = [doc.data().deviceToken]
+            sendNoti(title, message, type, receiver, sender, token, link, time)
+          })
+        })
+        //message.info('เพิ่มงานเรียบร้อบ')
       }
       await browserHistory.goBack()      
     }else{

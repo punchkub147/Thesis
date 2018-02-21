@@ -6,10 +6,12 @@ import _ from 'lodash'
 import moment from 'moment'
 import store from 'store'
 
+import holiday from '../config/holiday'
+
 import { Slider } from 'antd';
 
 import { getUser, db } from '../api/firebase'
-import { secToTime } from '../functions/moment'
+import { secToTime, secToText } from '../functions/moment'
 import { getTasks, genNowWorking, genAllWorking, taskDoing } from '../functions/task'
 
 import Layout from '../layouts'
@@ -20,15 +22,18 @@ import Progress from '../components/Progress'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 
+import WorkItem from '../components/WorkItem'
+
+import TopStyle from '../components/TopStyle'
 
 import alarm2 from '../img/alarm2.png'
 
 const setDayHilight = (day, time) => {
   
-  if(day === moment().locale('en').format('ddd').toLowerCase()) return AppStyle.color.main
-  if(time===0) return AppStyle.color.gray
+  if(day === moment().locale('en').format('ddd').toLowerCase()) return 'today'
+  if(time>0) return 'workday'
 
-  return AppStyle.color.sub
+  return ''
 }
 
 class Tasks extends Component {
@@ -40,6 +45,11 @@ class Tasks extends Component {
     totalTimeAllWork: 0,
     doing: 0,
     modalIsOpen: false,
+
+    modalHoliday: false,
+    nextHoliday: [],
+
+    works: store.get('works')
   }
 
   async componentDidMount() {
@@ -58,8 +68,52 @@ class Tasks extends Component {
     }else{
       console.log('กรุณาระบุเวลาการทำงาน')
     }
-
+    await this.setNextHoliday()
     await this.getWorking(user)
+
+    await this.getWorks()
+  }
+
+  getWorks = async () => {
+
+    await db.collection('abilities')
+    .onSnapshot(snap => {
+      const abilities = []
+      snap.forEach(doc => {
+        abilities[doc.id] = doc.data()
+      })
+      this.setState({abilities})
+      store.set('abilities',abilities)
+    })
+
+    await db.collection('works')
+    //.where('startAt' ,'>', new Date())
+    .onSnapshot(snapshot => {
+      let works = []
+      snapshot.forEach(doc => {
+        if(doc.data().pack <= 0)return
+        if(!doc.data().round)return
+
+        const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+        if(!nextRound)return
+        
+        works.push(_.assign(doc.data(),
+          { 
+            _id: doc.id,
+            abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
+
+            startAt: nextRound.startAt,
+            endAt: nextRound.endAt,
+            workAllTime: doc.data().worktime*doc.data().piece
+          }
+        ))
+      })
+
+      works = _.orderBy(works, ['startAt'], ['asc']); //เรียงวันที่
+
+      this.setState({works})
+      store.set('works', works)
+    })
   }
 
   getWorking = async (user) => {
@@ -100,6 +154,27 @@ class Tasks extends Component {
     })
   }
 
+  setNextHoliday = async () => {
+    const { user } = this.state
+    const today = moment().format('DD/MM/YY')
+    let nextHoliday = []
+
+    
+    await _.map(holiday, holiday => {
+      moment(holiday.date, 'DD/MM/YY') > moment() &&
+        (moment().diff(moment(holiday.date, 'DD/MM/YY'),'days') > -30) &&
+          !_.get(user.data.holiday, holiday.date)&&
+            nextHoliday.push(holiday)
+    })
+
+    if(nextHoliday.length > 0){
+      this.setState({
+        nextHoliday: nextHoliday[0],
+        modalHoliday: true
+      })
+    }
+  }
+
   handleDo = async (e, work) => {
     e.preventDefault();
     
@@ -125,8 +200,18 @@ class Tasks extends Component {
     })
   }
 
+  handleHoliday = (date) => {
+    const { user } = this.state
+    let holiday = user.data.holiday?user.data.holiday:{}
+    holiday[date] = true
+    db.collection('employee').doc(user.uid).update({holiday})
+    this.setState({
+      modalHoliday: false
+    })
+  }
+
   render() {
-    const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user } = this.state
+    const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user, nextHoliday, works } = this.state
 
     const { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks, user)
     
@@ -168,7 +253,8 @@ class Tasks extends Component {
                 <div className='col-6'>
                   <div className="timing">
                   {secToTime(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}
-                    <div style={{color: 'red'}}>{working.overPiece!==0&&secToTime(working.overPiece*working.worktime)}</div>
+                    {/*<div style={{color: 'red'}}>{working.overPiece!==0&&secToTime(working.overPiece*working.worktime)}</div>
+                    */}
                   </div>
                 </div>
               </div>
@@ -176,7 +262,10 @@ class Tasks extends Component {
             </div>
             {working.toDayFinishedPiece>=working.limitTodo+working.overPiece
               ?<div className="finish"><div className='border'>เสร็จ</div></div>
-              :<div className="do" onClick={() => this.handleOpenModal(working)}><div className='border'>ทำ</div></div>
+              :<div className="do" onClick={() => this.handleOpenModal(working)}>
+                  <div className='border'></div>
+                  <div className='do-text'>ทำ</div>
+                </div>
             }
           
           </div>
@@ -186,7 +275,7 @@ class Tasks extends Component {
           */}
         </NowTask>
       )}
-        {
+        {/*
         <div className=''>
           {'เวลางานที่ต้องทำทั้งหมดทุกงาน '+secToTime(totalTimeAllWork)}
           <br/>
@@ -200,8 +289,8 @@ class Tasks extends Component {
             </span>
           }
         </div>
-        }
-        
+        */}
+      <TopStyle/>
       <div style={{width: '100%',height: '60px'}}></div>
       </div>
     )
@@ -236,8 +325,10 @@ class Tasks extends Component {
             </div>
             </div>
           </div>
+          
         </AllTask>
       )}
+      <TopStyle/>
       <div style={{width: '100%',height: '60px'}}></div>
       </div>
     )
@@ -253,6 +344,41 @@ class Tasks extends Component {
       },
     ]
 
+    ///////////////////////
+    let days = []
+    let timeToEndMonth = 0
+    console.log(works)
+    if(user.data.workTime){
+      const countDay = -moment().diff(moment().endOf('month'),'days')
+      
+      for(let i = 1; i<=countDay; i++){
+        const day = moment().add(i, 'days').locale('en').format('ddd').toLowerCase()
+        days.push(day)
+        timeToEndMonth += user.data.workTime[day]
+      }
+      console.log(days,timeToEndMonth)
+    }
+    let recommendWorks = []
+    {_.map(works, (work, i) => 
+      timeToEndMonth > work.workAllTime &&
+      moment(work.endAt) < moment().endOf('month') &&
+        recommendWorks.push(work)
+    )}
+
+    const taskStat = (
+      <div>
+        <div className='message'>
+          <div className='title'>คุณยังไม่มีงาน</div>
+          <div>มีเวลาถึงสิ้นเดือน {secToText(timeToEndMonth)}</div>
+        </div>
+        {_.map(recommendWorks, (work, i) =>
+          <WorkItem data={work} i={i}/>
+        )}
+        <div style={{width: '100%',height: '60px'}}></div>
+      </div>
+    )
+    /////////////////////////////////////
+
     return (
       <div>
         <Layout route={this.props.route}>
@@ -261,7 +387,7 @@ class Tasks extends Component {
             {_.size(tasks) > 0
               ?<Tabbar tabs={tabs}/>
               :<Content>
-                <div className='message'>คุณยังไม่มีงาน</div>
+                {taskStat}
               </Content>
             }
 
@@ -269,25 +395,25 @@ class Tasks extends Component {
             <WorkDate>
               <Content>
                 <div className="day" style={{paddingLeft: 0}}>
-                  <div className='box' style={{borderColor: setDayHilight('sun', user.data.workTime['sun'])}}>อา.</div>
+                  <div className={`box ${setDayHilight('sun', user.data.workTime['sun'])}`}>อา.</div>
                 </div>
                 <div className="day">
-                  <div className='box' style={{borderColor: setDayHilight('mon', user.data.workTime['mon'])}}>จ.</div>
+                  <div className={`box ${setDayHilight('mon', user.data.workTime['mon'])}`}>จ.</div>
                 </div>
                 <div className="day">
-                  <div className='box' style={{borderColor: setDayHilight('tue', user.data.workTime['tue'])}}>อ.</div>
+                  <div className={`box ${setDayHilight('tue', user.data.workTime['tue'])}`}>อ.</div>
                 </div>
                 <div className="day">
-                  <div className='box' style={{borderColor: setDayHilight('wed', user.data.workTime['wed'])}}>พ.</div>
+                  <div className={`box ${setDayHilight('wed', user.data.workTime['wed'])}`}>พ.</div>
                 </div>
                 <div className="day">
-                  <div className='box' style={{borderColor: setDayHilight('thu', user.data.workTime['thu'])}}>พฤ.</div>
+                  <div className={`box ${setDayHilight('thu', user.data.workTime['thu'])}`}>พฤ.</div>
                 </div>
                 <div className="day">
-                  <div className='box' style={{borderColor: setDayHilight('fri', user.data.workTime['fri'])}}>ศ.</div>
+                  <div className={`box ${setDayHilight('fri', user.data.workTime['fri'])}`}>ศ.</div>
                 </div>
                 <div className="day" style={{paddingRight: 0}}>
-                  <div className='box' style={{borderColor: setDayHilight('sat', user.data.workTime['sat'])}}>ส.</div>
+                  <div className={`box ${setDayHilight('sat', user.data.workTime['sat'])}`}>ส.</div>
                 </div>
               </Content>
             </WorkDate>
@@ -308,6 +434,28 @@ class Tasks extends Component {
                   <Button onClick={(e) => this.handleDo(e,doWork)}>ยืนยัน</Button>
                 </form>
               </InsideModal>
+            </Modal>
+
+            <Modal modalIsOpen={this.state.modalHoliday} mini>
+              <HolidayModal>
+                {/*_.map(nextHoliday, date =>
+                  <div>
+                    <div className='name'>{date.name}</div>
+                    <div className='countdown'>{moment(date.date,'DD/MM/YY').fromNow()}</div>
+                  </div>
+                )*/}
+                {nextHoliday&&
+                <div>
+                  <div className='name'>{nextHoliday.name}</div>
+                  <div className='countdown'>{moment(nextHoliday.date,'DD/MM/YY').fromNow()}</div>
+                </div>
+                }
+                <div className='text'>คุณจะหยุดหรือไม่</div><br/>
+
+                <div className='cancel' onClick={() => this.setState({modalHoliday: false})}>ไม่หยุด</div>
+                <div className='submit' onClick={() => this.handleHoliday(nextHoliday.date)}>หยุด</div>
+              
+              </HolidayModal>
             </Modal>
 
           </Style>
@@ -332,8 +480,11 @@ const Style = Styled.div`
     padding: 10px;
     text-align: center;
     ${AppStyle.font.read1}
-    border-radius: 100px;
-    margin-top: 20px;
+    .title{
+      ${AppStyle.font.main}
+    }
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 `
 
@@ -346,13 +497,15 @@ const InsideModal = Styled.div`
 `
 
 const NowTask = Styled.div`
-  animation-name: fadeInLeft; 
+  animation-name: fadeInUp; 
   animation-duration: ${props => props.fade+0.2}s;
 
   padding: 10px;
   box-sizing: border-box;
   background: ${AppStyle.color.card};
+
   margin-bottom: 10px;
+
   ${AppStyle.shadow.lv1}
   .name{
     text-align: left;
@@ -401,18 +554,29 @@ const NowTask = Styled.div`
     height: 60px;
     background: ${AppStyle.color.main};
     border-radius: 100%;
-    text-align: center;
-    line-height: 60px;
+    
     cursor: pointer;
     ${AppStyle.font.tool}
     ${AppStyle.shadow.lv2}
+    position: relative;
     .border{
-      border: solid 2px ${AppStyle.color.white};
+      position: absolute;
+      border: dashed 2px ${AppStyle.color.white};
       border-radius: 100%;
       width: 50px;
       height: 50px;
-      margin: 5px;
+      margin: 4.5px 0 0 4.5px;
       line-height: 50px;
+
+      animation: rotate 20s infinite linear;  //Rotate
+
+      box-sizing: border-box;
+    }
+    .do-text{
+      position: absolute;
+      text-align: center;
+      line-height: 60px;
+      width: 60px;
     }
   }
   .do:active{
@@ -438,13 +602,15 @@ const NowTask = Styled.div`
   }
 `
 const AllTask = Styled.div`
-  animation-name: fadeInRight;
-  animation-duration: ${props => props.fade+0.2}s;
+  // animation-name: fadeInRight;
+  // animation-duration: ${props => props.fade+0.2}s;
 
   padding: 10px;
   box-sizing: border-box;
   background: ${AppStyle.color.card};
+
   margin-bottom: 10px;
+
   ${AppStyle.shadow.lv1}
   .name{
     text-align: left;
@@ -496,11 +662,60 @@ const WorkDate = Styled.div`
     .box{
       width: 100%;
       text-align: center;
-      border: solid 2px ${AppStyle.color.gray};
-      border-radius: 4px;
       height: 40px;
       line-height: 40px;
       ${AppStyle.font.read1}
     }
+    .today{
+      background: ${AppStyle.color.main};
+      color: ${AppStyle.color.white};
+      ${AppStyle.shadow.lv2}
+    }
+    .workday{
+      background: ${AppStyle.color.sub};
+      color: ${AppStyle.color.white};
+      ${AppStyle.shadow.lv2}
+    }
+  }
+
+
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`
+
+const HolidayModal = Styled.div`
+  .submit{
+    width: 50%;
+    float: left;
+    text-align: center;
+    ${AppStyle.font.menu}
+    color: ${AppStyle.color.main};
+    cursor: pointer;
+  }
+  .cancel{
+    width: 50%;
+    float: left;
+    text-align: center;
+    ${AppStyle.font.menu}
+    cursor: pointer;
+  }
+  .name{
+    ${AppStyle.font.main}
+    text-align: center;
+    font-size: 24px;
+  }
+  .countdown{
+    ${AppStyle.font.main}
+    text-align: center;
+  }
+  .text{
+    text-align: center;
   }
 `

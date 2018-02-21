@@ -4,14 +4,16 @@ import Styled from 'styled-components'
 import AppStyle from '../config/style'
 import moment from 'moment'
 
+import { secToText } from '../functions/moment'
+
 class WorkItem extends Component {
 
   render() {
     const { data, i } = this.props
-
+    
     const Small = (
       <div>
-      <Style fade={i*0.2} className={"col-xs-12"} style={{float: 'left'}}>
+      <Style fade={i+1} className={"col-xs-12"}>
         <Link to={`/work/${data._id}`}>
           <div className={"WorkItem"}>
             <div className="image">
@@ -34,8 +36,10 @@ class WorkItem extends Component {
                 </div>
 
                 <div className="price">
-                  {`${data.piece} : ${data.piece*data.price}฿`}
+                  {`${data.piece}ชื้น ${data.piece*data.price}.-`}
                 </div>
+
+                <div className='workAllTime'>{secToText(data.workAllTime)}</div>
               </div>
           </div>
         </Link>
@@ -70,6 +74,7 @@ class WorkItem extends Component {
                 <div className="price">
                   {`${data.piece} : ${data.piece*data.price}฿`}
                 </div>
+
               </div>
           </div>
         </Link>
@@ -90,7 +95,7 @@ export default WorkItem;
 const Style = Styled.div`
 .WorkItem{
   animation-name: fadeInUp;
-  animation-duration: 0.2s;
+  animation-duration: ${props => props.fade>2?3*0.2:props.fade*0.2}s;
 
   width: 100%;
   height: 90px;
@@ -99,6 +104,7 @@ const Style = Styled.div`
   ${AppStyle.shadow.lv1}
 
   margin-bottom: 10px;
+  
   .image{
     width: 30%;
     height: 90px;
@@ -113,10 +119,10 @@ const Style = Styled.div`
     width: 70%;
     height: auto;
     float: right;
+    padding: 10px;
   }
   .detail{
     float: left;
-    padding: 10px;
     width: 60%;
     .name{
       ${AppStyle.font.read1}
@@ -137,9 +143,12 @@ const Style = Styled.div`
   .price{
     float: right;
     text-align: right;
-    padding: 10px;
     width: 40%;
     ${AppStyle.font.hilight}
+  }
+  .workAllTime{
+    float: right;
+    ${AppStyle.font.read2}
   }
 }
 

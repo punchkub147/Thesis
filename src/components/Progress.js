@@ -57,7 +57,7 @@ const Style = Styled.div`
     background: ${AppStyle.color.sub};
   }
   .ant-progress-inner{
-    background-color: ${AppStyle.color.bg};
+    background-color: ${AppStyle.color.bg2};
     border-radius: 0px;
   }
   .ant-progress-status-active .ant-progress-bg:before{

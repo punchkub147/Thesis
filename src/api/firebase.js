@@ -57,8 +57,7 @@ export const getUser = async (collection, callback) => {
   await auth.onAuthStateChanged(async (user) => {
     if(user){
       const docRef = await db.collection(collection).doc(user.uid)
-      docRef.get()
-      .then(doc => {
+      docRef.onSnapshot(doc => {
         doc.exists
           ?callback({
             uid: user.uid,
@@ -66,9 +65,6 @@ export const getUser = async (collection, callback) => {
           })
           :callback(undefined)
       })
-      .catch(error => 
-          console.log("Error getting user:", error)
-      )
     }
   });
 }

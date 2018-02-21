@@ -11,6 +11,8 @@ import Step from '../../components/Step'
 import Button from '../../components/Button'
 import Bg from '../../components/Bg'
 
+import { message } from 'antd'
+
 class Register extends Component {
 
   handleRegister = async (e) => {
@@ -29,12 +31,15 @@ class Register extends Component {
       const user = await auth.createUserWithEmailAndPassword(email, password)
       .catch( e => {
         console.log(e.message);
+        message.info(e.message)
         //openNotificationWithIcon('error',error.message,'');
       });
       if(user){
-        db.collection('employee').doc(user.uid).set(data)
+        await db.collection('employee').doc(user.uid).set(data)
         browserHistory.push('/register2')
       }
+    }else{
+      message.info('รหัสผ่านไม่ตรงกัน')
     }
   }
 
@@ -85,12 +90,10 @@ const Style = Styled.div`
     width: 100%;
     background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}
-    padding: 10px 0;
-    padding-bottom: -20px;
 
     button{
       position: relative;
-      top: 30px;
+      top: 20px;
     }
   }
 `

@@ -9,6 +9,8 @@ import FormWorkTime from '../components/FormWorkTime';
 import Bg from '../components/Bg';
 import Card from '../components/Card';
 
+import TopStyle from '../components/TopStyle';
+
 class EditWorkTime extends Component {
   componentDidMount() {
     window.scrollTo(0, 0)
@@ -22,7 +24,9 @@ class EditWorkTime extends Component {
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
             />
-          <Card style={{marginTop: 10}}>
+          
+          <Card>
+            <TopStyle/>
             <FormWorkTime push='/tasks' />
           </Card>
         </Style>

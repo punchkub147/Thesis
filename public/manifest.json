@@ -3,20 +3,20 @@
   "name": "โฮมเบสท์",
   "icons": [
     {
-      "src": "logosmall.png",
+      "src": "logosmall2.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {  
-      "src": "logolarge.png",  
+      "src": "logolarge2.png",  
       "sizes": "512x512",  
       "type": "image/png"  
     }
   ],
   "start_url": "/index.html",
   "display": "standalone",
-  "theme_color": "#f4e4d1",
-  "background_color": "#f4e4d1",
+  "theme_color": "#f4cc72",
+  "background_color": "#f4cc72",
 
 
   "gcm_sender_id": "103953800507"
