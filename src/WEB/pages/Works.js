@@ -8,7 +8,7 @@ import store from 'store'
 
 import Layout from '../layouts'
 
-import { auth, db } from '../../api/firebase'
+import { auth, db, getUser } from '../../api/firebase'
 import Button from '../../components/Button';
 
 import Table from '../components/Table';
@@ -20,23 +20,29 @@ const MenuItemGroup = Menu.ItemGroup;
 class Works extends Component {
 
   state = {
-    user: {},
+    user: store.get('employer'),
     worksList: store.get('works'),
     filter: 'all',
   }
 
   async componentDidMount() {
+    await getUser('employer', user => {
+      store.set('employer',user)
+      this.setState({user})
+    })
+
     await auth.onAuthStateChanged(async user => {
       if(user){
-        this.setState({user})
         this.getWorks(user)
       }else{
-        browserHistory.push('/web/login')
+        //browserHistory.push('/web/login')
       }
     })
   }
 
   getWorks = (user) => {
+    
+    const employer = Object.assign(this.state.user.data, {employer_id: this.state.user.uid})
     db.collection('works').where('employer_id', '==', user.uid)
     .onSnapshot(async querySnapshot => {
       let worksList = []
@@ -45,6 +51,8 @@ class Works extends Component {
         worksList.push(Object.assign(doc.data(),{
           work_id: doc.id,
         }))
+
+        //db.collection('works').doc(doc.id).update({employer})
       });
       worksList = _.orderBy(worksList, ['createAt'], ['desc']); //เรียงวันที่
       await this.setState({worksList})

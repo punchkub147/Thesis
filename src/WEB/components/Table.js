@@ -50,4 +50,10 @@ const Style = Styled.div`
   .ant-table-row-expand-icon{
     background: none;
   }
+
+  @media screen and (max-width: 400px) {
+    .ant-table-wrapper{
+      width: 800px;
+    }
+  }
 `

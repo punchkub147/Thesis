@@ -30,7 +30,7 @@ class NeedWork extends Component {
         this.setState({user})
         this.getNeedWork(user)
       }else{
-        browserHistory.push('/web/login')
+        //browserHistory.push('/web/login')
       }
     })
   }

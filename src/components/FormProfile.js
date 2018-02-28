@@ -8,7 +8,7 @@ import moment from 'moment'
 
 import { Icon } from 'antd'
 
-import { getUser, updateAt, storage } from '../api/firebase'
+import { db, getUser, updateAt, storage } from '../api/firebase'
 
 import BottomButton from '../components/BottomButton';
 import Button from '../components/Button';
@@ -78,6 +78,27 @@ class FormProfile extends Component {
     if(!user.data.tname)user.data.tname = 'นาย'
     if(!user.data.education)user.data.education = 'ไม่ระบุ'
     console.log(user.education)
+
+    //////////////////////////
+    db.collection('working').where('employee_id', '==', user.uid).get()
+    .then(doc => 
+      doc&&
+        doc.forEach(data => {
+          db.collection('working').doc(data.id).update({
+            employee: Object.assign(user.data, {employee_id: user.uid})
+          })
+        })
+    )
+    db.collection('needWork').where('employee_id', '==', user.uid).get()
+    .then(doc => 
+      doc&&
+        doc.forEach(data => {
+          db.collection('needWork').doc(data.id).update({
+            employee: Object.assign(user.data, {employee_id: user.uid})
+          })
+        })
+    )
+    ////////////////////////
 
     await updateAt('employee', user.uid, user.data)
     browserHistory.push(this.props.push)
@@ -347,6 +368,7 @@ margin-top: 85px;
     width: 100%;
     height: 140px;
     border-radius: 100%;
+    object-fit: cover;
   }
 }
 

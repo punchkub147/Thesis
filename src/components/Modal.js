@@ -18,7 +18,7 @@ export default class extends Component {
       'height': `${this.props.mini?'200px':'auto'}`, 
       background: `${AppStyle.color.white}`,
       margin: '0 auto',
-      width: '300px',
+      //width: '300px',
       'margin-top': `${((this.props.mini?2:0)*50)+40}`, 
       'z-index': '99999999',
       position: 'fixed',

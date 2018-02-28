@@ -43,6 +43,8 @@ export default class extends Component {
 
     modalVisible: false,
     selectEmployee: '',
+
+    loading: true
   }
 
   async componentDidMount() {
@@ -55,26 +57,107 @@ export default class extends Component {
         const work = Object.assign(doc.data(), {work_id: doc.id})
         this.setState({work})
       })
+      this.setState({loading: true})
 
       await this.getNeedWork(work_id)
       await this.getWorking(work_id)
+
+      this.setState({loading: false})
     }
   }
 
+  setCountNeedWork = async (work_id) => {
+    await db.collection('works').doc(work_id).update({
+      needWork: this.state.needWorkList.length,
+    })
+  }
+
   getNeedWork = async (work_id) => {
-    db.collection('needWork').where('work_id', '==', work_id)
-    .onSnapshot(async querySnapshot => {
-      let needWorkList = []
-      await querySnapshot.forEach(function(doc) {
-        needWorkList.push(Object.assign(doc.data(),{needWork_id: doc.id}))
-      });
+    const { work } = this.state
+    
+    let needWorkList = []
+    
+    await db.collection('needWork').where('work_id', '==', work_id)
+    .get().then(async querySnapshot => {
+      this.setState({loading: true})
+      needWorkList = []
+      let countNeedWork = 0
+      await querySnapshot.forEach(async function(doc) {
+        countNeedWork+=1
+        const countDay = -moment(doc.data().startAt).diff(moment(doc.data().endAt), 'days')
+        let timeCanWork = 0
 
+        //หาเวลาที่ทำงาน
+        let timeWork = 0
+        let workSuccess = 0
+        let workFail = 0
+
+        needWorkList.push(Object.assign(doc.data(),{
+          needWork_id: doc.id,
+        }))
+        const index = _.findIndex(needWorkList, ['needWork_id', doc.id])
+
+        await db.collection('employee').doc(doc.data().employee_id).get()
+        .then(se => {
+          workSuccess = se.data().workSuccess?se.data().workSuccess:0
+          workFail = se.data().workFail?se.data().workFail:0
+          if(se.data().workTime){
+            for(let i = 0; i<countDay; i++){
+              const day = moment(doc.data().startAt).add(i,'days').locale('en').format('ddd').toLowerCase()
+              
+              if(se.data().holiday){
+                const workDay = moment(doc.data().startAt).add(i,'days').format('DD/MM/YY')
+                if(se.data().holiday[workDay]==true){
+                  console.log('วันหยุด')
+                }else{
+                  timeWork += se.data().workTime[day]
+                }
+              }else{
+                timeWork += se.data().workTime[day]
+              }
+            }
+          }
+        })
+        needWorkList[index] = _.assign(needWorkList[index],{
+          workSuccess,
+          workFail
+        })
+        //console.log('timeWork',timeWork)//เวลาทำงาน-วันหยุด
+
+        ///หาเวลาที่ยุ่งอยู่
+        let timeWorkingBetween = 0 //เวลาที่ยุ่งอยู่
+        await db.collection('working').where('employee_id', '==', doc.data().employee_id).get()
+        .then(w => {
+          w.forEach(d => {
+            if(!d.data().success){
+              if(d.data().startAt<doc.data().endAt && d.data().endAt>doc.data().startAt){ //งานที่คาบเกี่ยวเวลากัน
+                const fp = d.data().finished_piece?d.data().finished_piece:0
+                const timeWorkingAll = (+d.data().total_piece-+fp)*d.data().worktime
+                const countDayWorking = -moment(d.data().startAt).diff(moment(d.data().endAt), 'days')
+                const timeWorking = timeWorkingAll/countDayWorking*countDay
+                timeWorkingBetween += timeWorking
+              }             
+            }
+          })
+          
+        })
+        //console.log('timeWorkingBetween',timeWorkingBetween)//เวลาที่ยุ่งระหว่างงานนี้
+
+        timeCanWork = Math.floor(timeWork-timeWorkingBetween) //เวลาที่ว่างอยู่ระหว่างวันทำงาน
+        
+        needWorkList[index] = _.assign(needWorkList[index],{
+          timeCanWork,
+        })
+        console.log('งาน',needWorkList[index])
+        
+      });//ForEach
+      this.setState({loading: false})
       needWorkList = _.orderBy(needWorkList, ['createAt'], ['desc']); //เรียงวันที่
-
       await this.setState({needWorkList})
       await db.collection('works').doc(work_id).update({
-        needWork: needWorkList.length,
-      })
+        needWork: countNeedWork,
+      }) //อัพเดทจำนวน
+
     })
   }
 
@@ -160,8 +243,27 @@ export default class extends Component {
     })
   }
 
+  sendWork = (work) => {
+    const { needWorkList } = this.state
+    const index = _.findIndex(needWorkList, ['needWork_id', work.needWork_id]);
+    _.pullAt(needWorkList, [index]);
+    this.setState({
+      needWorkList
+    })
+    sendWork(work)
+  }
+  cancelWork = (work) => {
+    const { needWorkList } = this.state
+    const index = _.findIndex(needWorkList, ['needWork_id', work.needWork_id]);
+    _.pullAt(needWorkList, [index]);
+    this.setState({
+      needWorkList
+    })
+    cancelWork(work)
+  }
+
   render() {
-    const { work, needWorkList, workingList, workSuccessList, selectEmployee } = this.state
+    const { work, needWorkList, workingList, workSuccessList, selectEmployee, loading } = this.state
 
     const needWorkColumns = [
       {
@@ -170,42 +272,56 @@ export default class extends Component {
         key: 'employee_id',
         className: 'click',
         render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text}</span>,
-      }, 
+      },  
       {
-        title: 'เบอร์ติดต่อ',
-        dataIndex: 'employee_phone',
-        key: 'employee_phone',
-        render: (text, item) => <div>{phoneFormatter(text)}</div>,
-      }, 
-      {
-        title: 'จำนวนชุด',
-        dataIndex: 'pack',
-        key: 'pack',
+        title: 'ทำงานสำเร็จ',
+        dataIndex: 'workSuccess',
+        key: 'workSuccess',
         className: 'align-right',
       }, 
       {
-        title: 'เมื่อวันที่',
-        dataIndex: 'createAt',
-        key: 'createAt',
+        title: 'ทำงานไม่สำเร็จ',
+        dataIndex: 'workFail',
+        key: 'workFail',
         className: 'align-right',
-        render: (text, item) => <div>{text&&moment(text).format('DD/MM/YY HH:mm')}</div>,
+      }, 
+      {
+        title: 'เวลาว่างทำงาน',
+        dataIndex: 'timeCanWork',
+        key: 'timeCanWork',
+        render: (text, item) => <div>{text>=work.piece*work.worktime?text:'เวลาทำงานไม่พอ'}</div>,
+      }, 
+      {
+        title: 'รอบวันที่',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {text&&
+              moment(text).locale('en').format('DD/MM/YY HH:mm')}
+          </div>,
       }, 
       {
         title: 'ส่งงาน',
         key: 'send',
         render: (text, item) => (
-          <span>
-            <div className='click' onClick={ () => sendWork(item)}> ส่งงาน </div>
-          </span>
+          <div>{
+            new Date > item.startAt
+            ?'เลยเวลาส่งแล้ว'
+            :<Popconfirm title="ยืนยันการส่งงาน" onConfirm={() => this.sendWork(item)}>
+              <div className='click' > ส่งงาน </div>
+            </Popconfirm>
+          }</div>
         )
       },
       {
         title: 'ปฏิเสธ',
         key: 'cancel',
         render: (text, item) => (
-          <span>
-            <div className='click' onClick={ () => cancelWork(item)}> ปฏิเสธ </div>
-          </span>
+          <Popconfirm title="ยืนยันการปฏิเสธ?" onConfirm={() => this.cancelWork(item)}>
+            <div className='click'> ปฏิเสธ </div>
+          </Popconfirm>
         ),
       }
     ];
@@ -247,7 +363,7 @@ export default class extends Component {
           ?<Popconfirm title="ยืนยันรับงาน?" onConfirm={ () => getedWork(item)}>
               <div className='click'> รับงาน </div>
             </Popconfirm>
-          :<div> รับงาน </div>
+          :<div> กำลังทำ... </div>
         ),
       },
     ];
@@ -297,7 +413,7 @@ export default class extends Component {
 
     const tabs = [
       {
-        name: `คำร้องขอรับงาน (${needWorkList.length})`,
+        name: `คำร้องขอรับงาน$ (${work.needWork})`,
         render: 
           <div className='contentTab'>
             <Table columns={needWorkColumns} dataSource={needWorkList} />
@@ -363,8 +479,10 @@ export default class extends Component {
     )
 
 
+    if(loading)return<div/>
     return (
       <Style>
+
           <Menu
             onClick={(e) => this.setState({menuTable: e.key})}
             selectedKeys={[this.state.menuTable]}
@@ -380,7 +498,7 @@ export default class extends Component {
               <Icon type="exception" style={{fontSize: 18}}/>{`งานที่มอบหมาย (${workingList.length})`}
             </Menu.Item>
             <Menu.Item key="workSuccessList">
-              <Icon type="schedule" style={{fontSize: 18}}/>{`งานที่สำเร็จแล้ว (${workSuccessList.length})`}
+              <Icon type="schedule" style={{fontSize: 18}}/>{`ประวัติงาน (${workSuccessList.length})`}
             </Menu.Item>
           </Menu>
 

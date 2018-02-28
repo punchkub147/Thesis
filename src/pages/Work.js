@@ -13,6 +13,8 @@ import Send from '../img/send.png'
 import Back from '../img/back2.png'
 
 import { auth, db, getUser } from '../api/firebase'
+import { secToText } from '../functions/moment'
+import { phoneFormatter } from '../functions/'
 
 import { message } from 'antd';
 
@@ -37,7 +39,6 @@ class Login extends Component {
     const _this = this
 
     if(!work_id)browserHistory.push('/search')
-
     auth.onAuthStateChanged(user => {
       !user
         ?console.log("กรุณาเข้าสู่ระบบ")
@@ -85,6 +86,7 @@ class Login extends Component {
         work_id: work.work_id,
         work_name: work.data.name,
         startAt: work.data.startAt,
+        endAt: work.data.endAt,
   
         employee_id: user.uid,
         employee_name: `${user.data.fname} ${user.data.lname}`,
@@ -96,7 +98,7 @@ class Login extends Component {
       }
 
       await db.collection('works').doc(work.work_id).update({
-        needWork: work.needWork?work.needWork+1:1
+        needWork: work.data.needWork?work.data.needWork+1:1
       })
 
       await db.collection('needWork').add(_.pickBy(needWork, _.identity))
@@ -113,19 +115,135 @@ class Login extends Component {
     const { data } = work
     const countAllDay = -moment(data.startAt).diff(data.endAt, 'days')+1
 
-    console.log('workData', data)
-    console.log('userrr', user.data.holiday)
-    console.log('จำนวนวัน',countAllDay)
-
     let worktimeBetween = 0
     for(let i = 0; i< countAllDay; i++){
       const day = moment(data.startAt).add(i, 'days').locale('en')//วัน
-      let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
-      if(user.data.holiday&&user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
-
-      worktimeBetween += dayWorkTime
+      if(user.data.workTime){
+        let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
+        if(user.data.holiday&&user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
+  
+        worktimeBetween += dayWorkTime
+      }
+      
     }
     const canRequest = Math.floor(worktimeBetween/(data.piece*data.worktime))
+
+    const MainDetail = (
+      <div className="row card">
+        <div className="col-12 name">
+          {data.name}
+        </div>
+        
+        <div className="col-6 pack">
+        {data.cost&&data.cost>0
+          ?`ค่ามัดจำ ${data.cost} บาท`
+          :'ไม่มีค่ามัดจำ'
+        }
+        </div>
+        <div className="col-6 price">
+          {data.piece} ชิ้น {data.price*data.piece} บาท
+        </div>
+
+        {/*<div className="col-6 cost">
+          เหลือ {data.pack} ชุด
+        </div>*/}
+
+      </div>
+    )
+    const SubDetail = (
+      <div className="row card">
+        <div className="col-12">
+          <div className='card-title'>รายละเอียดงาน</div>
+          <div className='card-read'>{data.detail}</div>
+        </div>
+      </div>
+    )
+    const SendDetail = (
+      <div className="row card">
+          <div className="col-12">
+            <div className='card-title'>รายละเอียดการจัดส่ง</div>
+            <div className='card-read'>
+              วิธีการจัดส่ง {data.sendBy}<br/>
+              วันที่เริ่มงาน {moment(data.startAt).format('DD/MM/YY')}<br/>
+              วันที่เสร็จงาน {moment(data.endAt).format('DD/MM/YY')}<br/>
+            </div>
+          </div>
+        
+        {/*
+        <div className="col-3 sendBy">
+          <img alt='' src={Send}/><br/>
+          {data.sendBy}
+        </div>
+        <div className="col-3 startAt">
+          <div className='text'>เริ่มส่ง</div>
+          {moment(data.startAt).format('DD/MM/YY')}
+        </div>
+        <div className="col-3 endAt">
+          <div className='text'>ส่งกลับ</div>
+          {moment(data.endAt).format('DD/MM/YY')}
+        </div>
+        <div className="col-3 workTime">
+          <img alt='' src={Alarm}/><br/>
+          {secToText(data.worktime)}
+        </div>
+        */}
+      </div>
+    )
+    const TimeDetail = (
+      <div className="row card">
+        <div className="col-6 cost">
+          มีเวลทำ {countAllDay} วัน
+        </div>
+        <div className="col-6 pack">
+        {canRequest>0
+          ?`สามารถรับได้ ${canRequest} ชุด`
+          :'เวลาว่างไม่พอทำงาน'
+        }
+        </div>
+        <div className="col-6 cost">
+          คุณมีเวลา {secToText(worktimeBetween)}
+        </div>
+        <div className="col-6 pack">
+          เวลาต่อชุด {secToText(data.piece*data.worktime)}
+        </div>
+
+      </div>
+    )
+    const ToolsDetail = (
+      <div className="row card">
+        <div className="col-12">
+          <div className='card-title'>อุปกรณ์การทำงาน</div>
+          <div className='card-read'>
+            {data.tool}
+          </div>
+        </div>
+      </div>
+    )
+    const EmployerDetail = (
+      <Link to={`/employer/${employer.employer_id}`}>
+      <div className="employer row card">
+        <div className="imageEmployer">
+          <img className="" alt='' src={employer.data.imageProfile}/>
+        </div>
+        <div className="detail">
+          <div className='name'>
+            {employer.data.name}
+          </div>
+          <div className='phone'>
+            {phoneFormatter(employer.data.phone)}
+          </div>
+          <div className='address'>
+            {employer.data.homeNo&&`${employer.data.homeNo} `}
+            {employer.data.road&&`ถ. ${employer.data.road} `}
+            {employer.data.area&&`ข. ${employer.data.area} `}
+            {employer.data.district&&`ข. ${employer.data.district} `}
+            {employer.data.province&&`จ. ${employer.data.province} `}
+            {employer.data.postcode&&`${employer.data.postcode} `}
+          </div>
+        </div>
+      </div>
+      </Link>
+    )
 
     return (
       <Style>
@@ -138,105 +256,13 @@ class Login extends Component {
         
         <div className="container">
         
-          <div className="row card">
-            <div className="col-7 name">
-              {data.name}
-            </div>
-            <div className="col-5 price">
-              {data.piece} ชิ้น {data.price*data.piece} บาท
-            </div>
-            <div className="col-6 cost">
-              เหลือ {data.pack} ชุด
-            </div>
-            <div className="col-6 pack">
-              ค่ามัดจำ {data.cost} บาท
-            </div>
-          </div>
-
-          <div className="row card">
-            
-            <div className="col-6 cost">
-              มีเวลทำ {countAllDay} วัน
-            </div>
-            <div className="col-6 pack">
-            {canRequest>0
-              ?`สามารถรับได้ ${canRequest} ชุด`
-              :'เวลาว่างไม่พอทำงาน'
-            }
-            </div>
-            <div className="col-6 cost">
-              คุณว่าง {worktimeBetween} วินาที
-            </div>
-            <div className="col-6 pack">
-              เวลาต่อชุด {data.piece*data.worktime} วินาที
-            </div>
-            
-          </div>
-        
-          <div className="row card">
-            <div className="col-3 sendBy">
-              <img alt='' src={Send}/><br/>
-              {data.sendBy}
-            </div>
-            <div className="col-3 startAt">
-              <div className='text'>เริ่มส่ง</div>
-              {moment(data.startAt).format('DD/MM/YY')}
-            </div>
-            <div className="col-3 endAt">
-              <div className='text'>ส่งกลับ</div>
-              {moment(data.endAt).format('DD/MM/YY')}
-            </div>
-            <div className="col-3 workTime">
-              <img alt='' src={Alarm}/><br/>
-              {(data.worktime>=60)
-                ?'~ ' + data.worktime/60 + ' นาที'
-                :data.worktime + ' วินาที'
-              }
-            </div>
-          </div>
-        
-          {/*
-          <div className="row card">
-            <div className="col-12">เครื่องมือ</div>
-            <div className="col-3">
-              <img className="imageTool" alt='' src=""/>
-            </div>
-            <div className="col-9">
-              {data.tool}
-            </div>
-          </div>
-          */}
-        
-          <div className="row card">
-            <div className="col-12">
-              รายละเอียด<br/>
-              {data.detail}
-            </div>
-          </div>
-        
-          <Link to={`/employer/${employer.employer_id}`}>
-          <div className="employer row card">
-            <div className="imageEmployer">
-              <img className="" alt='' src={employer.data.imageProfile}/>
-            </div>
-            <div className="detail">
-              <div className='name'>
-                {employer.data.name}
-              </div>
-              <div className='phone'>
-                {employer.data.phone}
-              </div>
-              <div className='address'>
-                {employer.data.homeNo&&`${employer.data.homeNo} `}
-                {employer.data.road&&`ถ. ${employer.data.road} `}
-                {employer.data.area&&`ข. ${employer.data.area} `}
-                {employer.data.district&&`ข. ${employer.data.district} `}
-                {employer.data.province&&`จ. ${employer.data.province} `}
-                {employer.data.postcode&&`${employer.data.postcode} `}
-              </div>
-            </div>
-          </div>
-          </Link>
+          {MainDetail}
+          {EmployerDetail}
+          {SendDetail}
+          {SubDetail}
+          {ToolsDetail}
+          {TimeDetail}
+          
 
         </div>
 
@@ -298,10 +324,13 @@ const Style = Styled.div`
   }
   .name{
     ${AppStyle.font.main}
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow:ellipsis;
   }
   .pack{
     ${AppStyle.font.read1}
-    text-align: right;
+    text-align: left;
   }
   .sendBy{
     text-align: center;
@@ -359,7 +388,16 @@ const Style = Styled.div`
       .address{
         clear: both;
         ${AppStyle.font.read2}
+        line-height: 20px;
       }
     }
+  }
+
+
+  .card-title{
+    ${AppStyle.font.read1}
+  }
+  .card-read{
+    line-height: 20px;
   }
 `

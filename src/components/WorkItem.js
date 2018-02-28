@@ -28,7 +28,7 @@ class WorkItem extends Component {
                   </div>
                   <div className="employer">{data.employer_name}</div>
                   <div className='startDate'>
-                    {data.startAt>new Date
+                    {moment(data.startAt)>moment()
                       ?'เริ่มส่ง ' + moment(data.startAt).fromNow()
                       :'เลยเวลาส่งแล้ว'
                     }

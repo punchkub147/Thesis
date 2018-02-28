@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import { Link, browserHistory } from 'react-router';
+import { Link, browserHistory, hashHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../../config/style'
 
 import { auth, getUser } from '../../api/firebase'
 import store from 'store'
+
+import defaultImage from '../../img/profile2.png'
 
 import { Menu, Icon } from 'antd';
 const SubMenu = Menu.SubMenu;
@@ -21,10 +23,26 @@ export default class extends Component {
       store.set('employer',user)
       this.setState({user})
     })
+
+    await auth.onAuthStateChanged(user => {
+      if(user){
+        // this.setState({user})
+      }else{
+        browserHistory.push('/login')
+      }
+    })
   }
 
   render() {
     const { user } = this.state
+
+    const menuProfile = [
+      {
+        path: `/web/profile/${user.uid}`,
+        name: 'แก้ไขโปรไฟล์',
+        icon: 'profile',
+      },
+    ]
 
     const menuList = [
       {
@@ -66,29 +84,46 @@ export default class extends Component {
       <Style>
         <div className="menu">
 
-          <Link to={`/web/profile/${user.uid}`}>
-            <div className='profile'>
-              <img src={user.data.imageProfile?user.data.imageProfile:'https://raw.githubusercontent.com/Infernus101/ProfileUI/0690f5e61a9f7af02c30342d4d6414a630de47fc/icon.png'} alt=''/>
-              <div className='name'>{user.data.name}</div>
-            </div>
-          </Link>
+          {(!user.data.admin)&&
+            <div>
 
-
-          {menuList.map(menu => 
-            <Link to={menu.path}>
-              <div className={`list ${menu.path===this.props.route.path&&'active'}`}>
-                <Icon type={menu.icon} style={{fontSize: 18}} /> {menu.name}
+            <Link to={`/web/profile/${user.uid}`}>
+              <div className='profile'>
+                <img src={user.data.imageProfile?user.data.imageProfile:defaultImage} alt=''/>
+                <div className='name'>{user.data.name}</div>
+                <div className='edit'>แก้ไขโปรไฟล์</div>
               </div>
             </Link>
-          )}
 
-          {//if(user === 'admin')
+            <div className='profile-icon'>
+            {menuProfile.map(menu => 
+              <Link to={menu.path}>
+                <div className={`list ${menu.path===`${this.props.route.path.substr(0, 12)}/${user.uid}`&&'active'}`}>
+                  <Icon type={menu.icon} style={{fontSize: 18}} />
+                  <span className='menu-name'>{menu.name}</span>
+                </div>
+              </Link>
+            )}
+            </div>
+
+            {menuList.map(menu => 
+              <Link to={menu.path}>
+                <div className={`list ${menu.path===this.props.route.path&&'active'}`}>
+                  <Icon type={menu.icon} style={{fontSize: 18}} />
+                  <span className='menu-name'>{menu.name}</span>
+                </div>
+              </Link>
+            )}
+            </div>
+          }
+
+          {(user.data.admin)&&
           <div>
-            ADMIN
             {menuAdmin.map(menu => 
               <Link to={menu.path}>
                 <div className={`list ${menu.path===this.props.route.path&&'active'}`}>
-                  <Icon type={menu.icon} style={{fontSize: 18}} /> {menu.name}
+                  <Icon type={menu.icon} style={{fontSize: 18}} />
+                  <span className='menu-name'>{menu.name}</span>
                 </div>
               </Link>
             )}
@@ -96,7 +131,8 @@ export default class extends Component {
           }
 
           <div className="list logout" onClick={() => auth.signOut()}>
-            ออกจากระบบ
+            <Icon type={'logout'} style={{fontSize: 18}} />
+            <span className='menu-name'>ออกจากระบบ</span>
           </div>
         </div>
       </Style>
@@ -123,11 +159,18 @@ const Style = Styled.div`
       .name{
         ${AppStyle.font.tool}
       }
+      .edit{
+        ${AppStyle.font.read1}
+      }
+
     }
   }
-
-
-
+  .menu-name{
+    margin-left: 10px;
+  }
+  .profile-icon{
+    display: none;
+  }
   .list{
     width: 100%;
     height: 40px;
@@ -144,5 +187,18 @@ const Style = Styled.div`
   }
   .logout{
     margin-top: 40px;
+  }
+
+
+  @media screen and (max-width: 400px) {
+    .profile{
+      display: none;
+    }
+    .profile-icon{
+      display: block;
+    }
+    .menu-name{
+      display: none;
+    }
   }
 `

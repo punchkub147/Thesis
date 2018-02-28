@@ -18,6 +18,21 @@ import TopStyle from '../components/TopStyle'
 
 import best from '../img/best.png'
 
+const overNumber = (number) => {
+  number = number.toString()
+  if(number >= 1000000){
+    return `${number[0]}.${number[1]} ล.`
+  }else if(number >= 100000){
+    return `${number[0]}.${number[1]} ส.`
+  }else if(number >= 10000){
+    return `${number[0]}.${number[1]} ห.`
+  }else if(number >= 1000){
+    return `${number[0]}.${number[1]} พ`
+  }else{
+    return number
+  }
+}
+
 class Dashboard extends Component {
 
   state = {
@@ -30,6 +45,8 @@ class Dashboard extends Component {
   async componentDidMount() {
     window.scrollTo(0, 0)
     const { user } = this.state
+    let workSuccess = 0
+    let workFail = 0
 
     await db.collection('working')
     .where('employee_id', '==', user.uid)
@@ -40,6 +57,15 @@ class Dashboard extends Component {
         const finished_piece = doc.data().finished_piece?doc.data().finished_piece:0
         const total_price = finished_piece*doc.data().price
         const total_time = finished_piece*doc.data().worktime
+
+        if(doc.data().endAt<new Date){
+          if(doc.data().total_piece-doc.data().finished_piece <= 0){
+            workSuccess+=1
+          }else{
+            workFail+=1
+          }
+        }// count workSuccess & workFail
+
         let value = 0
         if(finished_piece!=0)
           value = Number((total_price)/((total_time)/60)).toFixed(1)
@@ -67,10 +93,21 @@ class Dashboard extends Component {
           working[sameid].finished_piece += finished_piece
           working[sameid].value = Number((working[sameid].total_price)/((working[sameid].total_time)/60)).toFixed(1)
         }
-        //console.log(working)
+
+        // db.collection('works').doc(doc.data().work_id).get()
+        // .then(d => 
+        //   db.collection('working').doc(doc.id).update({
+        //     employer_id: d.data().employer_id,
+        //     employer: d.data().employer,
+        //     employee: Object.assign(user.data, {employee_id: user.uid})
+        //   })
+        // )
       })
 
-      
+      /*db.collection('employee').doc(user.uid).update({
+        workSuccess,
+        workFail,
+      })*/ //อัพเดทงานเสร็จ/ไม่เสร็จ
 
       this.setState({working})
       store.set('working', working)
@@ -161,7 +198,7 @@ class Dashboard extends Component {
                   onClick={() => this.selectMonth(data)}>
                   <div className='total'>.</div>
                   <div className='stat'>
-                    {data.price}.-
+                    {overNumber(data.price)}.-
                   </div>
                   <div className='date'>{data.date}</div>
                 </Bar>

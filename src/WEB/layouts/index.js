@@ -34,10 +34,15 @@ class Layout extends Component {
 export default Layout;
 
 const Style = Styled.div`
+
+
+
+
   .left{
     position: fixed;
     width: 200px;
     height: 100vh;
+    z-index: 10;
   }
   .right{
     margin-left: 200px;
@@ -47,10 +52,22 @@ const Style = Styled.div`
     box-sizing: border-box;
   }
   .con{
-    padding: 20px;
+    padding: 10px;
     min-height: 100vh;
     box-sizing: border-box;
     background: ${AppStyle.color.bg};
     ${AppStyle.shadow.lv1}
+  }
+
+  @media screen and (max-width: 400px) {
+    .left{
+      max-width: 50px;
+    }
+    .right{
+      margin-left: 50px;
+    }
+    .container{
+      padding: 0;
+    }
   }
 `

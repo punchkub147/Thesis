@@ -55,7 +55,9 @@ class Login extends Component {
       this.setState({loading: false})
     })
     .catch(e => {
-      message.info(e)
+      e.code=='auth/user-not-found'&&message.info('ไม่มีอีเมลล์นี้ในระบบ กรุณาลงทะเบียน')
+      e.code=='auth/wrong-password'&&message.info('รหัสผ่านผิดพลาด')
+      
       this.setState({loading: false})
     })
     this.setState({loading: false})
@@ -64,7 +66,6 @@ class Login extends Component {
   navigateUser = async (user) => {
     const employerRef = await db.collection('employer').doc(user.uid)
     const employeeRef = await db.collection('employee').doc(user.uid)
-
     this.setState({loading: true})
     await employeeRef.get().then(async doc => {
       if(doc.exists){
@@ -82,7 +83,9 @@ class Login extends Component {
       }else{
         employerRef.get().then(doc => {
           doc.exists
-            &&browserHistory.push('/web/works')
+            doc.data().admin
+              ?browserHistory.push('/web/admin')
+              :browserHistory.push('/web/')
         })
       }
     })
@@ -118,7 +121,10 @@ class Login extends Component {
                 </form>
 
                 <Link to="/register">
-                  <div className="register">ลงทะเบียน</div> 
+                  <div className="register hidden-md-up">ลงทะเบียน</div> 
+                </Link>
+                <Link to="/web/register">
+                  <div className="register employer hidden-md-down">ลงทะเบียนผู้ประกอบการ</div> 
                 </Link>
               </div>
             
@@ -180,5 +186,8 @@ const Style = Styled.div`
     margin-top: 20px;
     color: ${AppStyle.color.black};
     font-weight: bold;
+  }
+  .employer{
+    margin-top: 10px;
   }
 `

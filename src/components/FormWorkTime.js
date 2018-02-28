@@ -385,7 +385,7 @@ const InsideModal = Styled.div`
     
     .date{
       float: left;
-      width: 198px;
+      width: 175px;
       overflow: hidden; 
       white-space: nowrap; 
       text-overflow:ellipsis;

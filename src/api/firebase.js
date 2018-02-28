@@ -158,7 +158,9 @@ export const sendNoti = async (title, message, type, receiver, sender, token, li
     path: link,
     watched: false,
     createAt: new Date,
-  }, _.identity))
+  }, _.identity)).then(() => {
+    console.log('บันทึกการแจ้งเตือน')
+  })
 
   PushFCM({
     to: token,

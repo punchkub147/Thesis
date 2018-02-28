@@ -68,7 +68,7 @@ export default class extends Component {
             <div className='col-sm-12 col-md-8'>
               <div className='card'>
                 <Link to={`/web/editwork/${work.work_id}`}>
-                  <div className='edit'> แก้ไข </div>
+                  <div className='edit-work'> แก้ไข </div>
                 </Link>
                 <div className='name'>{work.name}</div>
                 <div className='detail'>{work.detail}</div>
@@ -144,7 +144,7 @@ const Style = Styled.div`
     ${AppStyle.font.read2}
   }
 
-  .edit{
+  .edit-work{
     position: absolute; 
     right: 10px;
     top: 10px;

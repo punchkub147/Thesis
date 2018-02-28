@@ -20,7 +20,7 @@ const color = { //YELLOW
   bg: "#faf5b2",
   bg2: '#f4cc72',
   card: "#faf5b2",
-  maintext: "#d2282c",
+  maintext: "#9c2828",
   text: "#442916",
   subtext: "#faf5b2",
   white: "#faf5b2",

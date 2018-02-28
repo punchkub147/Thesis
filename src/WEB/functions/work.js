@@ -73,10 +73,10 @@ export const cancelWork = (data) => {
 
   
 export const getedWork = async (data) => {
-  if(data.endAt > new Date){
-    console.log('ยังไม่ถึงเวลารับงาน')
-    return
-  }
+  // if(data.endAt > new Date){
+  //   console.log('ยังไม่ถึงเวลารับงาน')
+  //   return
+  // }
 
   console.log(data)
   let status = true

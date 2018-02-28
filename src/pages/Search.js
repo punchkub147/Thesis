@@ -10,6 +10,8 @@ import Layout from '../layouts'
 import Tabbar from '../layouts/Tabs'
 
 import WorkItem from '../components/WorkItem'
+import WorkItem2 from '../components/WorkItem2'
+
 import Content from '../components/Content'
 import Carousel from '../components/Carousel'
 
@@ -21,11 +23,13 @@ import { db, getUser } from '../api/firebase'
 import { browserHistory } from 'react-router/lib';
 import TopStyle from '../components/TopStyle'
 
+import { getWorks } from '../functions' 
+
 
 class Search extends Component {
   
   state = {
-    worksList: store.get('works'),
+    works: store.get('works'),
     user: store.get('employee'),
     abilities: store.get('abilities'),
   }
@@ -38,70 +42,74 @@ class Search extends Component {
       this.setState({user})
     })
 
-    await db.collection('abilities')
-    .onSnapshot(snap => {
-      const abilities = []
-      snap.forEach(doc => {
-        abilities[doc.id] = doc.data()
-      })
-      this.setState({abilities})
-      store.set('abilities',abilities)
+    await getWorks((works) => {
+      this.setState({works})
     })
+
+    // await db.collection('abilities')
+    // .onSnapshot(snap => {
+    //   const abilities = []
+    //   snap.forEach(doc => {
+    //     abilities[doc.id] = doc.data()
+    //   })
+    //   this.setState({abilities})
+    //   store.set('abilities',abilities)
+    // })
     
-    await db.collection('works')
-    //.where('startAt' ,'>', new Date())
-    .onSnapshot(snapshot => {
-      let worksList = []
-      snapshot.forEach(doc => {
-        if(doc.data().pack <= 0)return
-        if(!doc.data().round)return
+    // await db.collection('works')
+    // //.where('startAt' ,'>', new Date())
+    // .onSnapshot(snapshot => {
+    //   let works = []
+    //   snapshot.forEach(doc => {
+    //     if(doc.data().pack <= 0)return
+    //     if(!doc.data().round)return
 
-        const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
-        if(!nextRound)return
+    //     const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+    //     if(!nextRound)return
         
-        worksList.push(_.assign(doc.data(),
-          { 
-            _id: doc.id,
-            abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
+    //     works.push(_.assign(doc.data(),
+    //       { 
+    //         _id: doc.id,
+    //         abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
 
-            startAt: nextRound.startAt,
-            endAt: nextRound.endAt,
-            workAllTime: doc.data().worktime*doc.data().piece
-          }
-        ))
-      })
+    //         startAt: nextRound.startAt,
+    //         endAt: nextRound.endAt,
+    //         workAllTime: doc.data().worktime*doc.data().piece
+    //       }
+    //     ))
+    //   })
 
-      worksList = _.orderBy(worksList, ['startAt'], ['asc']); //เรียงวันที่
+    //   works = _.orderBy(works, ['startAt'], ['asc']); //เรียงวันที่
 
-      this.setState({worksList})
-      store.set('works', worksList)
-    })
+    //   this.setState({works})
+    //   store.set('works', works)
+    // })
 
 
   }
 
   render() {
-    const { worksList, user, abilities } = this.state
+    const { works, user, abilities } = this.state
 
     let recommended = []
-    _.map(worksList, work => 
+    _.map(works, work => 
       (user.data.abilities[work.ability] === true)&& 
         recommended.push(work)
     )
       if(recommended.length === 0){
-      _.map(worksList, work => 
+      _.map(works, work => 
         (!work.ability || work.ability === 'general')&& 
           recommended.push(work)
       )}
     //////////////////////////////////////////////////
     let workmanship = []
-    _.map(worksList, work => 
+    _.map(works, work => 
       (work.ability && work.ability !== 'general')&& 
         workmanship.push(work)
     )
     //////////////////////////////////////////////////
     let general = []
-    _.map(worksList, work => 
+    _.map(works, work => 
       (!work.ability || work.ability === 'general') && 
         general.push(work)
     )
@@ -114,6 +122,7 @@ class Search extends Component {
                   <Link to="/editabilities" className='edit'>
                     <img alt='' src={edit}/>
                   </Link>
+                  {/*
                   <div style={{overflow: 'hidden', 'max-width': '100%'}}>
                     <Carousel>
                       {_.map(recommended, (work, i) => 
@@ -121,9 +130,9 @@ class Search extends Component {
                       )}
                     </Carousel>
                   </div>
-
+                    */}
                   {_.map(recommended, (work, i) => 
-                    <WorkItem data={work} i={i}/>
+                    <WorkItem2 data={work}/>
                   )}
                 </Content>,
       },
@@ -131,7 +140,7 @@ class Search extends Component {
         name: 'งานฝีมือ',
         render: <Content>
                   {_.map(workmanship, (work, i) => 
-                    <WorkItem data={work} i={i}/>
+                    <WorkItem2 data={work} i={i}/>
                   )}
                 </Content>,
       },
@@ -139,7 +148,7 @@ class Search extends Component {
         name: 'งานทั่วไป',
         render: <Content>
                   {_.map(general, (work, i) => 
-                    <WorkItem data={work} i={i}/>
+                    <WorkItem2 data={work} i={i}/>
                   )}
                 </Content>,
       },

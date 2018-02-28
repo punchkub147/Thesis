@@ -5,12 +5,16 @@ import AppStyle from '../../config/style'
 import _ from 'lodash'
 import moment from 'moment'
 import cuid from 'cuid'
+import store from 'store'
 
-import { auth, db, storage, sendNoti } from '../../api/firebase'
+import { auth, db, storage, sendNoti, getUser } from '../../api/firebase'
 import { timeToSec } from '../../functions/moment'
 
 import { TimePicker, DatePicker, message } from 'antd'
 import Button from '../../components/Button';
+import Loading from '../../components/Loading';
+
+
 const { RangePicker } = DatePicker
 
 const format = 'HH:mm'
@@ -19,22 +23,23 @@ const dateFormat = 'YYYY/MM/DD'
 class FormEditWork extends Component {
   state = {
     work: {},
-    user: {},
+    user: store.get('employer'),
     image64: '',
     file: '',
-    abilities: []
+    abilities: [],
+
+    loading: false,
   }
 
-  componentDidMount() {
+  async componentDidMount() {
 
-
-    auth.onAuthStateChanged(user => {
-      user
-        ?this.setState({user})
-        :browserHistory.push('/web/login')
+    await getUser('employer', user => {
+      store.set('employer',user)
+      this.setState({user})
     })
 
     if(this.props.workId){
+      this.setState({loading: true})
       db.collection('works').doc(this.props.workId).get()
       .then(doc => {
         doc.exists&&
@@ -43,6 +48,7 @@ class FormEditWork extends Component {
             image64: doc.data().image
           })
       })
+      this.setState({loading: false})
     }
 
     db.collection('abilities').get()
@@ -71,6 +77,7 @@ class FormEditWork extends Component {
     const { work, user, file, image64 } = this.state
     if(image64 !== ''){
       let image = ''
+      this.setState({loading: true})
       if(file){
         image = await this.storageImage(file)
       }else{
@@ -88,15 +95,17 @@ class FormEditWork extends Component {
         await db.collection('works').doc(this.props.workId).update(_.pickBy(data, _.identity))
         message.info('แก้ไขงานเรียบร้อบ')
       }else{
+        const employer = Object.assign(user.data, {employer_id: user.uid})
         const createData = Object.assign(data, {
           createAt: new Date(),
+          employer,
         })
         let newId = ''
         await db.collection('works').add(_.pickBy(createData, _.identity)).then(data => {
           newId = data.id
         })
         const title = 'แนะนำ งานใหม่สำหรับคุณ'
-        const message = `${work.name} จำนวน ${work.piece} ชิ้น ราคา ${work.price}`
+        const message = `แนะนำงานใหม่สำหรับคุณ ${work.name} จำนวน ${work.piece} ชิ้น ราคา ${work.piece*work.price} บาท`
         const type = 'work'
         const sender = user.uid
         const link = `/work/${newId}`
@@ -111,6 +120,7 @@ class FormEditWork extends Component {
         })
         //message.info('เพิ่มงานเรียบร้อบ')
       }
+      this.setState({loading: false})
       await browserHistory.goBack()      
     }else{
       message.info('กรุณาเพิ่มรูปภาพ')
@@ -176,7 +186,7 @@ class FormEditWork extends Component {
   render() {
     const { image64, work, abilities } = this.state
 
-    if(window.location.pathname!=='/web/addwork' && !work.startAt)return<div/>
+    //if(window.location.pathname!=='/web/addwork' && !work.startAt)return<div/>
 
     let startAt = new Date
     if(work.startAt)
@@ -257,11 +267,14 @@ class FormEditWork extends Component {
       // },
     ]
     return (
+      <Loading loading={this.state.loading}>
       <Style>
         <form onSubmit={this.handleAddWork}>
 
           <div className="row">
-            <div className="col-12">
+            <div className="col-xs-12 col-sm-12 col-md-4">
+            </div>
+            <div className="col-xs-12 col-sm-12 col-md-8">
               <div className="image">
                 <img alt='' src={image64}/>
               </div>
@@ -287,6 +300,7 @@ class FormEditWork extends Component {
           
         </form>
       </Style>
+      </Loading>
     );
   }
 }
@@ -297,6 +311,8 @@ const Style = Styled.div`
 .image{
   img{
     max-height: 300px;
+    width: 100%;
+    object-fit: cover;
   }
   margin-bottom: 20px;
 }
@@ -329,10 +345,10 @@ const Style = Styled.div`
 .ant-calendar-picker-input{
   width: 100%;
   height: 40px;
-  background: ${AppStyle.color.card};
+  background: #f4e4d1;
   border-radius: 0;
   border: none;
-  border-bottom: solid 2px ${AppStyle.color.sub};
+  border-bottom: solid 5px ${AppStyle.color.border};
   margin-bottom: 20px; 
 }
 `

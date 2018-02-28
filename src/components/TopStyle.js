@@ -14,10 +14,10 @@ export default class extends Component {
 }
 
 const Style = Styled.div`
-  width: 100%;
-  height: 60px;
-  background-image: url(${topStyle});
-  background-size: auto 100%;
-  background-position: -100px bottom;
-  background-repeat: repeat-x;
+  // width: 100%;
+  // height: 60px;
+  // background-image: url(${topStyle});
+  // background-size: auto 100%;
+  // background-position: -100px bottom;
+  // background-repeat: repeat-x;
 `

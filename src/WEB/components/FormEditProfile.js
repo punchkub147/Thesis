@@ -12,6 +12,9 @@ import { timeToSec } from '../../functions/moment'
 
 import { message } from 'antd'
 import Button from '../../components/Button';
+import Loading from '../../components/Loading';
+
+import defaultImage from '../../img/profile2.png'
 
 const format = 'HH:mm'
 
@@ -20,6 +23,8 @@ class FormEditWork extends Component {
     user: store.get('employer'),
     image64: '',
     file: '',
+
+    loading: false,
   }
 
   async componentDidMount() {
@@ -42,6 +47,9 @@ class FormEditWork extends Component {
   handleInput = (e, ref) => {
     const { user } = this.state
     const { value } = e.target
+
+    if(ref=='phone' && value.length > 10)return
+
     this.setState({
       user: {
         ...user,
@@ -57,6 +65,7 @@ class FormEditWork extends Component {
     e.preventDefault();
     const { user, file, image64 } = this.state
     if(image64 !== ''){
+      this.setState({loading: true})
       let imageProfile = ''
       if(file){
         imageProfile = await this.storageImage(file)
@@ -71,6 +80,15 @@ class FormEditWork extends Component {
 
       if(user){
         await db.collection('employer').doc(user.uid).update(_.pickBy(data, _.identity))
+
+        const employer = Object.assign(user.data, {employer_id: user.uid})
+        db.collection('works').where('employer_id', '==', user.uid)
+        .onSnapshot(async querySnapshot => {
+          await querySnapshot.forEach(async doc => {
+            db.collection('works').doc(doc.id).update({employer})
+          });
+        })
+
         message.info('แก้ไขโปรไฟล์เรียบร้อบ')
       }else{
         const data = await Object.assign(data, {
@@ -79,7 +97,11 @@ class FormEditWork extends Component {
         await db.collection('employer').add(_.pickBy(data, _.identity))
         message.info('สร้างโปรไฟล์เรียบร้อบ')
       }
-      await browserHistory.push('/web/works')      
+      this.setState({loading: false})
+
+      this.props.push
+        ?browserHistory.push('/web/works')
+        :browserHistory.goBack()
     }else{
       message.info('กรุณาเพิ่มรูปภาพ')
     }
@@ -137,7 +159,7 @@ class FormEditWork extends Component {
       },
       {
         name: 'อีเมลล์',
-        input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'e-mail')} value={_.get(data,'e-mail')} required/>,
+        input: <input type="email" placeholder="" onChange={ e => this.handleInput(e, 'e-mail')} value={_.get(data,'email')} required/>,
       },
 
       ///สถานที่
@@ -173,13 +195,17 @@ class FormEditWork extends Component {
 
 
     return (
+      <Loading loading={this.state.loading}>
       <Style>
         <form onSubmit={this.handleProfile}>
 
           <div className="row">
-            <div className="col-12">
+            <div className="col-xs-12 col-sm-12 col-md-4">
+              
+            </div>
+            <div className="col-xs-12 col-sm-12 col-md-8">
               <div className="image">
-                <img alt='' src={image64}/>
+                <img alt='' src={image64?image64:defaultImage}/>
               </div>
             </div>
           </div>
@@ -203,6 +229,7 @@ class FormEditWork extends Component {
           
         </form>
       </Style>
+      </Loading>
     );
   }
 }
@@ -213,6 +240,8 @@ const Style = Styled.div`
 .image{
   img{
     max-height: 300px;
+    width: 100%;
+    object-fit: cover;
   }
   margin-bottom: 20px;
 }

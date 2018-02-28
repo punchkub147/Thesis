@@ -34,7 +34,6 @@ class Notification extends Component {
 
   getNotification = (user) => {
     if(!user)return
-
     db.collection('notifications').where('receiver', '==', user.uid)
     .onSnapshot(snapshot => {
       let notiList = []
@@ -45,7 +44,6 @@ class Notification extends Component {
       notiList = _.orderBy(notiList, ['createAt'], ['desc']); //เรียงวันที่
       notiList = _.chunk(notiList, 10)[0];
       //notiList = notiList[0]
-      console.log('qweqwe',notiList)
       this.setState({notiList})
       store.set('notifications',notiList)
     })
@@ -74,7 +72,6 @@ class Notification extends Component {
 
   render() {
     const { notiList } = this.state
-    console.log(notiList)
 
     return (
       <Layout route={this.props.route}>

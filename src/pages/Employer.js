@@ -14,7 +14,7 @@ import education from '../img/profile2.png'
 
 import Layout from '../layouts'
 import Content from '../components/Content'
-import WorkItem from '../components/WorkItem'
+import WorkItem2 from '../components/WorkItem2'
 
 import { getUser, db, auth } from '../api/firebase'
 import Button from '../components/Button';
@@ -27,6 +27,7 @@ export default class extends Component {
   state = {
     employer: {},
     works: [],
+    abilities: store.get('abilities')
   }
 
   async componentDidMount() {
@@ -41,14 +42,40 @@ export default class extends Component {
       }
     })
 
+    await db.collection('abilities')
+    .onSnapshot(snap => {
+      const abilities = []
+      snap.forEach(doc => {
+        abilities[doc.id] = doc.data()
+      })
+      this.setState({abilities})
+      store.set('abilities',abilities)
+    })
+
     await db.collection('works').where('employer_id', '==', this.props.params.id).get()
     .then(snap => {
-      const works = []
+      let works = []
       snap.forEach(doc => {
-        works.push(Object.assign(doc.data(), {_id: doc.id}))
-      })      
+        if(doc.data().pack <= 0)return
+        if(!doc.data().round)return
+
+        const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+        if(!nextRound)return
+        
+        works.push(_.assign(doc.data(),
+          { 
+            _id: doc.id,
+            abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
+
+            startAt: nextRound.startAt,
+            endAt: nextRound.endAt,
+            workAllTime: doc.data().worktime*doc.data().piece
+          }
+        ))
+      })    
       this.setState({works})
     })
+
   }
 
   render() {
@@ -97,7 +124,7 @@ export default class extends Component {
 
           <div>งานที่ประกาศ</div>
           {_.map(works, (work, i) => 
-            <WorkItem data={work} i={i}/>
+            <WorkItem2 data={work} i={i}/>
           )}
 
 

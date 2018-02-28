@@ -18,6 +18,7 @@ import EditWorkTime from './pages/EditWorkTime'
 import EditTools from './pages/EditTools'
 import StopWatch from './pages/StopWatch'
 import Employer from './pages/Employer'
+import WorkList from './pages/WorkList'
 
 import WebAddWork from './WEB/pages/AddWork' 
 import WebEditWork from './WEB/pages/EditWork'
@@ -133,13 +134,18 @@ class AppRouter extends Component {
         page: Employer,
         title: "บริษัท",
       },
+      { path: '/worklist/:id',
+        exact: false,
+        page: WorkList,
+        title: "งานแนะนำ",
+      },
       
 
       /////////////////////////////// WEB ////////////////////////////////////
 
       { path: '/web',
         exact: false,
-        page: WebLogin,
+        page: Login,
         title: "เข้าสู่ระบบ",
       },
       { path: '/web/login',
@@ -194,7 +200,11 @@ class AppRouter extends Component {
       },
       
       ///////////////////////////// ADMIN //////////////////
-
+      { path: '/web/admin/',
+        exact: false,
+        page: AdminEmployees,
+        title: "ผู้รับงาน",
+      },
       { path: '/web/admin/employees',
         exact: false,
         page: AdminEmployees,

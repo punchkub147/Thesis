@@ -25,7 +25,7 @@ class WorkOnHome extends Component {
         this.setState({user})
         this.getWorking(user)
       }else{
-        browserHistory.push('/web/login')
+        //browserHistory.push('/web/login')
       }
     })
   }

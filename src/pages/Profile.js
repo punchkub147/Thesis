@@ -55,7 +55,10 @@ class Profile extends Component {
     store.remove('user')
     store.remove('employee')
     store.remove('tasks')
+    store.remove('works')
     store.remove('notifications')
+    store.clearAll()
+    console.log(localStorage)
     browserHistory.push('/login')
   }
 
@@ -131,7 +134,7 @@ class Profile extends Component {
                     <Link to="/editabilities" className='edit'>
                       <img alt='' src={edit}/>
                     </Link>
-                    ความสามารถ<br/>
+                    <div className='card-title'>ความสามารถ</div>
                     {data.abilities&&
                       _.map(userAbilities,(data,key) => 
                       <div style={{float: 'left'}}>{_.get(data,'name') + ', '}</div>
@@ -230,5 +233,10 @@ const Style = Styled.div`
     img{
       width: 25px;
     }
+  }
+
+
+  .card-title{
+    ${AppStyle.font.read1}
   }
 `

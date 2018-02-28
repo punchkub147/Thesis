@@ -49,6 +49,12 @@ class Tasks extends Component {
     modalHoliday: false,
     nextHoliday: [],
 
+    modalRecommend: false,
+    recommend: '',
+
+    showDetail: [],
+    showAllDetail: [],
+
     works: store.get('works')
   }
 
@@ -137,6 +143,7 @@ class Tasks extends Component {
           working_id: doc.id,
           worktime,
           finished_piece,
+          do_piece: _.orderBy(doc.data().do_piece, ['updateAt'], ['desc'])
         }))
       })
       tasks = _.orderBy(tasks, ['endAt'], ['asc']); //เรียงวันที่
@@ -181,6 +188,16 @@ class Tasks extends Component {
     this.setState({
       modalIsOpen: false,
     })
+    const total_piece = work.total_piece
+    const finished_piece = work.finished_piece?work.finished_piece:0
+    const percent = 80
+    const totalPercent = (total_piece*percent)/100
+    if(finished_piece+this.state.doing >= totalPercent){
+      this.setState({
+        modalRecommend: true,
+        recommend: work.work_id
+      })
+    }
 
     taskDoing(work, this.state.doing)
 
@@ -210,8 +227,36 @@ class Tasks extends Component {
     })
   }
 
+  showDetail = (working_id) => {
+    let {showDetail} = this.state
+    console.log('FINDKETKEYK',_.indexOf(showDetail, working_id))
+    if(_.indexOf(showDetail, working_id) == -1){
+      showDetail.push(working_id)
+    }else{
+      _.pull(showDetail, working_id)
+    }
+    
+    this.setState({
+      showDetail
+    })
+  }
+
+  showAllDetail = (working_id) => {
+    let {showAllDetail} = this.state
+    console.log('FINDKETKEYK',_.indexOf(showAllDetail, working_id))
+    if(_.indexOf(showAllDetail, working_id) == -1){
+      showAllDetail.push(working_id)
+    }else{
+      _.pull(showAllDetail, working_id)
+    }
+    
+    this.setState({
+      showAllDetail
+    })
+  }
+
   render() {
-    const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user, nextHoliday, works } = this.state
+    const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user, nextHoliday, works, showDetail, showAllDetail } = this.state
 
     const { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks, user)
     
@@ -224,8 +269,11 @@ class Tasks extends Component {
               <Link to={`work/${working.work_id}`}>
                 <div className="name">{working.work_name}</div>
               </Link>
-              <div className="piece">
-                {working.toDayFinishedPiece} /{working.limitTodo+working.overPiece}
+              <div className="piece-l">
+                ต้องทำ <span className='number'>{working.limitTodo+working.overPiece}</span> ชิ้น
+              </div>
+              <div className="piece-r">
+                ทำไปแล้ว <span className='number'>{working.toDayFinishedPiece}</span> ชิ้น
               </div>
 
               <div className='row' style={{clear: 'both'}}>
@@ -235,6 +283,7 @@ class Tasks extends Component {
                   </div>
                 </div>
               </div>
+              
               <div className='row'>
                 <div className='col-6'>
                   <div className="edittime">
@@ -242,17 +291,14 @@ class Tasks extends Component {
                       <button>
                         <img alt='' src={alarm2}/>
                         {' '} 
-                        {working.worktime >= 60
-                          ?'~ ' + Math.floor(working.worktime/60) + ' นาที'
-                          : working.worktime + ' วินาที'
-                        }
+                        {secToText(working.worktime)}
                       </button>
                     </Link>
                   </div>
                 </div>
                 <div className='col-6'>
                   <div className="timing">
-                  {secToTime(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}
+                  เหลือเวลา {secToText(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}
                     {/*<div style={{color: 'red'}}>{working.overPiece!==0&&secToTime(working.overPiece*working.worktime)}</div>
                     */}
                   </div>
@@ -269,10 +315,20 @@ class Tasks extends Component {
             }
           
           </div>
-          {/*moment(working.createAt).fromNow()*/}
-          {/*
-            <div onClick={() => this.handleDelete(working.working_id)}>DELETE</div>
-          */}
+
+          <div className='showDetail' onClick={() => this.showDetail(working.working_id)}>แสดงรายละเอียด</div>
+          {showDetail[_.indexOf(showDetail, working.working_id)] == working.working_id&&
+            <div className='detail'>
+            {_.map(working.do_piece, detail => 
+              moment(detail.updateAt).format('DD/MM') == moment().format('DD/MM')&&
+              <div className='c'>
+                <div className='do_piece'>จำนวน {detail.piece} ชิ้น</div>
+                <div className='updateAt'>เมื่อวันที่ {moment(detail.updateAt).format('DD/MM/YY')} เวลา {moment(detail.updateAt).format('HH:mm')}น. </div>
+              </div>
+            )}
+            <div style={{clear: 'both'}}/>
+            </div>
+          }
         </NowTask>
       )}
         {/*
@@ -325,6 +381,19 @@ class Tasks extends Component {
             </div>
             </div>
           </div>
+
+          <div className='showDetail' onClick={() => this.showAllDetail(working.working_id)}>แสดงรายละเอียด</div>
+          {showAllDetail[_.indexOf(showAllDetail, working.working_id)] == working.working_id&&
+            <div className='detail'>
+            {_.map(working.do_piece, detail => 
+              <div className='c'>
+                <div className='do_piece'>จำนวน {detail.piece} ชิ้น</div>
+                <div className='updateAt'>เมื่อวันที่ {moment(detail.updateAt).format('DD/MM/YY')} เวลา {moment(detail.updateAt).format('HH:mm')}น. </div>
+              </div>
+            )}
+            <div style={{clear: 'both'}}/>
+            </div>
+          }
           
         </AllTask>
       )}
@@ -450,12 +519,21 @@ class Tasks extends Component {
                   <div className='countdown'>{moment(nextHoliday.date,'DD/MM/YY').fromNow()}</div>
                 </div>
                 }
-                <div className='text'>คุณจะหยุดหรือไม่</div><br/>
+                <div className='text'>คุณจะหยุดหรือไม่?</div><br/>
 
                 <div className='cancel' onClick={() => this.setState({modalHoliday: false})}>ไม่หยุด</div>
                 <div className='submit' onClick={() => this.handleHoliday(nextHoliday.date)}>หยุด</div>
               
               </HolidayModal>
+            </Modal>
+
+            <Modal modalIsOpen={this.state.modalRecommend} mini>
+              <RecommendModal>
+                <div className='title'>ว้าว! ทำงานใกล้เสร็จแล้ว</div>
+                <div className='text'>มีงานมากมายรอคุณอยู่ สนใจรับงานเพิ่มไหม?</div>
+                <Link to={'/worklist/'+this.state.recommend}><Button>ค้นหางาน</Button></Link>
+                <div className='cancel' onClick={() => this.setState({modalRecommend: false})}>ไม่สนใจ</div>
+              </RecommendModal>
             </Modal>
 
           </Style>
@@ -514,15 +592,21 @@ const NowTask = Styled.div`
     overflow: hidden; 
     white-space: nowrap; 
     text-overflow:ellipsis;
-    width: 60%;
+    width: 100%;
   }
-  .piece{
-    ${AppStyle.font.main}
-    text-align: right;
+  .piece-l{
+    float: left;
+    .number{
+      ${AppStyle.font.main}
+    }
+  }
+  .piece-r{
     float: right;
-    width: 40%;
-    font-weight: bold;
+    .number{
+      ${AppStyle.font.main}
+    }
   }
+
   .progress{
     height: 20px;
     width: 100%;
@@ -559,6 +643,8 @@ const NowTask = Styled.div`
     ${AppStyle.font.tool}
     ${AppStyle.shadow.lv2}
     position: relative;
+
+    right: -12px;
     .border{
       position: absolute;
       border: dashed 2px ${AppStyle.color.white};
@@ -598,6 +684,27 @@ const NowTask = Styled.div`
       height: 50px;
       margin: 5px;
       line-height: 50px;
+    }
+  }
+
+  .showDetail{
+    width: 100%;
+    text-align: center;
+    ${AppStyle.font.read1}
+  }
+  .detail{
+    background: ${AppStyle.color.bg2};
+    margin: 0 -10px -10px -10px;
+    padding: 10px;
+    .c{
+      clear: both;
+      .do_piece{
+        float: left;
+      }
+      .updateAt{
+        float: right;
+        text-align: right;
+      }
     }
   }
 `
@@ -643,6 +750,29 @@ const AllTask = Styled.div`
     height: 20px;
     width: 100%;
     //background: ${AppStyle.color.main};
+    margin-bottom: 10px;
+  }
+
+  
+  .showDetail{
+    width: 100%;
+    text-align: center;
+    ${AppStyle.font.read1}
+  }
+  .detail{
+    background: ${AppStyle.color.bg2};
+    margin: 0 -10px -10px -10px;
+    padding: 10px;
+    .c{
+      clear: both;
+      .do_piece{
+        float: left;
+      }
+      .updateAt{
+        float: right;
+        text-align: right;
+      }
+    }
   }
 `
 
@@ -717,5 +847,21 @@ const HolidayModal = Styled.div`
   }
   .text{
     text-align: center;
+  }
+`
+
+const RecommendModal = Styled.div`
+  .title{
+    ${AppStyle.font.main}
+    text-align: center;
+  }
+  .text{
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .cancel{
+    color: ${AppStyle.color.main};
+    text-align: center;
+    margin-top: 10px;
   }
 `

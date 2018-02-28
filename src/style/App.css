@@ -128,10 +128,10 @@ button:focus{
   left: 0;
 }
 li.ant-time-picker-panel-select-option-selected{
-  background: #f4e4d1;
+  background: #faf5b2;
 }
 .ant-time-picker-panel-select li:hover{
-  background: #f4e4d1;
+  background: #faf5b2;
 }
 
 .ant-time-picker-panel{
@@ -170,22 +170,22 @@ li.ant-time-picker-panel-select-option-selected{
   margin-top: -8px;
 }
 /* .ant-slider-handle:hover{
-  border-color: #eb7985;
+  border-color: #9c2828;
 }
 .ant-slider-handle:active{
-  border-color: #eb7985;
+  border-color: #9c2828;
 }
 .ant-slider-rail:hover .ant-slider-handle{
-  border-color: #eb7985;
+  border-color: #9c2828;
 }
 .ant-slider-track{
-  background-color: #eb7985;
+  background-color: #9c2828;
 }
 .ant-slider:hover .ant-slider-track{
-  background-color: #eb7985;
+  background-color: #9c2828;
 }
 .ant-slider:hover .ant-slider-handle{
-  border-color: #eb7985;
+  border-color: #9c2828;
 }
 .ant-slider-rail{
   background: #f3d5bc;
@@ -194,10 +194,10 @@ li.ant-time-picker-panel-select-option-selected{
   background: #f3d5bc;
 }
 .ant-slider:hover .ant-slider-handle:not(.ant-tooltip-open){
-  border-color: #eb7985;
+  border-color: #9c2828;
 }
 .ant-slider-handle:focus{
-  border-color: #eb7985;
+  border-color: #9c2828;
   box-shadow: none;
 } */
 
@@ -205,16 +205,16 @@ li.ant-time-picker-panel-select-option-selected{
 /* Wheel  */
 
 .am-picker-popup{
-  background: #f4e4d1;
+  background: #faf5b2;
 }
 .am-picker-col-mask{
   background-image: 
   linear-gradient(to bottom, 
-  rgba(244,228,209, 0.95), 
-  rgba(244,228,209, 0.6)), 
+  rgba(250, 245, 178, 0.95), 
+  rgba(250, 245, 178, 0.6)), 
   linear-gradient(to top, 
-  rgba(244,228,209, 0.95), 
-  rgba(244,228,209, 0.6));
+  rgba(250, 245, 178, 0.95), 
+  rgba(250, 245, 178, 0.6));
 }
 .am-picker-col-item{
   font-size: 32px;
@@ -230,7 +230,7 @@ li.ant-time-picker-panel-select-option-selected{
   content: 'ตกลง';
   visibility: visible;
   font-size: 22px;
-  color: #eb7985;
+  color: #9c2828;
   font-weight: bold;
 }
 .am-picker-popup-header .am-picker-popup-header-left{
