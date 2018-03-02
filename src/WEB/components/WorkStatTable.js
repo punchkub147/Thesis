@@ -18,6 +18,7 @@ import { secToText } from '../../functions/moment'
 import Table from '../components/Table'
 import Tabbar from '../components/Tabbar'
 import Button from '../../components/Button'
+import Loading from '../../components/Loading'
 
 import Send from '../../img/send.png'
 import Alarm from '../../img/alarm.png'
@@ -39,12 +40,14 @@ export default class extends Component {
     needWorkList: [],
     workingList: [],
     workSuccessList: [],
-    menuTable: 'roundList',
+    menuTable: 'needWorkList',
 
     modalVisible: false,
     selectEmployee: '',
 
-    loading: true
+    loading: true,
+
+    selectRound: 'all',
   }
 
   async componentDidMount() {
@@ -76,10 +79,9 @@ export default class extends Component {
     const { work } = this.state
     
     let needWorkList = []
-    
     await db.collection('needWork').where('work_id', '==', work_id)
-    .get().then(async querySnapshot => {
-      this.setState({loading: true})
+    .onSnapshot(async querySnapshot => {
+      
       needWorkList = []
       let countNeedWork = 0
       await querySnapshot.forEach(async function(doc) {
@@ -108,7 +110,6 @@ export default class extends Component {
               if(se.data().holiday){
                 const workDay = moment(doc.data().startAt).add(i,'days').format('DD/MM/YY')
                 if(se.data().holiday[workDay]==true){
-                  console.log('วันหยุด')
                 }else{
                   timeWork += se.data().workTime[day]
                 }
@@ -118,7 +119,7 @@ export default class extends Component {
             }
           }
         })
-        needWorkList[index] = _.assign(needWorkList[index],{
+        needWorkList[_.findIndex(needWorkList, ['needWork_id', doc.id])] = _.assign(needWorkList[_.findIndex(needWorkList, ['needWork_id', doc.id])],{
           workSuccess,
           workFail
         })
@@ -126,6 +127,7 @@ export default class extends Component {
 
         ///หาเวลาที่ยุ่งอยู่
         let timeWorkingBetween = 0 //เวลาที่ยุ่งอยู่
+
         await db.collection('working').where('employee_id', '==', doc.data().employee_id).get()
         .then(w => {
           w.forEach(d => {
@@ -141,17 +143,15 @@ export default class extends Component {
           })
           
         })
-        //console.log('timeWorkingBetween',timeWorkingBetween)//เวลาที่ยุ่งระหว่างงานนี้
+        //console.log('timeWorkingBetween',timeWorkingBetween, timeWork)//เวลาที่ยุ่งระหว่างงานนี้
 
         timeCanWork = Math.floor(timeWork-timeWorkingBetween) //เวลาที่ว่างอยู่ระหว่างวันทำงาน
         
-        needWorkList[index] = _.assign(needWorkList[index],{
+        needWorkList[_.findIndex(needWorkList, ['needWork_id', doc.id])] = _.assign(needWorkList[_.findIndex(needWorkList, ['needWork_id', doc.id])],{
           timeCanWork,
         })
-        console.log('งาน',needWorkList[index])
         
       });//ForEach
-      this.setState({loading: false})
       needWorkList = _.orderBy(needWorkList, ['createAt'], ['desc']); //เรียงวันที่
       await this.setState({needWorkList})
       await db.collection('works').doc(work_id).update({
@@ -185,7 +185,6 @@ export default class extends Component {
   }
 
   handleAddRound = (date) => {
-    console.log('addRound',date)
     const { work } = this.state
 
     let round = work.round?work.round:[]
@@ -205,7 +204,6 @@ export default class extends Component {
   }
   
   handleEditRound = (date, key) => {
-    console.log('addRound',date)
     const { work } = this.state
 
     let round = work.round
@@ -218,7 +216,6 @@ export default class extends Component {
   }
 
   handleCancelRound = (key) => {
-    console.log('cancel', key)
     const { work } = this.state
 
     let round = work.round
@@ -243,14 +240,22 @@ export default class extends Component {
     })
   }
 
-  sendWork = (work) => {
+  sendWork = async (work) => {
+    if(work.startAt < new Date){
+      message.info('เลยเวลาการส่งแล้ว')
+      return
+    }
+    this.setState({loading: true})
+
     const { needWorkList } = this.state
     const index = _.findIndex(needWorkList, ['needWork_id', work.needWork_id]);
     _.pullAt(needWorkList, [index]);
     this.setState({
       needWorkList
     })
-    sendWork(work)
+    await sendWork(work)
+
+    this.setState({loading: false})
   }
   cancelWork = (work) => {
     const { needWorkList } = this.state
@@ -261,26 +266,39 @@ export default class extends Component {
     })
     cancelWork(work)
   }
+  selectingRound = (startAt) => {
+    const { selectRound } = this.state
+    this.setState({
+      selectRound: selectRound==startAt?'all':startAt
+    })
+  }
 
   render() {
-    const { work, needWorkList, workingList, workSuccessList, selectEmployee, loading } = this.state
+    const { work, selectEmployee, loading, selectRound } = this.state
+    let { needWorkList, workingList, workSuccessList } = this.state
+
+    if(selectRound != 'all'){
+      needWorkList = _.filter(needWorkList, function(o) { return moment(o.startAt).format('DD/MM/YY') == moment(selectRound).format('DD/MM/YY'); })
+      workingList = _.filter(workingList, function(o) { return moment(o.startAt).format('DD/MM/YY') == moment(selectRound).format('DD/MM/YY'); })
+      workSuccessList = _.filter(workSuccessList, function(o) { return moment(o.startAt).format('DD/MM/YY') == moment(selectRound).format('DD/MM/YY'); })
+    }
 
     const needWorkColumns = [
       {
-        title: 'รหัสผู้รับงาน',
-        dataIndex: 'employee_id',
-        key: 'employee_id',
+        title: 'ชื่อผู้รับงาน',
+        dataIndex: 'employee',
+        key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text}</span>,
+        render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text.tname+text.fname+' '+text.lname}</span>,
       },  
       {
-        title: 'ทำงานสำเร็จ',
+        title: 'เคยทำงานสำเร็จ',
         dataIndex: 'workSuccess',
         key: 'workSuccess',
         className: 'align-right',
       }, 
       {
-        title: 'ทำงานไม่สำเร็จ',
+        title: 'เคยทำงานไม่สำเร็จ',
         dataIndex: 'workFail',
         key: 'workFail',
         className: 'align-right',
@@ -289,7 +307,12 @@ export default class extends Component {
         title: 'เวลาว่างทำงาน',
         dataIndex: 'timeCanWork',
         key: 'timeCanWork',
-        render: (text, item) => <div>{text>=work.piece*work.worktime?text:'เวลาทำงานไม่พอ'}</div>,
+        render: (text, item) => 
+          <div>{text &&
+            text>=work.piece*work.worktime
+            ?secToText(text)+' (ว่าง)'
+            :secToText(text)+' (ไม่ว่าง)'}
+          </div>,
       }, 
       {
         title: 'รอบวันที่',
@@ -306,13 +329,9 @@ export default class extends Component {
         title: 'ส่งงาน',
         key: 'send',
         render: (text, item) => (
-          <div>{
-            new Date > item.startAt
-            ?'เลยเวลาส่งแล้ว'
-            :<Popconfirm title="ยืนยันการส่งงาน" onConfirm={() => this.sendWork(item)}>
-              <div className='click' > ส่งงาน </div>
-            </Popconfirm>
-          }</div>
+          <Popconfirm title="ยืนยันการส่งงาน" onConfirm={() => this.sendWork(item)}>
+            <div className='click' > ส่งงาน </div>
+          </Popconfirm>
         )
       },
       {
@@ -324,15 +343,15 @@ export default class extends Component {
           </Popconfirm>
         ),
       }
-    ];
+    ];  
 
     const workingColumns = [
       {
-        title: 'รหัสผู้ทำงาน',
-        dataIndex: 'employee_id',
-        key: 'employee_id',
+        title: 'ชื่อผู้ทำงาน',
+        dataIndex: 'employee',
+        key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text}</span>,
+        render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text.tname+text.fname+' '+text.lname}</span>,
       },
       {
         title: 'เวลาทำงานต่อชิ้น',
@@ -356,6 +375,17 @@ export default class extends Component {
         render: (text, item) => <div>{text?text:0} ชิ้น</div>,
       },
       {
+        title: 'รอบวันที่',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {text&&
+              moment(text).locale('en').format('DD/MM/YY HH:mm')}
+          </div>,
+      }, 
+      {
         title: 'รับงาน',
         key: 'action',
         render: (text, item) => (
@@ -366,6 +396,15 @@ export default class extends Component {
           :<div> กำลังทำ... </div>
         ),
       },
+      // {
+      //   title: 'ลบ',
+      //   key: 'delete',
+      //   render: (text, item) => (
+      //     <Popconfirm title="ยืนยันลบ?" onConfirm={ () => db.collection('working').doc(item.working_id).delete()}>
+      //       <div className='click'> ลบงาน </div>
+      //     </Popconfirm>
+      //   ),
+      // },
     ];
 
     const workSuccessColumns = [
@@ -438,9 +477,9 @@ export default class extends Component {
     const Round = (
       <div className="col-12 card" style={{clear: 'both'}}>
         {_.map(work.round, (round,key) =>
-          round.endAt>=new Date&&
-          <label className='round'>
-            <div className={`card ${round.startAt<=new Date&&round.endAt>=new Date&&'hilight'}`}>
+          //round.endAt>=new Date&&
+          <label className='round' onClick={() => this.selectingRound(round.startAt)}>
+            <div className={`card ${selectRound == round.startAt&&'hilight'}`}>
               {round.startAt<=new Date&&round.endAt>=new Date
                 ?<span style={{color: AppStyle.color.main, fontWeight: 'bold'}}>กำลังดำเนินอยู่</span>
                 :<span style={{color: AppStyle.color.sub, fontWeight: 'bold'}}>{moment(round.startAt).fromNow()}</span>
@@ -448,13 +487,14 @@ export default class extends Component {
               {'ส่ง ' + moment(round.startAt).format('DD/MM/YY')}<br/>
               {'รับ ' + moment(round.endAt).format('DD/MM/YY')}
 
-              {round.startAt>new Date&&
+              {/*round.startAt>new Date&&
               <div className='cancel'>
                 <Popconfirm title={`ยกเลิกรอบการส่งวันที่ ${moment(round.startAt).format('DD/MM/YY')}?`} onConfirm={() => this.handleCancelRound(key)}>
                   <span>ยกเลิก</span>
                 </Popconfirm>
               </div>
-              }
+              */}
+
               {/*
               <RangePicker 
                 ranges={{ 'วันนี้': [moment(), moment()], 'เดือนนี้': [moment(), moment().endOf('month')] }}
@@ -484,13 +524,27 @@ export default class extends Component {
       <Style>
 
           <Menu
-            onClick={(e) => this.setState({menuTable: e.key})}
-            selectedKeys={[this.state.menuTable]}
+            //onClick={(e) => this.setState({menuTable: e.key})}
+            selectedKeys={'roundList'}
             mode="horizontal"
           >
             <Menu.Item key="roundList">
               <Icon type="calendar" style={{fontSize: 18}}/>{`รอบการส่งงาน`}
             </Menu.Item>
+          </Menu>
+
+          <div className='contentTab'>
+          {
+            //this.state.menuTable === 'roundList'&&
+              Round
+          }
+          </div>
+
+          <Menu
+            onClick={(e) => this.setState({menuTable: e.key})}
+            selectedKeys={[this.state.menuTable]}
+            mode="horizontal"
+          >
             <Menu.Item key="needWorkList">
               <Icon type="solution" style={{fontSize: 18}}/>{`คำร้องขอรับงาน (${needWorkList.length})`}
             </Menu.Item>
@@ -502,11 +556,7 @@ export default class extends Component {
             </Menu.Item>
           </Menu>
 
-          <div className='contentTab'>
-          {
-            this.state.menuTable === 'roundList'&&
-              Round
-          }{
+          <div className='contentTab'>{
             this.state.menuTable === 'needWorkList'&&
               <Table columns={needWorkColumns} dataSource={needWorkList} />
           }{
@@ -517,7 +567,6 @@ export default class extends Component {
               <Table columns={workSuccessColumns} dataSource={workSuccessList} />
           }
           </div>
-
 
           <Modal
             style={{ top: 20 }}
@@ -549,7 +598,7 @@ const Style = Styled.div`
     height: 90px;
     padding: 5px;
     box-sizing: border-box;
-    
+    cursor: pointer;
 
     .card{
       background: ${AppStyle.color.card};
@@ -587,6 +636,7 @@ const Style = Styled.div`
       border: dashed 2px ${AppStyle.color.sub};
     }
     .hilight{
+      box-sizing: border-box;
       border: solid 2px ${AppStyle.color.main};
     }
   }

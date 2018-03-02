@@ -11,6 +11,7 @@ import holiday from '../config/holiday'
 import { Slider } from 'antd';
 
 import { getUser, db } from '../api/firebase'
+import { getWorks } from '../functions/'
 import { secToTime, secToText } from '../functions/moment'
 import { getTasks, genNowWorking, genAllWorking, taskDoing } from '../functions/task'
 
@@ -77,50 +78,51 @@ class Tasks extends Component {
     await this.setNextHoliday()
     await this.getWorking(user)
 
-    await this.getWorks()
+    //await this.getWorks()
+    getWorks(works => this.setState({works}))
   }
 
-  getWorks = async () => {
+  // getWorks = async () => {
 
-    await db.collection('abilities')
-    .onSnapshot(snap => {
-      const abilities = []
-      snap.forEach(doc => {
-        abilities[doc.id] = doc.data()
-      })
-      this.setState({abilities})
-      store.set('abilities',abilities)
-    })
+  //   await db.collection('abilities')
+  //   .onSnapshot(snap => {
+  //     const abilities = []
+  //     snap.forEach(doc => {
+  //       abilities[doc.id] = doc.data()
+  //     })
+  //     this.setState({abilities})
+  //     store.set('abilities',abilities)
+  //   })
 
-    await db.collection('works')
-    //.where('startAt' ,'>', new Date())
-    .onSnapshot(snapshot => {
-      let works = []
-      snapshot.forEach(doc => {
-        if(doc.data().pack <= 0)return
-        if(!doc.data().round)return
+  //   await db.collection('works')
+  //   //.where('startAt' ,'>', new Date())
+  //   .onSnapshot(snapshot => {
+  //     let works = []
+  //     snapshot.forEach(doc => {
+  //       if(doc.data().pack <= 0)return
+  //       if(!doc.data().round)return
 
-        const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
-        if(!nextRound)return
+  //       const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+  //       if(!nextRound)return
         
-        works.push(_.assign(doc.data(),
-          { 
-            _id: doc.id,
-            abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
+  //       works.push(_.assign(doc.data(),
+  //         { 
+  //           _id: doc.id,
+  //           abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
 
-            startAt: nextRound.startAt,
-            endAt: nextRound.endAt,
-            workAllTime: doc.data().worktime*doc.data().piece
-          }
-        ))
-      })
+  //           startAt: nextRound.startAt,
+  //           endAt: nextRound.endAt,
+  //           workAllTime: doc.data().worktime*doc.data().piece
+  //         }
+  //       ))
+  //     })
 
-      works = _.orderBy(works, ['startAt'], ['asc']); //เรียงวันที่
+  //     works = _.orderBy(works, ['startAt'], ['asc']); //เรียงวันที่
 
-      this.setState({works})
-      store.set('works', works)
-    })
-  }
+  //     this.setState({works})
+  //     store.set('works', works)
+  //   })
+  // }
 
   getWorking = async (user) => {
     db.collection('working')

@@ -25,10 +25,15 @@ export const getAbilities = async () => {
 }
 
 export const getWorks = async (callback) => {
-  getAbilities()
-  const abilities = store.get('abilities')
-
-  
+  let abilities = []
+  await db.collection('abilities')
+  .onSnapshot(snap => {
+    
+    snap.forEach(doc => {
+      abilities[doc.id] = doc.data()
+    })
+    store.set('abilities',abilities)
+  })
   await db.collection('works')
   //.where('startAt' ,'>', new Date())
   .onSnapshot(async snapshot => {

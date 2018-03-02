@@ -9,24 +9,38 @@ import { PushFCM } from '../../api/notification'
 
 const user = store.get('employer')
 
-export const sendWork = (data) => {
+export const sendWork = async (data) => {
+  if(data.startAt < new Date){
+    message.info('เลยเวลาการส่งแล้ว')
+    return
+  }
+
   db.collection('needWork').doc(data.needWork_id).delete()
   /////////////////
 
   db.collection('works').doc(data.work_id).get()
   .then(async snapshot => {
     const work = snapshot.data()
+    let employee = {}
+    await db.collection('employee').doc(data.employee_id).get()
+    .then(doc => {
+      employee = Object.assign(doc.data(), {employee_id: doc.id})
+    })
+    const employer = Object.assign(user.data, {employer_id: user.uid})
+
     const working = {
       employee_id: data.employee_id,
+      employee,
       employer_id: data.employer_id,
+      employer,
       work_id: snapshot.id,
       total_piece: work.piece*data.pack,
       finished_piece: 0,
       worktime: work.worktime,
       price: work.price,
       work_name: work.name,
-      startAt: work.startAt,
-      endAt: work.endAt,
+      startAt: data.startAt,
+      endAt: data.endAt,
       createAt: new Date,
     }
     await db.collection('working').add(_.pickBy(working, _.identity))

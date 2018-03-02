@@ -44,9 +44,24 @@ export default class extends Component {
       const work_id = this.props.params.id
       await db.collection('works').doc(work_id)
       .onSnapshot(doc => {
-        const work = Object.assign(doc.data(), {work_id: doc.id})
+        
+        let nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+        if(!nextRound){
+          nextRound = {
+          startAt: doc.data().startAt,
+          endAt: doc.data().endAt,
+        }}
+
+        const work = Object.assign(doc.data(), {
+          work_id: doc.id,
+
+          startAt: nextRound.startAt,
+          endAt: nextRound.endAt,
+        })
         this.setState({work})
       })
+    }else{
+      browserHistory.goBack()
     }
   }
 

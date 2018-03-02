@@ -48,8 +48,18 @@ class Works extends Component {
       let worksList = []
       await querySnapshot.forEach(async doc => {
 
+        let nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+        if(!nextRound){
+          nextRound = {
+          startAt: doc.data().startAt,
+          endAt: doc.data().endAt,
+        }}
+
         worksList.push(Object.assign(doc.data(),{
           work_id: doc.id,
+
+          startAt: nextRound.startAt,
+          endAt: nextRound.endAt,
         }))
 
         //db.collection('works').doc(doc.id).update({employer})

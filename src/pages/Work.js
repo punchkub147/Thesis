@@ -49,12 +49,18 @@ class Login extends Component {
 
     db.collection('works').doc(work_id)
     .onSnapshot(async work => {
+      const nextRound = _.find(work.data().round, function(o) { return o.startAt > new Date; })
+      //if(!nextRound)return
+
       db.collection('employer').doc(work.data().employer_id)
       .onSnapshot(async employer => {
         _this.setState({
           work: {
             work_id,
-            data: work.data()
+            data: Object.assign(work.data(), {
+              startAt: nextRound.startAt,
+              endAt: nextRound.endAt
+            }),
           },
           employer: {
             employer_id: employer.id,
@@ -89,6 +95,9 @@ class Login extends Component {
         endAt: work.data.endAt,
   
         employee_id: user.uid,
+
+        employee: Object.assign(user.data, {employee_id: user.uid}),
+
         employee_name: `${user.data.fname} ${user.data.lname}`,
         employee_phone: user.data.phone,
   
@@ -164,8 +173,8 @@ class Login extends Component {
             <div className='card-title'>รายละเอียดการจัดส่ง</div>
             <div className='card-read'>
               วิธีการจัดส่ง {data.sendBy}<br/>
-              วันที่เริ่มงาน {moment(data.startAt).format('DD/MM/YY')}<br/>
-              วันที่เสร็จงาน {moment(data.endAt).format('DD/MM/YY')}<br/>
+              วันที่เริ่มงาน {data.startAt&& moment(data.startAt).format('DD/MM/YY')}<br/>
+              วันที่เสร็จงาน {data.endAt&& moment(data.endAt).format('DD/MM/YY')}<br/>
             </div>
           </div>
         
