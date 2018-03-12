@@ -15,7 +15,6 @@ import defaultImage from '../img/profile2.png'
 
 import Layout from '../layouts'
 import Content from '../components/Content'
-import TopStyle from '../components/TopStyle'
 
 import { getUser, db, auth } from '../api/firebase'
 import Button from '../components/Button';
@@ -71,7 +70,6 @@ class Profile extends Component {
 
     return (
       <Layout route={this.props.route}>
-        <TopStyle/>
         <Style>
           <div id="Profile">
             <Content>

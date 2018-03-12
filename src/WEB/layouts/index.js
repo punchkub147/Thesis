@@ -8,6 +8,7 @@ import Bg from '../../components/Bg'
 class Layout extends Component {
 
   render() {
+    console.log(this.props)
     return (
       <Bg>
       <Style>
@@ -17,8 +18,10 @@ class Layout extends Component {
         </div>
 
         <div className="right">
-          <div className="container">
+          <div className="">
             <div className="con">
+            
+              <div className='title'>{this.props.route.title}</div>
               {this.props.children}
               <div style={{clear: 'both'}}></div>
             </div>
@@ -35,7 +38,10 @@ export default Layout;
 
 const Style = Styled.div`
 
-
+  .title{
+    ${AppStyle.font.main}
+    margin-bottom: 10px;
+  }
 
 
   .left{
@@ -52,11 +58,11 @@ const Style = Styled.div`
     box-sizing: border-box;
   }
   .con{
-    padding: 10px;
+    padding: 40px;
     min-height: 100vh;
     box-sizing: border-box;
-    background: ${AppStyle.color.bg};
-    ${AppStyle.shadow.lv1}
+    background: ${AppStyle.color.bg2};
+    //${AppStyle.shadow.lv1}
   }
 
   @media screen and (max-width: 400px) {
@@ -68,6 +74,9 @@ const Style = Styled.div`
     }
     .container{
       padding: 0;
+    }
+    .con{
+      padding: 10px;
     }
   }
 `

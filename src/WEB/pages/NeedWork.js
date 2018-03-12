@@ -12,16 +12,19 @@ import { auth, db, sendNoti } from '../../api/firebase'
 import { PushFCM } from '../../api/notification'
 
 import { sendWork, cancelWork } from '../functions/work'
+import { secToText } from '../../functions/moment'
 
 import Table from '../components/Table'
 import { phoneFormatter } from '../../functions/index';
 
-import { message } from 'antd'
+import { message, Popconfirm } from 'antd'
 
 class NeedWork extends Component {
 
   state = {
     needWorkList: [],
+    loading: false,
+    re: false,
   }
 
   async componentDidMount() {
@@ -34,7 +37,7 @@ class NeedWork extends Component {
       }
     })
   }
-
+/*
   getNeedWork = (user) => {
     db.collection('needWork').where('employer_id', '==', user.uid)
     .onSnapshot(async querySnapshot => {
@@ -48,65 +51,196 @@ class NeedWork extends Component {
       await this.setState({needWorkList})
     })
   }
+*/
+  getNeedWork = async (user) => {
+    
+    let needWorkList = []
+    await db.collection('needWork').where('employer_id', '==', user.uid)
+    .onSnapshot(async querySnapshot => {
+      
+      needWorkList = []
+      let countNeedWork = 0
+      await querySnapshot.forEach(async function(doc) {
+        countNeedWork+=1
+        const countDay = -moment(doc.data().startAt).diff(moment(doc.data().endAt), 'days')
+        let timeCanWork = 0
+
+        //หาเวลาที่ทำงาน
+        let timeWork = 0
+        let workSuccess = 0
+        let workFail = 0
+
+        needWorkList.push(Object.assign(doc.data(),{
+          needWork_id: doc.id,
+        }))
+        const index = _.findIndex(needWorkList, ['needWork_id', doc.id])
+
+        await db.collection('employee').doc(doc.data().employee_id).get()
+        .then(se => {
+          workSuccess = se.data().workSuccess?se.data().workSuccess:0
+          workFail = se.data().workFail?se.data().workFail:0
+          if(se.data().workTime){
+            for(let i = 0; i<countDay; i++){
+              const day = moment(doc.data().startAt).add(i,'days').locale('en').format('ddd').toLowerCase()
+              
+              if(se.data().holiday){
+                const workDay = moment(doc.data().startAt).add(i,'days').format('DD/MM/YY')
+                if(se.data().holiday[workDay]==true){
+                }else{
+                  timeWork += se.data().workTime[day]
+                }
+              }else{
+                timeWork += se.data().workTime[day]
+              }
+            }
+          }
+        })
+        needWorkList[_.findIndex(needWorkList, ['needWork_id', doc.id])] = _.assign(needWorkList[_.findIndex(needWorkList, ['needWork_id', doc.id])],{
+          workSuccess,
+          workFail
+        })
+        //console.log('timeWork',timeWork)//เวลาทำงาน-วันหยุด
+
+        ///หาเวลาที่ยุ่งอยู่
+        let timeWorkingBetween = 0 //เวลาที่ยุ่งอยู่
+
+        await db.collection('working').where('employee_id', '==', doc.data().employee_id).get()
+        .then(w => {
+          w.forEach(d => {
+            if(!d.data().success){
+              if(d.data().startAt<doc.data().endAt && d.data().endAt>doc.data().startAt){ //งานที่คาบเกี่ยวเวลากัน
+                const fp = d.data().finished_piece?d.data().finished_piece:0
+                const timeWorkingAll = (+d.data().total_piece-+fp)*d.data().worktime
+                const countDayWorking = -moment(d.data().startAt).diff(moment(d.data().endAt), 'days')
+                const timeWorking = timeWorkingAll/countDayWorking*countDay
+                timeWorkingBetween += timeWorking
+              }             
+            }
+          })
+          
+        })
+        //console.log('timeWorkingBetween',timeWorkingBetween, timeWork)//เวลาที่ยุ่งระหว่างงานนี้
+
+        timeCanWork = Math.floor(timeWork-timeWorkingBetween) //เวลาที่ว่างอยู่ระหว่างวันทำงาน
+        
+        needWorkList[_.findIndex(needWorkList, ['needWork_id', doc.id])] = _.assign(needWorkList[_.findIndex(needWorkList, ['needWork_id', doc.id])],{
+          timeCanWork,
+        })
+        
+      });//ForEach
+      needWorkList = _.orderBy(needWorkList, ['createAt'], ['desc']); //เรียงวันที่
+      await this.setState({needWorkList})
+      
+    })
+    
+  }
+
+  sendWork = async (work) => {
+    if(work.startAt < new Date){
+      message.info('เลยเวลาการส่งแล้ว')
+      return
+    }
+    this.setState({loading: true})
+
+    const { needWorkList } = this.state
+    const index = _.findIndex(needWorkList, ['needWork_id', work.needWork_id]);
+    _.pullAt(needWorkList, [index]);
+    this.setState({
+      needWorkList
+    })
+    await sendWork(work)
+
+    this.setState({loading: false})
+  }
+  cancelWork = (work) => {
+    const { needWorkList } = this.state
+    const index = _.findIndex(needWorkList, ['needWork_id', work.needWork_id]);
+    _.pullAt(needWorkList, [index]);
+    this.setState({
+      needWorkList
+    })
+    cancelWork(work)
+  }
 
   render() {
     const { needWorkList } = this.state
 
-    const columns = [
+    const needWorkColumns = [
       {
         title: 'ชื่องาน',
         dataIndex: 'work_name',
         key: 'work_name',
-        render: (text, item) => <Link to={`/web/work/${item.work_id}`}>{text}</Link>,
-      }, 
+        className: 'click',
+        render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{item.work_name}</span>,
+      },
       {
         title: 'ชื่อผู้รับงาน',
-        dataIndex: 'employee_name',
+        dataIndex: 'employee',
         key: 'employee_name',
-        //render: (text, item) => <Link to={`/web/editwork/${item.work_id}`}>{text}</Link>,
-      }, 
+        className: 'click',
+        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
+      },  
       {
-        title: 'เบอร์ติดต่อ',
-        dataIndex: 'employee_phone',
-        key: 'employee_phone',
-        render: (text, item) => <div>{phoneFormatter(text)}</div>,
-      }, 
-      {
-        title: 'จำนวนชุด',
-        dataIndex: 'pack',
-        key: 'pack',
-      }, 
-      {
-        title: 'เมื่อวันที่',
-        dataIndex: 'createAt',
-        key: 'createAt',
+        title: 'เคยทำงานสำเร็จ',
+        dataIndex: 'workSuccess',
+        key: 'workSuccess',
         className: 'align-right',
-        render: (text, item) => <div>{text&&moment(text).format('DD/MM/YY HH:mm')}</div>,
+      }, 
+      {
+        title: 'เคยทำงานไม่สำเร็จ',
+        dataIndex: 'workFail',
+        key: 'workFail',
+        className: 'align-right',
+      }, 
+      {
+        title: 'เวลาว่างทำงาน',
+        dataIndex: 'timeCanWork',
+        key: 'timeCanWork',
+        render: (text, item) => 
+          <div>{text &&
+            text>=item.piece*item.worktime
+            ?secToText(text)+' (ว่าง)'
+            :secToText(text)+' (ไม่ว่าง)'}
+          </div>,
+      }, 
+      {
+        title: 'รอบวันที่',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {text&&
+              moment(text).locale('en').format('DD/MM/YY HH:mm')}
+          </div>,
       }, 
       {
         title: 'ส่งงาน',
         key: 'send',
-        render: (text, item) => (
-          <span>
-            <div className='click' onClick={ () => sendWork(item)}> ส่งงาน </div>
-          </span>
-        )
+        render: (text, item) => 
+          item.startAt > new Date
+            ?<Popconfirm title="ยืนยันการส่งงาน" onConfirm={() => this.sendWork(item)}>
+              <div className='btn primary' style={{background: AppStyle.color.sub}}> ส่งงาน </div>
+            </Popconfirm>
+            :<div className='btn primary' style={{background: AppStyle.color.gray}}> ส่งงาน </div>
       },
       {
-        title: 'ปฏิเสธ',
+        title: 'เสนอรอบใหม่',
         key: 'cancel',
         render: (text, item) => (
-          <span>
-            <div className='click' onClick={ () => cancelWork(item)}> ปฏิเสธ </div>
-          </span>
+          <Popconfirm title="ยืนยันการเสนอรอบใหม่?" onConfirm={() => this.cancelWork(item)}>
+            <div className='btn'> เสนอ </div>
+          </Popconfirm>
         ),
       }
-    ];
-
+    ];  
+ 
     return (
-      <Style>
+      <Style onMouseOver={() => this.setState({re: !this.state.re})}>
         <Layout {...this.props}>
-          <Table columns={columns} dataSource={needWorkList} />
+        {!this.state.loading&&
+          <Table columns={needWorkColumns} dataSource={needWorkList}/>
+        }
         </Layout>
       </Style>
     );
@@ -122,5 +256,17 @@ const Style = Styled.div`
   }
   .align-right{
     text-align: right;
+  }
+  .btn{
+    background: ${AppStyle.color.main};
+    color: ${AppStyle.color.white};
+    width: 60px;
+    text-align: center;
+    ${AppStyle.shadow.lv1}
+    padding: 5px;
+    cursor: pointer;
+  }
+  .primary{
+    background: ${AppStyle.color.sub};
   }
 `

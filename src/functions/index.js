@@ -42,8 +42,9 @@ export const getWorks = async (callback) => {
       if(doc.data().pack <= 0)return
       if(!doc.data().round)return
 
-      const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+      let nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
       if(!nextRound)return
+      //if(!nextRound)nextRound = _.find(doc.data().round, function(o) { return o.startAt < new Date; })
       
       works.push(_.assign(doc.data(),
         { 

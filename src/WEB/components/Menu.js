@@ -46,6 +46,11 @@ export default class extends Component {
 
     const menuList = [
       {
+        path: '/web/dashboard',
+        name: 'สถิติ',
+        icon: 'line-chart',
+      },
+      {
         path: '/web/works',
         name: 'งานทั้งหมด',
         icon: 'shop',
@@ -65,6 +70,7 @@ export default class extends Component {
         name: 'ลูกจ้าง',
         icon: 'team',
       },
+
     ]
 
     const menuAdmin = [
@@ -145,6 +151,7 @@ const Style = Styled.div`
   width: 100%;
   height: 100vh;
   background: ${AppStyle.color.main};
+  ${AppStyle.shadow.lv1}
   .menu{
     padding-top: 60px;
     .profile{
@@ -175,9 +182,9 @@ const Style = Styled.div`
     width: 100%;
     height: 40px;
     line-height: 40px;
-    color: white;
     padding-left: 20px;
     box-sizing: border-box;
+    color: ${AppStyle.color.white};
   }
   .list:hover{
     background: ${AppStyle.color.sub};

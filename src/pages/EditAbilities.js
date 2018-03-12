@@ -7,7 +7,6 @@ import ToolBar from '../layouts/ToolBar'
 
 import FormAbilities from '../components/FormAbilities';
 
-import TopStyle from '../components/TopStyle';
 
 class EditAbilities extends Component {
   componentDidMount() {
@@ -22,7 +21,6 @@ class EditAbilities extends Component {
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
           />
-          <TopStyle/>
           <FormAbilities />
         </div>
       </Style>

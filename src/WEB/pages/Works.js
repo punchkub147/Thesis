@@ -49,22 +49,20 @@ class Works extends Component {
       await querySnapshot.forEach(async doc => {
 
         let nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
-        if(!nextRound){
-          nextRound = {
-          startAt: doc.data().startAt,
-          endAt: doc.data().endAt,
-        }}
+        let endRound = _.find(doc.data().round, function(o) { return o.endAt > new Date; })
 
         worksList.push(Object.assign(doc.data(),{
           work_id: doc.id,
 
-          startAt: nextRound.startAt,
-          endAt: nextRound.endAt,
+          startAt: _.get(nextRound,'startAt')?_.get(nextRound,'startAt'):doc.data().startAt?doc.data().startAt:new Date,
+          endAt: endRound.endAt?endRound.endAt:doc.data().endAt,
         }))
 
         //db.collection('works').doc(doc.id).update({employer})
       });
       worksList = _.orderBy(worksList, ['createAt'], ['desc']); //เรียงวันที่
+
+      console.table(worksList)
       await this.setState({worksList})
       store.set('works', worksList)
     })
@@ -99,12 +97,12 @@ class Works extends Component {
         render: (text, item) => <Link to={`/web/work/${item.work_id}`}>{text}</Link>,
       }, 
       {
-        title: 'จำนวนชุด',
+        title: 'จำนวนชุดที่เหลือ',
         dataIndex: 'pack',
         key: 'pack',
         className: 'align-right',
         sorter: (a, b) => a.pack - b.pack,
-        render: (text, item) => <span>{item.pack}/{item.total_pack}</span>,
+        render: (text, item) => <span>{item.pack}</span>,
       },
       {
         title: 'ขอรับงาน',
@@ -183,10 +181,11 @@ class Works extends Component {
       <Style>
         <Layout {...this.props}>
 
-          <Link to="/web/addwork"><Button>เพิ่มงาน</Button></Link>
+
+          <div className='addwork'>
+            <Link to="/web/addwork"><Button>เพิ่มงาน</Button></Link>
+          </div>
           
-
-
           <div className='search'>
             <input type='text' placeholder='ค้นหาชื่อ' onChange={(e) => this.setState({searchName: e.target.value})}/>
             <Icon type="search" className='icon' style={{fontSize: 18}}/>
@@ -262,6 +261,18 @@ const Style = Styled.div`
       position: absolute;
       right: 10px;
       top: 17px;
+    }
+  }
+
+  .addwork{
+    width: 150px;
+    float: right;
+    margin-top: -45px;
+  }
+
+  @media screen and (max-width: 400px) {
+    .addwork{
+
     }
   }
 

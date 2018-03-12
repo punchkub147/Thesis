@@ -8,7 +8,6 @@ import ToolBar from '../layouts/ToolBar'
 import FormProfile from '../components/FormProfile';
 import Bg from '../components/Bg';
 
-import TopStyle from '../components/TopStyle';
 
 class EditProfile extends Component {
   componentDidMount() {
@@ -23,7 +22,6 @@ class EditProfile extends Component {
             left={() => browserHistory.goBack()} 
             //right={this.handleUpdateAbilities}
             />
-          <TopStyle/>
           <div className="card">
             <FormProfile push='/profile' />
           </div>

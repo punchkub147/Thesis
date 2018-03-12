@@ -74,13 +74,13 @@ export const sendWork = async (data) => {
 export const cancelWork = (data) => {
   db.collection('needWork').doc(data.needWork_id).delete()
 
-  const title = 'บริษัทปฏิเสธการส่งงาน'
-  const message = `บริษัทปฏิเสธการส่ง ${data.work_name} ขออภัยในความไม่สะดวก`
+  const title = 'บริษัทเสนองานรอบใหม่ให้กับคุณ'
+  const message = `บริษัทได้เสนองาน ${data.work_name} รอบใหม่ให้กับคุณ ขออภัยในความไม่สะดวก`
   const type = 'send'
   const receiver = data.employee_id
   const sender = user.uid
   const token = [data.deviceToken]
-  const link = `/notification`
+  const link = `/work/${data.work_id}`
   const time = 0
   sendNoti(title, message, type, receiver, sender, token, link, time)
 }

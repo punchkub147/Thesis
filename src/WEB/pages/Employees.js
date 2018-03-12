@@ -45,6 +45,7 @@ export default class extends Component {
     .onSnapshot(snap => {
       let employees = []
       snap.forEach(doc => {
+        console.log(doc.data())
         const { workTime } = doc.data()
         if(_.indexOf(es, doc.id) !== -1){
           employees.push(Object.assign(doc.data(),{
@@ -68,7 +69,7 @@ export default class extends Component {
         key: 'name',
         className: 'name',
         render: (text, item) => 
-          <span onClick={() => this.setState({modalVisible: true,selectEmployee: item.employee_id})}>{item.tname + item.fname + ' ' + item.lname}</span>,
+          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{item.tname + item.fname + ' ' + item.lname}</span>,
       },
       {
         title: `เบอรโทรศัพท์`,

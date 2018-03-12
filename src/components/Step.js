@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Styled from 'styled-components'
 import AppStyle from '../config/style'
 
-import TopStyle from './TopStyle'
 
 class Step extends Component {
 
@@ -10,7 +9,6 @@ class Step extends Component {
     const { step } = this.props
     return (
       <Style>
-        <TopStyle/>
           <div className="step">
             {step >= 1
               ?<div className="o"/>

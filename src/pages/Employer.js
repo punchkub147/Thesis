@@ -83,6 +83,7 @@ export default class extends Component {
 
     return (
       <Style>
+        <div id='Employer'>
         <div className='goBack' >
           <img src={Back} alt='' onClick={() => browserHistory.goBack()}/>
         </div>
@@ -129,12 +130,14 @@ export default class extends Component {
 
 
         </Content>
+        </div>
       </Style>
     );
   }
 }
 
 const Style = Styled.div`
+#Employer{
   color: ${AppStyle.color.text};
   margin-top: 80px;
   .profileImage{
@@ -207,4 +210,5 @@ const Style = Styled.div`
       height: 100%;
     }
   }
+}
 `

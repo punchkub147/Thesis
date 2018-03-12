@@ -49,8 +49,9 @@ class Login extends Component {
 
     db.collection('works').doc(work_id)
     .onSnapshot(async work => {
-      const nextRound = _.find(work.data().round, function(o) { return o.startAt > new Date; })
-      //if(!nextRound)return
+      let nextRound = _.find(work.data().round, function(o) { return o.startAt > new Date; })
+      if(!nextRound)nextRound = _.find(work.data().round, function(o) { return o.startAt < new Date; })
+      
 
       db.collection('employer').doc(work.data().employer_id)
       .onSnapshot(async employer => {
@@ -167,6 +168,14 @@ class Login extends Component {
         </div>
       </div>
     )
+    const ConditionDetail = (
+      <div className="row card">
+        <div className="col-12">
+          <div className='card-title'>เงื่อนไข</div>
+          <div className='card-read'>{data.condition}</div>
+        </div>
+      </div>
+    )
     const SendDetail = (
       <div className="row card">
           <div className="col-12">
@@ -200,10 +209,13 @@ class Login extends Component {
     )
     const TimeDetail = (
       <div className="row card">
+        <div className="col-12">
+          <div className='card-title'>รายละเอียดการเวลาการทำงาน</div>
+        </div>
         <div className="col-6 cost">
           มีเวลทำ {countAllDay} วัน
         </div>
-        <div className="col-6 pack">
+        <div className="col-6">
         {canRequest>0
           ?`สามารถรับได้ ${canRequest} ชุด`
           :'เวลาว่างไม่พอทำงาน'
@@ -212,7 +224,7 @@ class Login extends Component {
         <div className="col-6 cost">
           คุณมีเวลา {secToText(worktimeBetween)}
         </div>
-        <div className="col-6 pack">
+        <div className="col-6">
           เวลาต่อชุด {secToText(data.piece*data.worktime)}
         </div>
 
@@ -269,6 +281,7 @@ class Login extends Component {
           {EmployerDetail}
           {SendDetail}
           {SubDetail}
+          {ConditionDetail}
           {ToolsDetail}
           {TimeDetail}
           

@@ -54,7 +54,7 @@ const AppStyle = {
 
   shadow: {
     lv1: "box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.25);",
-    lv2: `box-shadow: 3px 3px 0 ${color.bg2};`,
+    lv2: `box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);`,
   },
 
   font: {

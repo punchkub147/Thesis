@@ -19,7 +19,6 @@ import edit from '../img/edit.png'
 
 import { db, getUser } from '../api/firebase'
 import { browserHistory } from 'react-router/lib';
-import TopStyle from '../components/TopStyle'
 import ToolBar from '../layouts/ToolBar';
 
 
@@ -148,7 +147,6 @@ export default class extends Component {
             <WorkItem2 data={work} i={i}/>
           )}
         </Content>
-        <TopStyle/>
       </Style>
     );
   }

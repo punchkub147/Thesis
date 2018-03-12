@@ -13,7 +13,6 @@ import work from '../img/search.png'
 import stat from '../img/dashboard.png'
 
 import Content from '../components/Content'
-import TopStyle from '../components/TopStyle'
 
 import { getToken, PushFCM, PushSelf } from '../api/notification'
 import { auth, getUser } from '../api/firebase'
@@ -75,7 +74,6 @@ class Notification extends Component {
 
     return (
       <Layout route={this.props.route}>
-        <TopStyle/>
         <Style>
           
           <Content>
@@ -116,7 +114,8 @@ const Noti = Styled.div`
   width: 100%;
   min-height: 70px;
   background: ${AppStyle.color.card};
-  opacity: ${props => props.viewed?0.7:1};
+  //opacity: ${props => props.viewed?0.7:1};
+  border-left: 3px solid ${props => props.viewed?AppStyle.color.bg2:AppStyle.color.main};
   padding: 10px;
   box-sizing: border-box;
   ${AppStyle.shadow.lv1}

@@ -30,6 +30,8 @@ import WebWorkOnHome from './WEB/pages/WorkOnHome'
 import WebNeedWork from './WEB/pages/NeedWork'
 import WebEditProfile from './WEB/pages/EditProfile'
 import WebEmployees from './WEB/pages/Employees'
+import WebEmployee from './WEB/pages/Employee'
+import WebDashboard from './WEB/pages/Dashboard'
 
 /// ADMIN ///
 import AdminEmployees from './WEB/pages/Admin/Employees'
@@ -161,22 +163,22 @@ class AppRouter extends Component {
       { path: '/web/works',
         exact: false,
         page: WebWorks,
-        title: "งาน",
+        title: "งานทั้งหมด",
       },
       { path: '/web/work/:id',
         exact: false,
         page: WebWork,
-        title: "งาน",
+        title: "",
       },
       { path: '/web/workonhome',
         exact: false,
         page: WebWorkOnHome,
-        title: "งาน",
+        title: "งานที่มอบหมาย",
       },
       { path: '/web/needwork',
         exact: false,
         page: WebNeedWork,
-        title: "งาน",
+        title: "คำร้องขอรับงาน",
       },
       { path: '/web/addwork',
         exact: false,
@@ -197,6 +199,16 @@ class AppRouter extends Component {
         exact: false,
         page: WebEmployees,
         title: "ลูกจ้าง",
+      },
+      { path: '/web/employee/:id',
+        exact: false,
+        page: WebEmployee,
+        title: "",
+      },
+      { path: '/web/dashboard',
+        exact: false,
+        page: WebDashboard,
+        title: "สถิติ",
       },
       
       ///////////////////////////// ADMIN //////////////////

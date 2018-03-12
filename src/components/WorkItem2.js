@@ -15,15 +15,16 @@ class WorkItem extends Component {
 
     return (
       <Style fade={i+1}>
+        <div id='WorkItem'>
         <Link to={`/work/${data._id}`}>
-          <div className='card'>
+          <div className='card-item'>
 
             <div className='image'>
               <img src={data.image}/>
             </div>
 
             <div className='detail'>
-              <div className='name'>{data.name}</div>
+              <div className='work-name'>{data.name}</div>
               <div className='price'>{data.piece} ชิ้น {data.price*data.piece}.-</div>
               <div className='startAt'>วันที่เริ่มงาน {moment(data.startAt).format('DD/MM/YY')}</div>
               <div className='line'/>
@@ -32,6 +33,7 @@ class WorkItem extends Component {
             <div style={{clear: 'both'}}/>
           </div>
         </Link>
+        </div>
       </Style>
     );
   }
@@ -40,9 +42,10 @@ class WorkItem extends Component {
 export default WorkItem;
 
 const Style = Styled.div`
+#WorkItem{
   animation-name: fadeInUp;
   animation-duration: ${props => props.fade>2?3*0.2:props.fade*0.2}s;
-  .card{
+  .card-item{
     position: relative;
     width: 100%;
     ${AppStyle.shadow.lv1}
@@ -79,7 +82,7 @@ const Style = Styled.div`
     padding: 10px 10px 0 10px;
     width: 70%;
     float: left;
-    .name{
+    .work-name{
       ${AppStyle.font.read1}
       width: 60%;
       float: left;
@@ -114,4 +117,6 @@ const Style = Styled.div`
     background: ${AppStyle.color.bg2};
     clear: both;
   }
+
+}
 `

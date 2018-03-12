@@ -21,7 +21,6 @@ import edit from '../img/edit.png'
 
 import { db, getUser } from '../api/firebase'
 import { browserHistory } from 'react-router/lib';
-import TopStyle from '../components/TopStyle'
 
 import { getWorks } from '../functions' 
 
@@ -32,6 +31,8 @@ class Search extends Component {
     works: store.get('works'),
     user: store.get('employee'),
     abilities: store.get('abilities'),
+
+    bestWorking: []
   }
 
   async componentDidMount() {
@@ -46,6 +47,12 @@ class Search extends Component {
       this.setState({works})
     })
 
+    let bestWorking = store.get('working')
+    bestWorking = _.orderBy(bestWorking, ['value'], ['desc'])
+    bestWorking = _.map(bestWorking, working => working.work_id)
+    bestWorking = _.uniq(bestWorking);
+    bestWorking = _.chunk(bestWorking, 5)[0]
+    this.setState({bestWorking})
     // await db.collection('abilities')
     // .onSnapshot(snap => {
     //   const abilities = []
@@ -113,12 +120,18 @@ class Search extends Component {
       (!work.ability || work.ability === 'general') && 
         general.push(work)
     )
+    //////////////////////////////////////////////////
+    let bestWork = []
+    _.map(works, work => {
+      (_.indexOf(this.state.bestWorking, work._id)!=-1) && 
+        bestWork.push(work)
+    })
 
     const tabs = [
       {
         name: 'สำหรับคุณ',
         render: <Content>
-                  <div className="recommended">แนะนำ</div>
+                  <div className="recommended">งานที่คุณถนัด</div>
                   <Link to="/editabilities" className='edit'>
                     <img alt='' src={edit}/>
                   </Link>
@@ -134,6 +147,16 @@ class Search extends Component {
                   {_.map(recommended, (work, i) => 
                     <WorkItem2 data={work}/>
                   )}
+
+                  {bestWork.length>0 &&
+                  <div>
+                    <div className='title'>คุ้มค่าแรง</div>
+                    {_.map(bestWork, (work, i) => 
+                      <WorkItem2 data={work}/>
+                    )}
+                  </div>
+                  }
+                  
                 </Content>,
       },
       {
@@ -158,7 +181,6 @@ class Search extends Component {
       <Layout route={this.props.route}>
         <Style>
           <Tabbar tabs={tabs}/>
-          <TopStyle/>
         </Style>
       </Layout>
     );
@@ -180,5 +202,9 @@ const Style = Styled.div`
     img{
       width: 25px;
     }
+  }
+  .title{
+    ${AppStyle.font.main}
+    margin-bottom: 10px;
   }
 `

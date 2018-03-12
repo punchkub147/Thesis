@@ -9,7 +9,6 @@ import FormWorkTime from '../components/FormWorkTime';
 import Bg from '../components/Bg';
 import Card from '../components/Card';
 
-import TopStyle from '../components/TopStyle';
 
 class EditWorkTime extends Component {
   componentDidMount() {
@@ -26,7 +25,6 @@ class EditWorkTime extends Component {
             />
           
           <Card>
-            <TopStyle/>
             <FormWorkTime push='/tasks' />
           </Card>
         </Style>

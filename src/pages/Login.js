@@ -3,7 +3,7 @@ import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 
-import logo from '../img/logo-5.png'
+import logo from '../img/logo3.png'
 import bg12 from '../img/bg12.jpg'
 import bg3 from '../img/bg3.jpg'
 
@@ -85,7 +85,7 @@ class Login extends Component {
           doc.exists
             doc.data().admin
               ?browserHistory.push('/web/admin')
-              :browserHistory.push('/web/')
+              :browserHistory.push('/web/dashboard')
         })
       }
     })
@@ -173,6 +173,7 @@ const Style = Styled.div`
     animation-name: jackInTheBox;
     animation-duration: 1s;
     margin: 0 auto;
+
     img{
       width: 100%;
     }

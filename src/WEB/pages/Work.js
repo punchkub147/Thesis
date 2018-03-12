@@ -34,7 +34,9 @@ const dateFormat = 'YYYY/MM/DD';
 export default class extends Component {
 
   state = {
-    work: _.find(store.get('works'), ['work_id', this.props.params.id]),
+    user: store.get('employer'),
+    //work: _.find(store.get('works'), ['work_id', this.props.params.id]),
+    work: {},
   }
 
   async componentDidMount() {
@@ -66,7 +68,8 @@ export default class extends Component {
   }
 
   render() {
-    const { work, needWorkList, workingList, workSuccessList } = this.state
+    const { work, user, needWorkList, workingList, workSuccessList } = this.state
+    console.log(work.employer,user.uid)
 
     return (
       <Style>
@@ -86,47 +89,77 @@ export default class extends Component {
                   <div className='edit-work'> แก้ไข </div>
                 </Link>
                 <div className='name'>{work.name}</div>
-                <div className='detail'>{work.detail}</div>
+                <div className='detail'>รายละเอียด : {work.detail}</div>
+                <div className='detail'>เงื่อนไข : {work.condition}</div>
+                <div className='detail'>อุปรกรณ์การทำงาน : {work.tool}</div>
               </div>
 
-              <div className='card'>
-                <div className="pack">
-                  ค่ามัดจำ {work.cost} บาท
-                </div>
-                <div className="price">
-                  {work.piece} ชิ้น {work.price*work.piece} บาท
-                </div>
-                <div className="cost">
-                  เหลือ {work.pack} ชุด
-                </div>
-                
-                <div style={{clear: 'both'}}></div>
-              </div>
+              <div className='row'>
 
-              <div className="card">
-                <div className="sendBy">
-                  <Icon type="car" style={{fontSize: 24}}/><br/>
-                  {work.sendBy}
+                <div className='col-xs-12 col-md-6'>
+                  <div className='card'>
+                    <div className="">
+                      ค่ามัดจำ {work.cost} บาท
+                    </div>
+                    <div className="">
+                      จำนวน {work.piece} ชิ้น
+                    </div>
+                    <div className="">
+                      ค่าจ้างชิ้นละ {work.price} บาท
+                    </div>
+                    <div className="">
+                      จำนวนงาน เหลือ {work.pack} ชุด
+                    </div>
+                    
+                    <div style={{clear: 'both'}}></div>
+                  </div>
                 </div>
-                <div className="startAt">
-                  <div className='text'>เริ่มส่ง</div>
-                  {moment(work.startAt).format('DD/MM/YY')}
-                </div>
-                <div className="endAt">
-                  <div className='text'>ส่งกลับ</div>
-                  {moment(work.endAt).format('DD/MM/YY')}
-                </div>
-                <div className="workTime">
-                  <Icon type="clock-circle-o" style={{fontSize: 24}}/><br/>
-                  {secToText(work.worktime)}
-                </div>
-                <div style={{clear: 'both'}}></div>
+
+              
+                <div className='col-xs-12 col-md-6'>
+                  <div className="card">
+                    <div className="">
+                      วิธีส่งงาน {work.sendBy}
+                    </div>
+                    <div className="">
+                      <div className='text'>วันที่เริ่มงาน {moment(work.startAt).format('DD/MM/YY')}</div>
+                    </div>
+                    <div className="">
+                      <div className='text'>วันที่เสร็จงาน {moment(work.endAt).format('DD/MM/YY')}</div>
+                    </div>
+                    <div className="">
+                      ใช้เวลาทำชิ้นละ {secToText(work.worktime)}
+                    </div>
+                    <div style={{clear: 'both'}}></div>
+                  </div>
               </div>
-            
+              {work.employer_id!==user.uid&&work.employer&&
+                <div className='col-xs-12 col-md-12'>
+                  <div className='card employer'>
+                    <img src={work.employer.imageProfile} className='imageProfile'/>
+                    <div className='detail'>
+                      <div className='name'>{work.employer.name}</div>
+                      <div className=''>
+                        {work.employer.homeNo&&`${work.employer.homeNo} `}
+                        {work.employer.road&&`ถ. ${work.employer.road} `}
+                        {work.employer.area&&`ข. ${work.employer.area} `}
+                        {work.employer.district&&`ข. ${work.employer.district} `}
+                        {work.employer.province&&`จ. ${work.employer.province} `}
+                        {work.employer.postcode&&`${work.employer.postcode} `}
+                      </div>
+                    </div>
+                    <div style={{clear: 'both'}}></div>
+                  </div>
+                </div>
+              }
+
             </div>
           </div>
+          </div>
 
-          <WorkStatTable work_id={work.work_id}/>
+          {work.employer_id===user.uid&&
+            <WorkStatTable work_id={work.work_id}/>
+          }
 
         </div>
         </Layout>
@@ -137,10 +170,11 @@ export default class extends Component {
 
 const Style = Styled.div`
   .image{
-    width: 260px;
-    height: 260px;
+    width: 100%;
+    height: 240px;
     float: left;
     margin-bottom: 10px;
+    ${AppStyle.shadow.lv1}
     img{
       width: 100%;
       height: 100%;
@@ -220,5 +254,25 @@ const Style = Styled.div`
     float: left;
     width: 33.33%;
     text-align: center;
+  }
+
+
+
+
+  //////////////////////////////
+  .employer{
+    .imageProfile{
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      float: left;
+      margin-right: 10px;
+    }
+    .detail{
+      float: left;
+      .name{
+        ${AppStyle.font.read1}
+      }
+    }
   }
 `

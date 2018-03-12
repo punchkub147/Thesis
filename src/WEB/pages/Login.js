@@ -7,7 +7,7 @@ import Loading from '../../components/Loading'
 import Content from '../../components/Content'
 import Button from '../../components/Button'
 
-import logo from '../../img/logo-5.png'
+import logo from '../../img/logo3.png'
 import bg12 from '../../img/bg12.jpg'
 
 import { auth, db } from '../../api/firebase'
@@ -28,7 +28,7 @@ class Login extends Component {
       const employeeRef = await db.collection('employee').doc(user.uid)
       employerRef.get().then(doc => {
         doc.exists
-          ?browserHistory.push('/web/works')
+          ?browserHistory.push('/web/dashboard')
           :employeeRef.get().then(async doc => {
             await doc.exists&&browserHistory.push('/search')
           })

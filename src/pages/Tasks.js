@@ -8,7 +8,7 @@ import store from 'store'
 
 import holiday from '../config/holiday'
 
-import { Slider } from 'antd';
+import { Slider, Icon } from 'antd';
 
 import { getUser, db } from '../api/firebase'
 import { getWorks } from '../functions/'
@@ -24,8 +24,6 @@ import Button from '../components/Button'
 import Modal from '../components/Modal'
 
 import WorkItem from '../components/WorkItem'
-
-import TopStyle from '../components/TopStyle'
 
 import alarm2 from '../img/alarm2.png'
 
@@ -46,6 +44,8 @@ class Tasks extends Component {
     totalTimeAllWork: 0,
     doing: 0,
     modalIsOpen: false,
+
+    modalDoing: false,
 
     modalHoliday: false,
     nextHoliday: [],
@@ -82,47 +82,49 @@ class Tasks extends Component {
     getWorks(works => this.setState({works}))
   }
 
-  // getWorks = async () => {
+  /*
+  getWorks = async () => {
 
-  //   await db.collection('abilities')
-  //   .onSnapshot(snap => {
-  //     const abilities = []
-  //     snap.forEach(doc => {
-  //       abilities[doc.id] = doc.data()
-  //     })
-  //     this.setState({abilities})
-  //     store.set('abilities',abilities)
-  //   })
+    await db.collection('abilities')
+    .onSnapshot(snap => {
+      const abilities = []
+      snap.forEach(doc => {
+        abilities[doc.id] = doc.data()
+      })
+      this.setState({abilities})
+      store.set('abilities',abilities)
+    })
 
-  //   await db.collection('works')
-  //   //.where('startAt' ,'>', new Date())
-  //   .onSnapshot(snapshot => {
-  //     let works = []
-  //     snapshot.forEach(doc => {
-  //       if(doc.data().pack <= 0)return
-  //       if(!doc.data().round)return
+    await db.collection('works')
+    //.where('startAt' ,'>', new Date())
+    .onSnapshot(snapshot => {
+      let works = []
+      snapshot.forEach(doc => {
+        if(doc.data().pack <= 0)return
+        if(!doc.data().round)return
 
-  //       const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
-  //       if(!nextRound)return
+        const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
+        if(!nextRound)return
         
-  //       works.push(_.assign(doc.data(),
-  //         { 
-  //           _id: doc.id,
-  //           abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
+        works.push(_.assign(doc.data(),
+          { 
+            _id: doc.id,
+            abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
 
-  //           startAt: nextRound.startAt,
-  //           endAt: nextRound.endAt,
-  //           workAllTime: doc.data().worktime*doc.data().piece
-  //         }
-  //       ))
-  //     })
+            startAt: nextRound.startAt,
+            endAt: nextRound.endAt,
+            workAllTime: doc.data().worktime*doc.data().piece
+          }
+        ))
+      })
 
-  //     works = _.orderBy(works, ['startAt'], ['asc']); //เรียงวันที่
+      works = _.orderBy(works, ['startAt'], ['asc']); //เรียงวันที่
 
-  //     this.setState({works})
-  //     store.set('works', works)
-  //   })
-  // }
+      this.setState({works})
+      store.set('works', works)
+    })
+  }
+  */
 
   getWorking = async (user) => {
     db.collection('working')
@@ -257,6 +259,76 @@ class Tasks extends Component {
     })
   }
 
+  handleStartDo = (working) => {
+    let { do_piece } = working
+    if(!do_piece){
+      do_piece=[{
+        startAt: new Date
+      }]
+    }else if(_.filter(do_piece, o => o.startAt&&!o.endAt ).length > 0){
+      console.log('กำลังทำอยู่',_.filter(do_piece, o => o.startAt&&!o.endAt ))
+      return
+    }else{
+      do_piece.push({
+        startAt: new Date
+      })
+    }
+
+    console.log('START', do_piece)
+    db.collection('working').doc(working.working_id).update({do_piece})
+  }
+
+  handleOpenDoing = (working) => {
+    this.setState({
+      modalDoing: true,
+      doWork: working,
+    })
+  }
+
+  handleStopDo = async (e, working) => {
+    e.preventDefault();
+    this.setState({
+      modalDoing: false,
+    })
+    ///////////////////////////////////////////
+    const total_piece = working.total_piece
+    const finished_piece = working.finished_piece?working.finished_piece:0
+    const percent = 80
+    const totalPercent = (total_piece*percent)/100
+    if(finished_piece+this.state.doing >= totalPercent){
+      this.setState({
+        modalRecommend: true,
+        recommend: working.work_id
+      })
+    }
+    ///////////////////////////////////////////
+    const { doing } = this.state
+    let { do_piece } = working
+    console.log('Before', do_piece)
+    let doingAt = _.findIndex(do_piece, o => o.startAt&&!o.endAt )
+    if(doingAt != -1 && doing!=0){
+      do_piece[doingAt] = Object.assign(do_piece[doingAt], {
+        endAt: new Date,
+        updateAt: new Date,
+        piece: doing,
+        worktime: moment().diff(moment(do_piece[doingAt].startAt),'seconds')
+      })
+      console.log('After', do_piece)
+      await db.collection('working').doc(working.working_id).update({
+        do_piece: do_piece,
+        useWorktime: _.sumBy(do_piece, 'worktime')/_.sumBy(do_piece, 'piece'),
+        finished_piece: _.sumBy(do_piece, 'piece')
+      })
+    }else{
+      console.log('error')
+    }
+    /////////////////////////////////////////////
+    
+    this.setState({
+      doing: 0,
+    })
+  }
+
   render() {
     const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user, nextHoliday, works, showDetail, showAllDetail } = this.state
 
@@ -348,7 +420,94 @@ class Tasks extends Component {
           }
         </div>
         */}
-      <TopStyle/>
+      <div style={{width: '100%',height: '60px'}}></div>
+      </div>
+    )
+
+    const nowTask2 = (
+      <div>
+      {_.map(nowWorking, (working,i) => 
+        <NowTask2 fade={i*0.2}>
+          <div className='row'>
+            <div className='col-9'>
+              <Link to={`work/${working.work_id}`}>
+                <div className="name">{working.work_name}</div>
+              </Link>
+              <div className="piece-r">
+                {'ส่ง '+moment(working.endAt).format('DD/MM/YY')}
+              </div>
+              <div style={{clear: 'both'}}>
+                <div className="piece-l">
+                  ทำไปแล้ว <span className='number'>{working.toDayFinishedPiece?working.toDayFinishedPiece:0}</span> ชิ้น
+                </div>
+                <div className="piece-r">
+                  ต้องทำ <span className='number'>{working.limitTodo+working.overPiece}</span> ชิ้น
+                </div>
+              </div>
+            </div>
+
+            {working.toDayFinishedPiece>=working.limitTodo+working.overPiece
+              ?<div className="finish"><div className='border'>เสร็จ</div></div>
+              :working.do_piece && (_.filter(working.do_piece, o => o.startAt&&!o.endAt ).length > 0)
+                ?<div className="stop" onClick={() => this.handleOpenDoing(working)}>
+                  <div className='border'></div>
+                  <div className='do-text'>พัก</div>
+                </div>
+                :<div className="do" onClick={() => this.handleStartDo(working)}>
+                  <div className='border'></div>
+                  <div className='do-text'>เริ่ม</div>
+                </div>
+            }
+          
+          </div>
+
+          <div className='row' style={{clear: 'both'}}>
+            <div className='col'>
+              <div className="progress">
+                <Progress now={working.toDayFinishedPiece} max={working.limitTodo+working.overPiece}/>
+              </div>
+            </div>
+          </div>
+          
+
+          <Detail>
+          <div className='showDetail' 
+            onClick={() => this.showDetail(working.working_id)}>
+            แสดงรายละเอียดการทำงาน <Icon style={{fontSize: 12}} type={showDetail[_.indexOf(showDetail, working.working_id)] == working.working_id?'up':'down'} />
+          </div>
+          {showDetail[_.indexOf(showDetail, working.working_id)] == working.working_id&&
+            <div className='detail'>
+
+              <div className='row'>
+                <div className='col-12'>
+                  เวลาทำงานมาตรฐาน {secToText(working.worktime)}ต่อชิ้น
+                  <div>วันนี้ต้องทำงานอีก {secToText(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}</div>
+                </div>
+              </div>
+
+              <div className='c head'>
+                <div className='date'>วันที่</div>
+                <div className='startAt'>เวลา</div>
+                <div className='endAt'>ใช้เวลา</div>
+                <div className='do_piece'>จำนวน</div>
+                <div className='doingTime'>เฉลี่ยชิ้นละ</div>
+              </div>
+              {_.map(working.do_piece, detail => 
+                moment(detail.updateAt).format('DD/MM') == moment().format('DD/MM')&&
+                <div className='c'>
+                  <div className='date'>{moment(detail.startAt).format('DD/MM')}</div>
+                  <div className='startAt'>{moment(detail.startAt).format('HH:mm')}น.-{moment(detail.endAt).format('HH:mm')}น.</div>
+                  <div className='endAt'>{secToText(moment(detail.endAt).diff(moment(detail.startAt),'seconds'))}</div>
+                  <div className='do_piece'>{detail.piece} ชิ้น</div>
+                  <div className='doingTime'>{secToText(moment(detail.endAt).diff(moment(detail.startAt),'seconds')/detail.piece)}</div>
+                </div>
+              )}
+              <div style={{clear: 'both'}}/>
+            </div>
+            }
+            </Detail>
+        </NowTask2>
+      )}
       <div style={{width: '100%',height: '60px'}}></div>
       </div>
     )
@@ -364,16 +523,23 @@ class Tasks extends Component {
               <Link to={`work/${working.work_id}`}>
                 <div className="name">{working.work_name}</div>
               </Link>
-              
+
               <div className="date">
               {working.startAt > new Date
-                ?`เริ่มงาน${moment(working.startAt).locale('th').fromNow()}`
-                :`ส่งงาน${moment(working.endAt).locale('th').fromNow()}`
+                ?`เริ่มงาน ${moment(working.startAt).format('DD/MM/YY')}`
+                :`ส่งงาน ${moment(working.endAt).format('DD/MM/YY')}`
               }
               </div>
-              <div className="piece">
-                {working.finished_piece}/{working.total_piece}
+
+              <div style={{clear: 'both'}}>
+                <div className="piece-l">
+                  ทำไปแล้ว <span className='number'>{working.finished_piece}</span> ชิ้น
+                </div>
+                <div className="piece-r">
+                  ต้องทำ <span className='number'>{working.total_piece}</span> ชิ้น
+                </div>
               </div>
+              
             </div>
           </div>
           <div className='row'>
@@ -384,29 +550,51 @@ class Tasks extends Component {
             </div>
           </div>
 
-          <div className='showDetail' onClick={() => this.showAllDetail(working.working_id)}>แสดงรายละเอียด</div>
+
+          <Detail>
+          <div className='showDetail' 
+            onClick={() => this.showAllDetail(working.working_id)}>
+              แสดงรายละเอียดการทำงาน <Icon style={{fontSize: 12}} type={showAllDetail[_.indexOf(showAllDetail, working.working_id)] == working.working_id?'up':'down'} />
+          </div>
           {showAllDetail[_.indexOf(showAllDetail, working.working_id)] == working.working_id&&
             <div className='detail'>
+
+              <div className='row'>
+                <div className='col-12'>
+                  <div>เวลาทำงานของคุณ {secToText(working.useWorktime?working.useWorktime:working.worktime)}ต่อชิ้น</div>
+                  ศักยภาพ {working.worktime/(_.sumBy(working.do_piece, 'worktime')/_.sumBy(working.do_piece, 'piece'))*100}%
+                </div>
+              </div>
+              <div className='c head'>
+                <div className='date'>วันที่</div>
+                <div className='startAt'>เวลา</div>
+                <div className='endAt'>ใช้เวลา</div>
+                <div className='do_piece'>จำนวน</div>
+                <div className='doingTime'>เฉลี่ยชิ้นละ</div>
+              </div>
             {_.map(working.do_piece, detail => 
               <div className='c'>
-                <div className='do_piece'>จำนวน {detail.piece} ชิ้น</div>
-                <div className='updateAt'>เมื่อวันที่ {moment(detail.updateAt).format('DD/MM/YY')} เวลา {moment(detail.updateAt).format('HH:mm')}น. </div>
+                <div className='date'>{moment(detail.startAt).format('DD/MM')}</div>
+                <div className='startAt'>{moment(detail.startAt).format('HH:mm')}น.-{moment(detail.endAt).format('HH:mm')}น.</div>
+                <div className='endAt'>{secToText(moment(detail.endAt).diff(moment(detail.startAt),'seconds'))}</div>
+                <div className='do_piece'>{detail.piece} ชิ้น</div>
+                <div className='doingTime'>{secToText(moment(detail.endAt).diff(moment(detail.startAt),'seconds')/detail.piece)}</div>
               </div>
             )}
             <div style={{clear: 'both'}}/>
             </div>
           }
+          </Detail>
           
         </AllTask>
       )}
-      <TopStyle/>
       <div style={{width: '100%',height: '60px'}}></div>
       </div>
     )
 
     const tabs = [
       {
-        render: <Content>{nowTask}</Content>,
+        render: <Content>{nowTask2}</Content>,
         name: 'งานวันนี้',
       },
       {
@@ -490,8 +678,6 @@ class Tasks extends Component {
             </WorkDate>
             </Link>
 
-
-            
             <Modal modalIsOpen={this.state.modalIsOpen} mini>
               <InsideModal>
                 <div className="modal-text">ทำงาน {this.state.doing} จาก {(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
@@ -503,6 +689,25 @@ class Tasks extends Component {
                     style={{margin: '40px 0'}}
                     />
                   <Button onClick={(e) => this.handleDo(e,doWork)}>ยืนยัน</Button>
+                </form>
+              </InsideModal>
+            </Modal>
+
+            <Modal modalIsOpen={this.state.modalDoing} mini>
+              <InsideModal>
+                <div className="modal-text">
+                  ช่วง {doWork&& moment(_.filter(_.get(doWork.do_piece, o => o.startAt&&!o.endAt ), '[0].startAt')).format('HH:mm')} น. 
+                  ถึง {moment().format('HH:mm')}น.
+                </div>
+                <div className="modal-text">ทำงานได้ {this.state.doing} จาก {(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
+                {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
+                <form>
+                  <Slider min={0} max={(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')}
+                    onChange={doing => this.setState({doing})}
+                    value={this.state.doing}
+                    style={{margin: '20px 0 30px 0'}}
+                    />
+                  <Button onClick={(e) => this.handleStopDo(e,doWork)}>ยืนยัน</Button>
                 </form>
               </InsideModal>
             </Modal>
@@ -521,10 +726,11 @@ class Tasks extends Component {
                   <div className='countdown'>{moment(nextHoliday.date,'DD/MM/YY').fromNow()}</div>
                 </div>
                 }
-                <div className='text'>คุณจะหยุดหรือไม่?</div><br/>
+                <div className='text'>คุณจะหยุดหรือไม่?</div>
+                <div style={{height: 10}}/>
 
-                <div className='cancel' onClick={() => this.setState({modalHoliday: false})}>ไม่หยุด</div>
-                <div className='submit' onClick={() => this.handleHoliday(nextHoliday.date)}>หยุด</div>
+                <div className='btn cancel' onClick={() => this.setState({modalHoliday: false})}>ไม่หยุด</div>
+                <div className='btn submit' onClick={() => this.handleHoliday(nextHoliday.date)}>หยุด</div>
               
               </HolidayModal>
             </Modal>
@@ -692,10 +898,11 @@ const NowTask = Styled.div`
   .showDetail{
     width: 100%;
     text-align: center;
-    ${AppStyle.font.read1}
+    ${AppStyle.font.hilight}
+    font-size: 18px;
   }
   .detail{
-    background: ${AppStyle.color.bg2};
+    background: ${AppStyle.color.bg1};
     margin: 0 -10px -10px -10px;
     padding: 10px;
     .c{
@@ -710,6 +917,222 @@ const NowTask = Styled.div`
     }
   }
 `
+
+const NowTask2 = Styled.div`
+  animation-name: fadeInUp; 
+  animation-duration: ${props => props.fade+0.2}s;
+
+  padding: 10px;
+  box-sizing: border-box;
+  background: ${AppStyle.color.card};
+
+  margin-bottom: 10px;
+
+  ${AppStyle.shadow.lv1}
+  .name{
+    text-align: left;
+    float: left;
+    ${AppStyle.font.main}
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow:ellipsis;
+    width: 50%;
+  }
+  .piece-l{
+    float: left;
+    .number{
+      ${AppStyle.font.main}
+    }
+  }
+  .piece-r{
+    float: right;
+    .number{
+      ${AppStyle.font.main}
+    }
+  }
+
+  .progress{
+    height: 20px;
+    width: 100%;
+    //background: ${AppStyle.color.main};
+    margin-bottom: 10px;
+  }
+  .edittime{
+    text-align: left;
+    button{
+      width: 100px;
+      height: 30px;
+      background: ${AppStyle.color.sub};
+      border: none;
+      border-radius: 4px;
+      color: ${AppStyle.color.white};
+      font-size: 14px;
+      ${AppStyle.shadow.lv2}
+      img{
+        height: 20px;
+        width: 20px;
+      }
+    }
+  }
+  .timing{
+    text-align: right;
+  }
+  .do{
+    width: 60px;
+    height: 60px;
+    background: ${AppStyle.color.main};
+    border-radius: 100%;
+    
+    cursor: pointer;
+    ${AppStyle.font.tool}
+    ${AppStyle.shadow.lv2}
+    position: relative;
+
+    right: -12px;
+    .border{
+      position: absolute;
+      border: solid 2px ${AppStyle.color.white};
+      border-radius: 100%;
+      width: 50px;
+      height: 50px;
+      margin: 4.5px 0 0 4.5px;
+      line-height: 50px;
+
+      //animation: rotate 20s infinite linear;  //Rotate
+
+      box-sizing: border-box;
+    }
+    .do-text{
+      position: absolute;
+      text-align: center;
+      line-height: 60px;
+      width: 60px;
+    }
+  }
+  .stop{
+    width: 60px;
+    height: 60px;
+    background: ${AppStyle.color.sub};
+    border-radius: 100%;
+    
+    cursor: pointer;
+    ${AppStyle.font.tool}
+    ${AppStyle.shadow.lv2}
+    position: relative;
+
+    right: -12px;
+    .border{
+      position: absolute;
+      border: dashed 2px ${AppStyle.color.white};
+      border-radius: 100%;
+      width: 50px;
+      height: 50px;
+      margin: 4.5px 0 0 4.5px;
+      line-height: 50px;
+
+      animation: rotate 20s infinite linear;  //Rotate
+
+      box-sizing: border-box;
+    }
+    .do-text{
+      position: absolute;
+      text-align: center;
+      line-height: 60px;
+      width: 60px;
+    }
+  }
+  .do:active{
+    opacity: 0.8;
+  }
+  .finish{
+    width: 60px;
+    height: 60px;
+    background: ${AppStyle.color.bg2};
+    border-radius: 100%;
+    text-align: center;
+    ${AppStyle.font.tool}
+    color: ${AppStyle.color.white};
+    ${AppStyle.shadow.lv2}
+    .border{
+      border: solid 2px ${AppStyle.color.white};
+      border-radius: 100%;
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      line-height: 50px;
+    }
+  }
+
+`
+
+const Detail = Styled.div`
+  .showDetail{
+    width: 100%;
+    text-align: center;
+    ${AppStyle.font.hilight}
+    font-size: 18px;
+
+  }
+  .detail{
+    animation-name: fadeIn; 
+    animation-duration: 0.2s;
+
+
+    background: ${AppStyle.color.bg1};
+    margin: 0 -10px -10px -10px;
+    padding: 10px;
+    .head{
+      background: ${AppStyle.color.bg2};
+      margin: 0 -10px;
+      padding: 0 10px;
+      height: 30px;
+      font-weight: bold;
+    }
+    .c{
+      clear: both;
+      .date{
+        float: left;
+        width: 12%;
+        text-align: left;
+        overflow: hidden; 
+        white-space: nowrap; 
+        text-overflow:ellipsis;
+      }
+      .startAt{
+        float: left;
+        width: 29%;
+        overflow: hidden; 
+        white-space: nowrap; 
+        text-overflow:ellipsis;
+      }
+      .endAt{
+        float: left;
+        text-align: right;
+        width: 18%;
+        overflow: hidden; 
+        white-space: nowrap; 
+        text-overflow:ellipsis;
+      }
+      .do_piece{
+        float: left;
+        text-align: right;
+        width: 17%;
+        overflow: hidden; 
+        white-space: nowrap; 
+        text-overflow:ellipsis;
+      }
+      .doingTime{
+        float: right;
+        text-align: right;
+        width: 24%;
+        overflow: hidden; 
+        white-space: nowrap; 
+        text-overflow:ellipsis;
+      }
+    }
+  }
+`
+
 const AllTask = Styled.div`
   // animation-name: fadeInRight;
   // animation-duration: ${props => props.fade+0.2}s;
@@ -728,7 +1151,7 @@ const AllTask = Styled.div`
     white-space: nowrap; 
     text-overflow:ellipsis;
     float: left;
-    width: 40%;
+    width: 60%;
   }
   .piece{
     ${AppStyle.font.read1}
@@ -754,27 +1177,15 @@ const AllTask = Styled.div`
     //background: ${AppStyle.color.main};
     margin-bottom: 10px;
   }
-
-  
-  .showDetail{
-    width: 100%;
-    text-align: center;
-    ${AppStyle.font.read1}
+  .piece-l{
+    float: left;
   }
-  .detail{
-    background: ${AppStyle.color.bg2};
-    margin: 0 -10px -10px -10px;
-    padding: 10px;
-    .c{
-      clear: both;
-      .do_piece{
-        float: left;
-      }
-      .updateAt{
-        float: right;
-        text-align: right;
-      }
-    }
+  .piece-r{
+    float: right;
+    text-align: right;
+  }
+  .number{
+    ${AppStyle.font.main}
   }
 `
 
@@ -830,13 +1241,20 @@ const HolidayModal = Styled.div`
     ${AppStyle.font.menu}
     color: ${AppStyle.color.main};
     cursor: pointer;
+    background: ${AppStyle.color.bg2};
+    height: 40px;
+    line-height: 40px;
   }
   .cancel{
     width: 50%;
     float: left;
     text-align: center;
     ${AppStyle.font.menu}
+    color: ${AppStyle.color.white};
     cursor: pointer;
+    background: ${AppStyle.color.main};
+    height: 40px;
+    line-height: 40px;
   }
   .name{
     ${AppStyle.font.main}
@@ -865,5 +1283,7 @@ const RecommendModal = Styled.div`
     color: ${AppStyle.color.main};
     text-align: center;
     margin-top: 10px;
+    padding: 10px;
+    background: ${AppStyle.color.bg2};
   }
 `

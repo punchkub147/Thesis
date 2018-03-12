@@ -14,7 +14,6 @@ import { db } from '../api/firebase'
 
 import back from '../img/back2.png'
 
-import TopStyle from '../components/TopStyle'
 
 import best from '../img/best.png'
 
@@ -109,7 +108,17 @@ class Dashboard extends Component {
         workFail,
       })*/ //อัพเดทงานเสร็จ/ไม่เสร็จ
 
-      this.setState({working})
+      const minMonth = _.minBy(working, work => work.endAt).endAt
+      const countMonth = moment().diff(minMonth, 'months')
+      console.log('mininioth',minMonth,Math.floor(countMonth/5))
+      const maxMonth = _.maxBy(working, work => work.endAt).endAt
+
+
+      this.setState({
+        working,
+        page: Math.floor(countMonth/5),
+        selectMonth: moment(maxMonth).format('MMM/YY')
+      })
       store.set('working', working)
     })
 
@@ -147,6 +156,7 @@ class Dashboard extends Component {
     let { working, page, selectMonth } = this.state
     working = _.orderBy(working, ['endAt'], ['asc']); //เรียงวันที่
     
+    console.log(this.state.page, this.state.selectMonth)
 
     let chartData = []
     _.map(working, work => {
@@ -214,11 +224,13 @@ class Dashboard extends Component {
           <div className='statlist'>
 
             <Content>
-              <List className='title'>
-                <div className='name'>ชื่องาน</div>
-                <div className='piece'>จำนวน</div>
-                <div className='price'>รายได้</div>
-                <div className='total'></div>
+              <List>
+                <div className='title'>
+                  <div className='name'>ชื่องาน</div>
+                  <div className='piece'>จำนวน</div>
+                  <div className='price'>รายได้</div>
+                  <div className='total'></div>
+                </div>
               </List>
             {_.map(workMonth, (work,i) =>
               <List fade={i>2?3:i}>
@@ -335,7 +347,7 @@ const Bar = Styled.div`
     width: 100%;
     bottom: -30px;
     text-align: center;
-    color: ${props => props.selected?AppStyle.color.main:AppStyle.color.text};
+    //color: ${props => props.selected?AppStyle.color.main:AppStyle.color.text};
     font-weight: ${props => props.selected?'bold':'normal'};
   }
 `
@@ -390,13 +402,27 @@ const List = Styled.div`
   background: ${AppStyle.color.card};
   padding: 0 10px;
 
+  border-bottom: solid 1px ${AppStyle.color.bg2}; 
+  .title{
+    font-weight: bold;
+    background: ${AppStyle.color.bg2};
+    height: 40px;
+    line-height: 40px;
+    margin: 0 -20px;
+    margin-top: -10px;
+    padding: 0 20px;
+  }
+
   .name{
     float: left;
     width: 40%;
     overflow: hidden; 
     white-space: nowrap; 
     text-overflow:ellipsis;
-    a{${AppStyle.font.read1}}
+    a{
+      ${AppStyle.font.read1}
+      color: ${AppStyle.color.main};
+    }
   }
   .piece{
     float: left;

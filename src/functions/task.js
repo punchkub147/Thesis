@@ -17,7 +17,7 @@ export const genNowWorking = (limitWorkTimeToDay, workingList, user) => {
   let nowWorking = []
   _.map(workingList, async (working, key) => {
     //if(working.finished_piece >= working.total_piece)return //เอาเฉพาะงานที่ยังไม่เสร็จ
-    if(working.startAt > new Date)return //เอาเฉพาะงานที่ต้องเริ่มทำแล้ว
+    if(moment(working.startAt).startOf('day') > moment())return //เอาเฉพาะงานที่ต้องเริ่มทำแล้ว
 
     const toDayFinishedPiece = _.sumBy(working.do_piece, (o) => 
       o.updateAt >= moment().startOf('day')&& //ถ้าเป็นงานในวันนี้เท่านั้น 

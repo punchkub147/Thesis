@@ -48,6 +48,8 @@ export default class extends Component {
     loading: true,
 
     selectRound: 'all',
+
+    re: false,
   }
 
   async componentDidMount() {
@@ -169,7 +171,8 @@ export default class extends Component {
       await querySnapshot.forEach(function(doc) {
         const data = Object.assign(doc.data(),{
           working_id: doc.id,
-          finished_piece: doc.data().finished_piece?doc.data().finished_piece:0
+          finished_piece: doc.data().finished_piece?doc.data().finished_piece:0,
+          qualityWorking: doc.data().do_piece&&(doc.data().worktime/(_.sumBy(doc.data().do_piece, 'worktime')/_.sumBy(doc.data().do_piece, 'piece'))*100).toFixed(0)
         })
         !doc.data().success
           ?workingList.push(data)
@@ -284,12 +287,19 @@ export default class extends Component {
     }
 
     const needWorkColumns = [
+      // {
+      //   title: 'ชื่องาน',
+      //   dataIndex: 'work_name',
+      //   key: 'work_name',
+      //   className: 'click',
+      //   render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{item.work_name}</span>,
+      // },
       {
         title: 'ชื่อผู้รับงาน',
         dataIndex: 'employee',
         key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text.tname+text.fname+' '+text.lname}</span>,
+        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
       },  
       {
         title: 'เคยทำงานสำเร็จ',
@@ -309,7 +319,7 @@ export default class extends Component {
         key: 'timeCanWork',
         render: (text, item) => 
           <div>{text &&
-            text>=work.piece*work.worktime
+            text>=item.piece*item.worktime
             ?secToText(text)+' (ว่าง)'
             :secToText(text)+' (ไม่ว่าง)'}
           </div>,
@@ -328,73 +338,136 @@ export default class extends Component {
       {
         title: 'ส่งงาน',
         key: 'send',
-        render: (text, item) => (
-          <Popconfirm title="ยืนยันการส่งงาน" onConfirm={() => this.sendWork(item)}>
-            <div className='click' > ส่งงาน </div>
-          </Popconfirm>
-        )
+        render: (text, item) => 
+          item.startAt > new Date
+            ?<Popconfirm title="ยืนยันการส่งงาน" onConfirm={() => this.sendWork(item)}>
+              <div className='btn primary' style={{background: AppStyle.color.sub}}> ส่งงาน </div>
+            </Popconfirm>
+            :<div className='btn primary' style={{background: AppStyle.color.gray}}> ส่งงาน </div>
       },
       {
-        title: 'ปฏิเสธ',
+        title: 'เสนอรอบใหม่',
         key: 'cancel',
         render: (text, item) => (
-          <Popconfirm title="ยืนยันการปฏิเสธ?" onConfirm={() => this.cancelWork(item)}>
-            <div className='click'> ปฏิเสธ </div>
+          <Popconfirm title="ยืนยันการเสนอรอบใหม่?" onConfirm={() => this.cancelWork(item)}>
+            <div className='btn'> เสนอ </div>
           </Popconfirm>
         ),
       }
-    ];  
+    ];   
 
     const workingColumns = [
+      // {
+      //   title: 'ชื่องาน',
+      //   dataIndex: 'work_name',
+      //   key: 'work_name',
+      //   className: 'click',
+      //   render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{item.work_name}</span>,
+      //   sorter: (a, b) => a.work_name - b.work_name,
+      // },
       {
         title: 'ชื่อผู้ทำงาน',
         dataIndex: 'employee',
         key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text.tname+text.fname+' '+text.lname}</span>,
+        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
+        sorter: (a, b) => a.employee.fname - b.employee.fname,
       },
       {
         title: 'เวลาทำงานต่อชิ้น',
-        dataIndex: 'worktime',
-        key: 'worktime',
+        dataIndex: 'useWorktime',
+        key: 'useWorktime',
         className: 'align-right',
-        render: (text, item) => <div>{text>=60?`~ ${Math.floor(text/60)} นาที`:`${text} วินาที`}</div>,
+        render: (text, item) => <div>{secToText(text)}</div>,
+        sorter: (a, b) => a.worktime - b.worktime,
       },
       {
-        title: 'ทำงานได้',
-        dataIndex: 'finished_piece',
-        key: 'finished_piece',
+        title: 'ศักยภาพการทำงาน',
+        dataIndex: 'qualityWorking',
+        key: 'qualityWorking',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0} ชิ้น</div>,
-      }, 
+        render: (text, item) => <div>{text&&text+'%'}</div>,
+        sorter: (a, b) => +a.qualityWorking - +b.qualityWorking,
+      },
       {
-        title: 'ชิ้นงานทั้งหมด',
+        title: 'งานทั้งหมด(ชิ้น)',
         dataIndex: 'total_piece',
         key: 'total_piece',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0} ชิ้น</div>,
+        render: (text, item) => <div>{text?text:0}</div>,
+        sorter: (a, b) => a.total_piece - b.total_piece,
       },
       {
-        title: 'รอบวันที่',
+        title: 'ทำเสร็จ(ชิ้น)',
+        dataIndex: 'finished_piece',
+        key: 'finished_piece',
+        className: 'align-right',
+        render: (text, item) => <div>{text?text:0}</div>,
+        sorter: (a, b) => a.finished_piece - b.finished_piece,
+      },
+      {
+        title: 'ทำไม่เสร็จ(ชิ้น)',
+        key: 'fail_piece',
+        className: 'align-right',
+        render: (text, item) => (
+          <div>
+          {item.total_piece-item.finished_piece > 0
+            ?`${item.total_piece-item.finished_piece}`
+            :'เสร็จครบ'
+          }
+          </div>
+        ),
+        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
+      },
+      {
+        title: 'สถาณะงาน',
+        className: 'align-right',
+        render: (text, item) => (
+          <div>{
+            item.success
+              ?item.total_piece-item.finished_piece==0
+                ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
+                :<span style={{color: AppStyle.color.main}}>ไม่ครบ</span>
+              :item.endAt<new Date
+                ?<span style={{color: AppStyle.color.main}}>กำลังส่งงาน</span>
+                :'กำลังทำงาน'
+          }</div>
+        ),
+        sorter: (a, b) => a.endAt - b.endAt,
+      },
+      {
+        title: 'เริ่มงานวันที่',
         dataIndex: 'startAt',
         key: 'startAt',
         className: 'align-right',
         render: (text, item) => 
           <div>
             {text&&
-              moment(text).locale('en').format('DD/MM/YY HH:mm')}
+              moment(text).locale('en').format('DD/MM/YY')}
           </div>,
+        sorter: (a, b) => a.startAt - b.startAt,
       }, 
       {
-        title: 'รับงาน',
+        title: 'เสร็จงานวันที่',
+        dataIndex: 'endAt',
+        key: 'endAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {text&&
+              moment(text).locale('en').format('DD/MM/YY')}
+          </div>,
+        sorter: (a, b) => a.endAt - b.endAt,
+      },
+      {
+        title: 'รับงานคืน',
         key: 'action',
         render: (text, item) => (
-          item.endAt < new Date
-          ?<Popconfirm title="ยืนยันรับงาน?" onConfirm={ () => getedWork(item)}>
-              <div className='click'> รับงาน </div>
-            </Popconfirm>
-          :<div> กำลังทำ... </div>
+          <Popconfirm title="ยืนยันรับงาน?" onConfirm={ () => getedWork(item)}>
+            <div className='btn' style={{background: item.endAt < new Date ?AppStyle.color.sub:AppStyle.color.gray}}> รับงาน </div>
+          </Popconfirm>
         ),
+        sorter: (a, b) => a.startAt - b.startAt,
       },
       // {
       //   title: 'ลบ',
@@ -409,45 +482,143 @@ export default class extends Component {
 
     const workSuccessColumns = [
       {
-        title: 'รหัสผู้ทำงาน',
-        dataIndex: 'employee_id',
-        key: 'employee_id',
+        title: 'รหัสงาน',
+        dataIndex: 'working_id',
+        key: 'working_id',
+        className: '',
+        render: (text, item) => <span>{text}</span>,
+        sorter: (a, b) => a.working_id - b.working_id,
+      },
+      {
+        title: 'ชื่อผู้ทำงาน',
+        dataIndex: 'employee',
+        key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => this.setState({selectEmployee: item.employee_id,modalVisible: true})}>{text}</span>,
+        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
+        sorter: (a, b) => a.employee.fname - b.employee.fname,
       },
       {
         title: 'เวลาทำงานต่อชิ้น',
-        dataIndex: 'worktime',
-        key: 'worktime',
+        dataIndex: 'useWorktime',
+        key: 'useWorktime',
         className: 'align-right',
         render: (text, item) => <div>{secToText(text)}</div>,
+        sorter: (a, b) => a.worktime - b.worktime,
       },
       {
-        title: 'ชิ้นงานทั้งหมด',
+        title: 'ศักยภาพการทำงาน',
+        dataIndex: 'qualityWorking',
+        key: 'qualityWorking',
+        className: 'align-right',
+        render: (text, item) => <div>{text&&text+'%'}</div>,
+        sorter: (a, b) => +a.qualityWorking - +b.qualityWorking,
+      },
+      {
+        title: 'งานทั้งหมด(ชิ้น)',
         dataIndex: 'total_piece',
         key: 'total_piece',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0} ชิ้น</div>,
+        render: (text, item) => <div>{text?text:0}</div>,
+        sorter: (a, b) => a.total_piece - b.total_piece,
       },
       {
-        title: 'ทำงานได้',
+        title: 'ทำเสร็จ(ชิ้น)',
         dataIndex: 'finished_piece',
         key: 'finished_piece',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0} ชิ้น</div>,
+        render: (text, item) => <div>{text?text:0}</div>,
+        sorter: (a, b) => a.finished_piece - b.finished_piece,
       },
       {
-        title: 'สำเร็จ',
+        title: 'ทำไม่เสร็จ(ชิ้น)',
+        key: 'fail_piece',
         className: 'align-right',
         render: (text, item) => (
           <div>
           {item.total_piece-item.finished_piece > 0
-            ?`เหลือ ${item.total_piece-item.finished_piece} ชิ้น`
+            ?`${item.total_piece-item.finished_piece}`
             :'เสร็จครบ'
           }
           </div>
         ),
+        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
       },
+      {
+        title: 'สถาณะงาน',
+        className: 'align-right',
+        render: (text, item) => (
+          <div>{
+            item.success
+              ?item.total_piece-item.finished_piece==0
+                ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
+                :<span style={{color: AppStyle.color.main}}>ไม่ครบ</span>
+              :item.endAt<new Date
+                ?<span style={{color: AppStyle.color.main}}>กำลังส่งงาน</span>
+                :'กำลังทำงาน'
+          }</div>
+        ),
+        sorter: (a, b) => a.endAt - b.endAt,
+      },
+      {
+        title: 'เริ่มงานวันที่',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {text&&
+              moment(text).locale('en').format('DD/MM/YY')}
+          </div>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      }, 
+      {
+        title: 'เสร็จงานวันที่',
+        dataIndex: 'endAt',
+        key: 'endAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {text&&
+              moment(text).locale('en').format('DD/MM/YY')}
+          </div>,
+        sorter: (a, b) => a.endAt - b.endAt,
+      },
+    ];
+
+    const subWorkingColumns = [
+      {
+        title: 'จำนวนชิ้นที่ทำ',
+        dataIndex: 'piece',
+        key: 'piece',
+        className: 'align-right',
+        render: (text, item) => <span>{text}</span>,
+        sorter: (a, b) => a.piece - b.piece,
+      },
+      {
+        title: 'ใช้เวลา',
+        dataIndex: 'worktime',
+        key: 'worktime',
+        className: 'align-right',
+        render: (text, item) => <span>{secToText(text)}</span>,
+        sorter: (a, b) => a.worktime - b.worktime,
+      },
+      {
+        title: 'เวลาที่เริ่มทำ',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      },
+      {
+        title: 'เวลาที่บันทึก',
+        dataIndex: 'endAt',
+        key: 'endAt',
+        className: 'align-right',
+        render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
+        sorter: (a, b) => a.endAt - b.endAt,
+      },
+
     ];
 
     const tabs = [
@@ -519,9 +690,9 @@ export default class extends Component {
     )
 
 
-    if(loading)return<div/>
+    //if(loading)return<div/>
     return (
-      <Style>
+      <Style onMouseOver={() => this.setState({re: !this.state.re})}>
 
           <Menu
             //onClick={(e) => this.setState({menuTable: e.key})}
@@ -561,10 +732,26 @@ export default class extends Component {
               <Table columns={needWorkColumns} dataSource={needWorkList} />
           }{
             this.state.menuTable === 'workingList'&&
-              <Table columns={workingColumns} dataSource={workingList} />
+              <Table columns={workingColumns} dataSource={workingList} 
+                expandedRowRender={record => 
+                  <Table 
+                    columns={subWorkingColumns} 
+                    dataSource={record.do_piece}
+                    size='small'
+                  />
+                }
+              />
           }{
             this.state.menuTable === 'workSuccessList'&&
-              <Table columns={workSuccessColumns} dataSource={workSuccessList} />
+              <Table columns={workSuccessColumns} dataSource={workSuccessList} 
+                expandedRowRender={record => 
+                  <Table 
+                    columns={subWorkingColumns} 
+                    dataSource={record.do_piece}
+                    size='small'
+                  />
+                }
+              />
           }
           </div>
 
@@ -594,7 +781,7 @@ const Style = Styled.div`
     position: relative;
     text-align: center;
     float: left;
-    width: 16.66%;
+    width: 160px;
     height: 90px;
     padding: 5px;
     box-sizing: border-box;
@@ -641,7 +828,22 @@ const Style = Styled.div`
     }
   }
 
+  .btn{
+    background: ${AppStyle.color.main};
+    color: ${AppStyle.color.white};
+    width: 60px;
+    text-align: center;
+    ${AppStyle.shadow.lv1}
+    padding: 5px;
+    cursor: pointer;
+  }
+  .primary{
+    background: ${AppStyle.color.sub};
+  }
+
+
   .ant-menu{
     background: ${AppStyle.color.bg};
   }
+
 `

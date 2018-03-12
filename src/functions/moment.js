@@ -22,13 +22,17 @@ export const secToText = (sec) => {
     text = '' + Math.floor(sec/60/60) + ' ชั่วโมง'
   }else if(sec >= 60){
     text = '' + Math.floor(sec/60) + ' นาที'
-  }else if(sec <= 60*60){
+  }else if(sec <= -60*60){
     text = '' + Math.floor(sec/60/60) + ' ชั่วโมง'
   }else if(sec <= -60){
     text = '' + Math.floor(sec/60) + ' นาที'
   }else{
-    text = sec + ' วินาที'
+    text = parseFloat(+sec).toFixed(0) + ' วินาที'
   }
 
   return text
+}
+
+export const decimal2 = (number) => {
+  return parseFloat(+number).toFixed(2)
 }
