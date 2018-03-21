@@ -15,7 +15,9 @@ import { PushFCM } from '../../api/notification'
 import { sendWork, cancelWork, getedWork } from '../functions/work'
 import { secToText } from '../../functions/moment'
 
-import { Menu, Icon } from 'antd';
+import { Menu, Icon, Rate, Popconfirm } from 'antd';
+import Table from '../components/Table'
+
 
 const chart = require("react-chartjs")
 const DoughnutChart = chart.Doughnut;
@@ -25,9 +27,10 @@ export default class extends Component {
 
   state = {
     user: store.get('employer'),
-    works: [],
+    works: store.get('works'),
     working: [],
     needWork: [],
+    workSuccessList: [],
   }
 
   async componentDidMount() {
@@ -46,11 +49,23 @@ export default class extends Component {
     await db.collection('working').where('employer_id', '==', user.uid)
     .onSnapshot(snap => { 
       let working = []
+      let workSuccessList = []
       let expenditure = 0
       snap.forEach(doc => {
-        working.push(_.assign(doc.data(), {work_id: doc.id}))
+        const finished_piece = doc.data().finished_piece?doc.data().finished_piece:0
+        const total_piece = doc.data().total_piece?doc.data().total_piece:0
+        
+        const data = Object.assign(doc.data(),{
+          working_id: doc.id,
+          finished_piece,
+          total_piece,
+          qualityWorking: doc.data().do_piece&&(doc.data().worktime/(_.sumBy(doc.data().do_piece, 'worktime')/_.sumBy(doc.data().do_piece, 'piece'))*100).toFixed(0)
+        })
         if(doc.data().success){
-          expenditure += +doc.data().finished_piece*+doc.data().price
+          working.push(_.assign(data))
+          expenditure += finished_piece*doc.data().price
+
+          workSuccessList.push(_.assign(data))
         }
 
         // if(doc.data().do_piece){
@@ -63,7 +78,8 @@ export default class extends Component {
       })
       this.setState({
         working,
-        expenditure
+        expenditure,
+        workSuccessList
       })
     })
 
@@ -78,9 +94,9 @@ export default class extends Component {
   }
 
   render() {
-    const { works, working, expenditure, needWork } = this.state
+    const { works, working, expenditure, needWork, workSuccessList } = this.state
 
-    console.table(works)
+    console.table('WWWWWWWWWW',working)
 
     let successWork = 0
     let failWork = 0
@@ -154,6 +170,154 @@ export default class extends Component {
         }
       ]
     }
+    console.log('wwwwwwwww',works,_.find(works,(o)=>o.work_id=='xLuqpSepD613uchCAHFP'))
+    "nLqb1QzNTs5PIOxVUToz"
+
+    const workSuccessColumns = [
+      {
+        title: 'ชื่องาน',
+        dataIndex: 'work_name',
+        key: 'work_name',
+        className: 'click',
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>
+          <img src={_.get(_.find(works,(o)=>o.work_id==item.work_id),'image')} className='work_image'/>
+          {' '+item.work_name}
+          </span>,
+        sorter: (a, b) => a.work_name - b.work_name,
+      },
+      {
+        title: 'ผู้รับงาน',
+        dataIndex: 'employee',
+        key: 'employee_name',
+        className: 'click',
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
+            <img src={text.profileImage} className='employee_image'/>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+          </span>,
+        sorter: (a, b) => a.employee.fname - b.employee.fname,
+      }, 
+      {
+        title: 'ศักยภาพการทำงาน',
+        dataIndex: 'useWorktime',
+        key: 'useWorktime',
+        render: (text, item) => 
+          <div>{item.qualityWorking&&
+            <span title={item.qualityWorking&&item.qualityWorking+'%'} style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> {
+              item.qualityWorking>=150?'เร็วมาก'
+              :item.qualityWorking>=100?'เร็ว'
+              :item.qualityWorking>=75?'ปกติ'
+              :item.qualityWorking<75&&'ช้า'
+            }</span>}
+            {item.qualityWorking&& ` (${secToText(text)}ต่อชิ้น)`}
+          
+          </div>,
+        sorter: (a, b) => a.qualityWorking - b.qualityWorking,
+      },
+      {
+        title: 'งานที่ทำเสร็จ / ทั้งหมด',
+        dataIndex: 'total_piece',
+        key: 'total_piece',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
+          </div>,
+        sorter: (a, b) => a.total_piece - b.total_piece,
+      },
+      {
+        title: 'สถาณะงาน',
+        className: 'align-right',
+        render: (text, item) => (
+          <div style={{fontWeight: 'bold'}}>{
+            item.success
+              ?item.total_piece-item.finished_piece==0
+                ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
+                :<span style={{color: AppStyle.color.main}}>ไม่ครบ</span>
+              :item.endAt<new Date
+                ?<span style={{color: AppStyle.color.main}}>กำลังส่งงาน</span>
+                :'กำลังทำงาน'
+          }</div>
+        ),
+        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
+      },
+      {
+        title: 'วันที่ส่ง - เสร็จ',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {text&&
+              moment(text).locale('en').format('DD/MM/YY')+' - '+moment(item.endAt).locale('en').format('DD/MM/YY')}
+          </div>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      }, 
+      {
+        title: 'ค่าจ้าง',
+        dataIndex: 'price',
+        key: 'price',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {item.finished_piece*item.price}
+          </div>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      }, 
+      // {
+      //   title: 'ลบ',
+      //   key: 'delete',
+      //   render: (text, item) => (
+      //     <Popconfirm title="ยืนยันลบ?" onConfirm={ () => db.collection('working').doc(item.working_id).delete()}>
+      //       <div className='click'> ลบงาน </div>
+      //     </Popconfirm>
+      //   ),
+      // },
+    ];
+    const subWorkingColumns = [
+      {
+        title: 'จำนวนชิ้นที่ทำ',
+        dataIndex: 'piece',
+        key: 'piece',
+        className: 'align-right',
+        render: (text, item) => <span>{text}</span>,
+        sorter: (a, b) => a.piece - b.piece,
+      },
+      {
+        title: 'ใช้เวลาต่อชิ้น',
+        dataIndex: 'worktimeOnePiece',
+        key: 'worktimeOnePiece',
+        className: 'align-right',
+        render: (text, item) => <span>{secToText(item.worktime/item.piece)}</span>,
+        sorter: (a, b) => a.worktime - b.worktime,
+      },
+      {
+        title: 'ใช้เวลาทั้งหมด',
+        dataIndex: 'worktime',
+        key: 'worktime',
+        className: 'align-right',
+        render: (text, item) => <span>{secToText(text)}</span>,
+        sorter: (a, b) => a.worktime - b.worktime,
+      },
+      {
+        title: 'เวลาที่เริ่มทำ',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      },
+      {
+        title: 'เวลาที่บันทึก',
+        dataIndex: 'endAt',
+        key: 'endAt',
+        className: 'align-right',
+        render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
+        sorter: (a, b) => a.endAt - b.endAt,
+      },
+
+    ];
 
     const chartOptions = []
 
@@ -223,7 +387,7 @@ export default class extends Component {
 
           
           <div className='row'>
-
+          {/*
             <div className='col-xs-12 col-md-4 gutter'>
               <div className='card'>
                 <div className='title'>ผลลัพธ์</div>
@@ -248,10 +412,19 @@ export default class extends Component {
                 </div>
               </div>
             </div>
-
-            
-
+          */}
           </div>
+
+          <div className='title'>ประวัติงาน</div>
+          <Table columns={workSuccessColumns} dataSource={workSuccessList} 
+            expandedRowRender={record => 
+              <Table 
+                columns={subWorkingColumns} 
+                dataSource={record.do_piece}
+                size='small'
+              />
+            }
+          />
 
         </Layout>
       </Style>
@@ -318,5 +491,28 @@ const Style = Styled.div`
 
   .linechart{
 
+  }
+
+  .click{
+    cursor: pointer;
+  }
+  .align-right{
+    text-align: right;
+  }
+  .align-center{
+    text-align: center;
+  }
+  .work_image{
+    width: 50px;
+    height: 50px;
+    margin: -7px 0;
+    object-fit: cover;
+  }
+  .employee_image{
+    width: 32px;
+    height: 32px;
+    margin: -7px 0;
+    object-fit: cover;
+    border-radius: 100%;
   }
 `

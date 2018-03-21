@@ -14,7 +14,9 @@ import EmployeeData from '../components/EmployeeData';
 
 import { secToText } from '../../functions/moment'
 
-import { Modal, Button } from 'antd';
+import { phoneFormatter } from '../../functions'
+
+import { Modal, Button, Rate } from 'antd';
 
 
 export default class extends Component {
@@ -36,6 +38,7 @@ export default class extends Component {
     .get().then(snap => {
       snap.forEach(doc => {
         es.push(doc.data().employee_id)
+        
       })
     })
     es = _.uniq(es)
@@ -64,17 +67,34 @@ export default class extends Component {
     const { employees, selectEmployee } = this.state
     const columns = [
       {
-        title: `ชื่อ`,
-        dataIndex: 'name',
-        key: 'name',
-        className: 'name',
+        title: 'ผู้ทำงาน',
+        dataIndex: 'fname',
+        key: 'employee_name',
+        className: 'click',
         render: (text, item) => 
-          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{item.tname + item.fname + ' ' + item.lname}</span>,
+          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
+            <img src={item.profileImage} className='employee_image'/>
+            {' '+item.tname+item.fname+' '+item.lname}
+          </span>,
+        sorter: (a, b) => a.fname - b.fname,
       },
       {
         title: `เบอรโทรศัพท์`,
         dataIndex: 'phone',
         key: 'phone',
+        render: (text, item) => 
+          <span>{
+            phoneFormatter(text)
+          }</span>,
+      },
+      {
+        title: `ที่อยู่ อำเภอ/ตำบล`,
+        dataIndex: 'province',
+        key: 'address',
+        render: (text, item) => 
+          <span>{
+            item.area + " " + item.district + " " + item.province
+          }</span>,
       },
       {
         title: `เวลาทำงานต่อสัปดาห์`,
@@ -86,20 +106,11 @@ export default class extends Component {
           }</span>,
       },
       {
-        title: `ทำลังทำงาน`,
+        title: `กำลังทำงาน`,
         dataIndex: 'working',
         key: 'working',
       },
-      {
-        title: `ทำงานสำเร็จ`,
-        dataIndex: 'workSuccess',
-        key: 'workSuccess',
-      },
-      {
-        title: `ทำงานไม่สำเร็จ`,
-        dataIndex: 'workFail',
-        key: 'workFail',
-      },
+
     ];
     console.log('FFFFFF',employees)
 
@@ -142,6 +153,17 @@ export default class extends Component {
 const Style = Styled.div`
   .name{
     ${AppStyle.font.hilight}
+    cursor: pointer;
+  }
+
+  .employee_image{
+    width: 32px;
+    height: 32px;
+    margin: -7px 0;
+    object-fit: cover;
+    border-radius: 100%;
+  }  
+  .click{
     cursor: pointer;
   }
 `

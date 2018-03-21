@@ -16,7 +16,7 @@ import TopStyle from '../components/TopStyle'
 import { auth, db } from '../api/firebase'
 import { getToken } from '../api/notification'
 
-import { message } from 'antd';
+import { message, Icon } from 'antd';
 
 class Login extends Component {
 
@@ -121,10 +121,10 @@ class Login extends Component {
                 </form>
 
                 <Link to="/register">
-                  <div className="register hidden-md-up">ลงทะเบียน</div> 
+                  <div className="register hidden-md-up"><Icon type='user'/> ลงทะเบียนผู้รับงาน</div> 
                 </Link>
                 <Link to="/web/register">
-                  <div className="register employer hidden-md-down">ลงทะเบียนผู้ประกอบการ</div> 
+                  <div className="register employer hidden-md-down"><Icon type='shop'/> ลงทะเบียนผู้ประกอบการ</div> 
                 </Link>
               </div>
             

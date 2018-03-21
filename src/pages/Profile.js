@@ -133,10 +133,14 @@ class Profile extends Component {
                       <img alt='' src={edit}/>
                     </Link>
                     <div className='card-title'>ความสามารถ</div>
-                    {data.abilities&&
-                      _.map(userAbilities,(data,key) => 
-                      <div style={{float: 'left'}}>{_.get(data,'name') + ', '}</div>
-                    )}
+                    {_.size(data.abilities)
+                      ?_.map(userAbilities,(data,key) => 
+                          <div style={{float: 'left'}}>{_.get(data,'name') + ', '}</div>
+                      )
+                      :'ทั่วไป'
+                    }
+                    <div className='card-title'>อุปกรณ์ที่มี</div>
+                    <div >{data.tool?data.tool:'ไม่ระบุ'}</div>
                   </div>
                 </div>
               </div>

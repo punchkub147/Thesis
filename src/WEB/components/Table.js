@@ -12,9 +12,8 @@ export default class extends Component {
     return (
       <Style>
         <Table {...this.props} 
-          bordered 
           size='middle'
-          pagination={false} 
+          pagination={false}
         />
       </Style>
     );

@@ -59,7 +59,7 @@ class Register extends Component {
     const registerEmail = (
       <div className='col-md-4'>
         <form className='register' onSubmit={e => this.handleRegister(e)}>
-          <div className='title'>ลงทะเบียน</div>
+          <div className='title'>ลงทะเบียน</div><br/>
           <input placeholder="อีเมลล์" type="email" ref={r => this.email = r }/>
           <input placeholder="รหัสผ่าน" type="password" ref={r => this.password = r }/>
           <input placeholder="ยืนยันรหัสผ่าน" type="password" ref={r => this.password2 = r }/>
@@ -76,7 +76,6 @@ class Register extends Component {
 
     return (
       <Style>
-        <TopStyle/>
         <div className='container'>
           <div className='row justify-content-center'>
             {registerStep == 1 &&registerEmail}

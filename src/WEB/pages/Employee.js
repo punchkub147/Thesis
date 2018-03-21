@@ -7,7 +7,7 @@ import moment from 'moment'
 import store from 'store'
 import { secToText } from '../../functions/moment'
 
-import { Icon, Divider, Menu } from 'antd';
+import { Icon, Divider, Menu, Rate } from 'antd';
 import { db } from '../../api/firebase'
 
 import phone from '../../img/phone2.png'
@@ -30,6 +30,7 @@ export default class extends Component {
 
   state = {
     employee: {},
+    worksList: store.get('works'),
     workingList: [],
     workSuccessList: [],
     abilities: [],
@@ -83,15 +84,14 @@ export default class extends Component {
         workingList,
         workSuccessList
       })
-      // await db.collection('works').doc(work_id).update({
-      //   working: workingList.length,
-      //   success: workSuccessList.length,
-      // })
+      await db.collection('employee').doc(employee_id).update({
+        working: workingList.length,
+      })
     })
   }
 
   render() {
-    const { workingList, workSuccessList, abilities } = this.state
+    const { workingList, workSuccessList, abilities, worksList } = this.state
     const data = this.state.employee
 
     
@@ -103,65 +103,45 @@ export default class extends Component {
         dataIndex: 'work_name',
         key: 'work_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{item.work_name}</span>,
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>
+          <img src={_.get(_.find(worksList,(o)=>o.work_id==item.work_id),'image')} className='work_image'/>
+          {' '+item.work_name}
+          </span>,
         sorter: (a, b) => a.work_name - b.work_name,
-      },
-      // {
-      //   title: 'ชื่อผู้ทำงาน',
-      //   dataIndex: 'employee',
-      //   key: 'employee_name',
-      //   className: 'click',
-      //   render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
-      //   sorter: (a, b) => a.employee.fname - b.employee.fname,
-      // },
-      {
-        title: 'เวลาทำงานต่อชิ้น',
-        dataIndex: 'useWorktime',
-        key: 'useWorktime',
-        className: 'align-right',
-        render: (text, item) => <div>{secToText(text)}</div>,
-        sorter: (a, b) => a.worktime - b.worktime,
       },
       {
         title: 'ศักยภาพการทำงาน',
-        dataIndex: 'qualityWorking',
-        key: 'qualityWorking',
-        className: 'align-right',
-        render: (text, item) => <div>{text&&text+'%'}</div>,
-        sorter: (a, b) => +a.qualityWorking - +b.qualityWorking,
+        dataIndex: 'useWorktime',
+        key: 'useWorktime',
+        render: (text, item) => 
+          <div>{item.qualityWorking&&
+            <span title={item.qualityWorking&&item.qualityWorking+'%'} style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> {
+              item.qualityWorking>=150?'เร็วมาก'
+              :item.qualityWorking>=100?'เร็ว'
+              :item.qualityWorking>=75?'ปกติ'
+              :item.qualityWorking<75&&'ช้า'
+            }</span>}
+            {item.qualityWorking&& ` (${secToText(text)}ต่อชิ้น)`}
+          
+          </div>,
+        sorter: (a, b) => a.worktime - b.worktime,
       },
       {
-        title: 'งานทั้งหมด(ชิ้น)',
+        title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
+        render: (text, item) => 
+          <div>
+            {item.total_piece-item.finished_piece <= 0&&<span style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> เสร็จครบแล้ว</span>}
+            <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
+          </div>,
         sorter: (a, b) => a.total_piece - b.total_piece,
       },
       {
-        title: 'ทำเสร็จ(ชิ้น)',
-        dataIndex: 'finished_piece',
-        key: 'finished_piece',
-        className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
-        sorter: (a, b) => a.finished_piece - b.finished_piece,
-      },
-      {
-        title: 'ทำไม่เสร็จ(ชิ้น)',
-        key: 'fail_piece',
-        className: 'align-right',
-        render: (text, item) => (
-          <div>
-          {item.total_piece-item.finished_piece > 0
-            ?`${item.total_piece-item.finished_piece}`
-            :'เสร็จครบ'
-          }
-          </div>
-        ),
-        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
-      },
-      {
-        title: 'สถาณะงาน',
+        title: 'สถานะ',
+        key: 'status',
         className: 'align-right',
         render: (text, item) => (
           <div>{
@@ -177,48 +157,18 @@ export default class extends Component {
         sorter: (a, b) => a.endAt - b.endAt,
       },
       {
-        title: 'เริ่มงานวันที่',
+        title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
         className: 'align-right',
         render: (text, item) => 
           <div>
             {text&&
-              moment(text).locale('en').format('DD/MM/YY')}
+              moment(text).locale('en').format('DD/MM/YY')+' - '+moment(item.endAt).locale('en').format('DD/MM/YY')}
           </div>,
         sorter: (a, b) => a.startAt - b.startAt,
       }, 
-      {
-        title: 'เสร็จงานวันที่',
-        dataIndex: 'endAt',
-        key: 'endAt',
-        className: 'align-right',
-        render: (text, item) => 
-          <div>
-            {text&&
-              moment(text).locale('en').format('DD/MM/YY')}
-          </div>,
-        sorter: (a, b) => a.endAt - b.endAt,
-      },
-      // {
-      //   title: 'รับงานคืน',
-      //   key: 'action',
-      //   render: (text, item) => (
-      //     <Popconfirm title="ยืนยันรับงาน?" onConfirm={ () => getedWork(item)}>
-      //       <div className='btn' style={{background: item.endAt < new Date ?AppStyle.color.sub:AppStyle.color.gray}}> รับงาน </div>
-      //     </Popconfirm>
-      //   ),
-      //   sorter: (a, b) => a.startAt - b.startAt,
-      // },
-      // {
-      //   title: 'ลบ',
-      //   key: 'delete',
-      //   render: (text, item) => (
-      //     <Popconfirm title="ยืนยันลบ?" onConfirm={ () => db.collection('working').doc(item.working_id).delete()}>
-      //       <div className='click'> ลบงาน </div>
-      //     </Popconfirm>
-      //   ),
-      // },
+
     ];
 
     const workSuccessColumns = [
@@ -227,68 +177,46 @@ export default class extends Component {
         dataIndex: 'work_name',
         key: 'work_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{text}</span>,
-        sorter: (a, b) => a.employee.fname - b.employee.fname,
-      },
-      {
-        title: 'รอบวันที่',
-        dataIndex: 'startAt',
-        key: 'startAt',
-        className: 'align-right',
-        render: (text, item) => <div>{moment(text).format('DD/MM/YY')}</div>,
-        sorter: (a, b) => a.startAt - b.startAt,
-      },
-      {
-        title: 'เวลาทำงานต่อชิ้น',
-        dataIndex: 'worktime',
-        key: 'worktime',
-        className: 'align-right',
-        render: (text, item) => <div>{secToText(text)}</div>,
-        sorter: (a, b) => a.worktime - b.worktime,
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>
+          <img src={_.get(_.find(worksList,(o)=>o.work_id==item.work_id),'image')} className='work_image'/>
+          {' '+item.work_name}
+          </span>,
+        sorter: (a, b) => a.work_name - b.work_name,
       },
       {
         title: 'ศักยภาพการทำงาน',
-        dataIndex: 'qualityWorking',
-        key: 'qualityWorking',
-        className: 'align-right',
-        render: (text, item) => <div>{text&&text+'%'}</div>,
-        sorter: (a, b) => +a.qualityWorking - +b.qualityWorking,
+        dataIndex: 'useWorktime',
+        key: 'useWorktime',
+        render: (text, item) => 
+          <div>{item.qualityWorking&&
+            <span title={item.qualityWorking&&item.qualityWorking+'%'} style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> {
+              item.qualityWorking>=150?'เร็วมาก'
+              :item.qualityWorking>=100?'เร็ว'
+              :item.qualityWorking>=75?'ปกติ'
+              :item.qualityWorking<75&&'ช้า'
+            }</span>}
+            {item.qualityWorking&& ` (${secToText(text)}ต่อชิ้น)`}
+          
+          </div>,
+        sorter: (a, b) => a.worktime - b.worktime,
       },
       {
-        title: 'งานทั้งหมด(ชิ้น)',
+        title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
-        sorter: (a, b) => a.total_piece - b.total_piece,
-      },
-      {
-        title: 'ทำเสร็จ(ชิ้น)',
-        dataIndex: 'finished_piece',
-        key: 'finished_piece',
-        className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
-        sorter: (a, b) => a.finished_piece - b.finished_piece,
-      },
-      {
-        title: 'ทำไม่เสร็จ(ชิ้น)',
-        key: 'fail_piece',
-        className: 'align-right',
-        render: (text, item) => (
+        render: (text, item) => 
           <div>
-          {item.total_piece-item.finished_piece > 0
-            ?`${item.total_piece-item.finished_piece}`
-            :'เสร็จครบ'
-          }
-          </div>
-        ),
-        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
+            <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
+          </div>,
+        sorter: (a, b) => a.total_piece - b.total_piece,
       },
       {
         title: 'สถาณะงาน',
         className: 'align-right',
         render: (text, item) => (
-          <div>{
+          <div style={{fontWeight: 'bold'}}>{
             item.success
               ?item.total_piece-item.finished_piece==0
                 ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
@@ -298,8 +226,21 @@ export default class extends Component {
                 :'กำลังทำงาน'
           }</div>
         ),
-        sorter: (a, b) => a.endAt - b.endAt,
+        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
       },
+      {
+        title: 'วันที่ส่ง - เสร็จ',
+        dataIndex: 'startAt',
+        key: 'startAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {text&&
+              moment(text).locale('en').format('DD/MM/YY')+' - '+moment(item.endAt).locale('en').format('DD/MM/YY')}
+          </div>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      }, 
+
     ];
 
     const subWorkingColumns = [
@@ -345,25 +286,35 @@ export default class extends Component {
       },
 
     ];
-
+    
+    const star = 3+Math.floor(data.workSuccess/data.workFail)
+    
     return (
       <Layout {...this.props}>
       <Style>
         <div className='row'>
+        
           <div className='col-xs-12 col-md-4'>
             <div className="row justify-content-center" style={{margin: '0 10px'}}>
               <img className="profileImage" alt='' src={_.get(data,'profileImage')}/>
             </div>
 
             <div className="name">
-              {`${_.get(data,'tname')}${_.get(data,'fname')} ${_.get(data,'lname')}`}
-            </div>
-          </div>
-
+              {`${_.get(data,'tname')}${_.get(data,'fname')} ${_.get(data,'lname')}`}<br/>
+              <span title={`ทำงานเสร็จ ${data.workSuccess} : ไม่เสร็จ ${data.workFail}`}>
+                {star&&<Rate disabled defaultValue={star} style={{color: AppStyle.color.main, fontSize: 18}}/>}
+              </span>
           
+            </div>
+            </div>
 
           <div className='col-xs-12 col-md-4'>
+
+            
+
             <div className="detail card"> 
+
+              <div className='title-card'>ประวัติส่วนตัว</div>
               
               <div className="row list">
                 <div className="col-2">
@@ -373,29 +324,11 @@ export default class extends Component {
               </div>
               <div className="row list">
                 <div className="col-2">
-
+                  <img className="icon" alt='' src={profile}/>
                 </div>
                 <div className="col-10 text">ระดับการศึกษา {_.get(data,'education')}</div>
               </div>
-            </div>
 
-            
-            <div className="card">
-              <div className="row">
-                <div className="col-12">
-                  ความสามารถ<br/>
-                  {data.abilities&&
-                    _.map(userAbilities,(data,key) => 
-                    <div style={{float: 'left'}}>{_.get(data,'name') + ', '}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-          </div>
-          
-          <div className='col-xs-12 col-md-4'>
-            <div className='detail card'>
               <div className="row list">
                 <div className="col-2">
                   <img className="icon" alt='' src={phone}/>
@@ -408,21 +341,31 @@ export default class extends Component {
                 </div>
                 <div className="col-10 text">
                   {data.homeNo&&`${data.homeNo} `}
-                  {data.road&&`ถ. ${data.road} `}
-                  {data.area&&`ข. ${data.area} `}
-                  {data.district&&`ข. ${data.district} `}
-                  {data.province&&`จ. ${data.province} `}
+                  {data.road&&`ถนน${data.road} `}
+                  {data.area&&`ตำบล${data.area} `}
+                  {data.district&&`อำเภอ${data.district} `}
+                  {data.province&&`${data.province} `}
                   {data.postcode&&`${data.postcode} `}
                 </div>
               </div>
+
             </div>
-            <div className='card'>
-              <div className="row list">
-                <div className="col-12 text">
-                  เลขที่บัญชี : {_.get(data,'bankAddress')}
-                </div>
-                <div className="col-12 text">
-                  ธนาคาร : {_.get(data,'bank')}
+
+          </div>
+          
+          <div className='col-xs-12 col-md-4'>    
+            <div className="card">
+              <div className="row">
+                <div className="col-12">
+                  <div className='title-card'>ความสามารถ</div>
+                  {_.size(data.abilities)>0?
+                    _.map(userAbilities,(data,key) => 
+                      <div style={{float: 'left'}}>{_.get(data,'name') + ', '}</div>
+                    )
+                    :'ทั่วไป'
+                  }
+                  <div className='title-card'>อุปกรณ์ที่มี</div>
+                  <div >{data.tool?data.tool:'ไม่ระบุ'}</div>
                 </div>
               </div>
             </div>
@@ -517,15 +460,33 @@ const Style = Styled.div`
       margin-bottom: 10px;
       background: ${AppStyle.color.card};
       ${AppStyle.shadow.lv1}
+
+      height: 250px;
     }
 
     .click{
-      ${AppStyle.font.hilight}
+      cursor: pointer;
     }
     .align-right{
       text-align: right;
     }
+    .align-center{
+      text-align: center;
+    }
     .ant-menu{
       background: ${AppStyle.color.bg};
     }
+
+    .title-card{
+      color: ${AppStyle.color.read1};
+      font-weight: bold;
+    }
+
+    .work_image{
+      width: 50px;
+      height: 50px;
+      margin: -7px 0;
+      object-fit: cover;
+    }
+  
 `

@@ -23,7 +23,7 @@ import Progress from '../components/Progress'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 
-import WorkItem from '../components/WorkItem'
+import WorkItem from '../components/WorkItem2'
 
 import alarm2 from '../img/alarm2.png'
 
@@ -33,6 +33,18 @@ const setDayHilight = (day, time) => {
   if(time>0) return 'workday'
 
   return ''
+}
+
+const quality = (percent) => {
+  if(percent>=150){
+    return 'เร็วมาก'
+  }else if(percent>=100){
+    return 'เร็ว'
+  }else if(percent>=75){
+    return 'ปกติ'
+  }else if(percent<75){
+    return 'ช้า'
+  }
 }
 
 class Tasks extends Component {
@@ -332,6 +344,7 @@ class Tasks extends Component {
   render() {
     const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user, nextHoliday, works, showDetail, showAllDetail } = this.state
 
+
     const { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks, user)
     
     const nowTask = (
@@ -480,8 +493,12 @@ class Tasks extends Component {
 
               <div className='row'>
                 <div className='col-12'>
-                  เวลาทำงานมาตรฐาน {secToText(working.worktime)}ต่อชิ้น
-                  <div>วันนี้ต้องทำงานอีก {secToText(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}</div>
+                  <div>
+                    คุณทำงาน <span className='qualityText'>{quality(working.worktime/(_.sumBy(working.do_piece, 'worktime')/_.sumBy(working.do_piece, 'piece'))*100)} </span> 
+                    ({secToText(working.useWorktime?working.useWorktime:working.worktime)}ต่อชิ้น)
+                  </div>
+                  {/*เวลาทำงานมาตรฐาน {secToText(working.worktime)}ต่อชิ้น
+                  <div>วันนี้ต้องทำงานอีก {secToText(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}</div>*/}
                 </div>
               </div>
 
@@ -561,8 +578,10 @@ class Tasks extends Component {
 
               <div className='row'>
                 <div className='col-12'>
-                  <div>เวลาทำงานของคุณ {secToText(working.useWorktime?working.useWorktime:working.worktime)}ต่อชิ้น</div>
-                  ศักยภาพ {working.worktime/(_.sumBy(working.do_piece, 'worktime')/_.sumBy(working.do_piece, 'piece'))*100}%
+                  <div>
+                    คุณทำงาน <span className='qualityText'>{quality(working.worktime/(_.sumBy(working.do_piece, 'worktime')/_.sumBy(working.do_piece, 'piece'))*100)} </span> 
+                    ({secToText(working.useWorktime?working.useWorktime:working.worktime)}ต่อชิ้น)
+                  </div>
                 </div>
               </div>
               <div className='c head'>
@@ -637,7 +656,8 @@ class Tasks extends Component {
       </div>
     )
     /////////////////////////////////////
-
+    const doingStart = doWork&& _.get(_.filter(doWork.do_piece, o => o.startAt&&!o.endAt), '[0].startAt')
+    
     return (
       <div>
         <Layout route={this.props.route}>
@@ -696,10 +716,11 @@ class Tasks extends Component {
             <Modal modalIsOpen={this.state.modalDoing} mini>
               <InsideModal>
                 <div className="modal-text">
-                  ช่วง {doWork&& moment(_.filter(_.get(doWork.do_piece, o => o.startAt&&!o.endAt ), '[0].startAt')).format('HH:mm')} น. 
-                  ถึง {moment().format('HH:mm')}น.
+                  {/*ช่วง {moment(doingStart).format('HH:mm')} น. 
+                  ถึง {moment().format('HH:mm')}น.*/}
+                  ใช้เวลาไป {secToText(moment().diff(doingStart, 'seconds'))}
                 </div>
-                <div className="modal-text">ทำงานได้ {this.state.doing} จาก {(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
+                <div className="modal-text">ทำงานได้ {this.state.doing} {/*จาก {(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')} */}ชิ้น</div>
                 {/*<button onClick={() => this.setState({modalIsOpen: false})}>close</button>*/}
                 <form>
                   <Slider min={0} max={(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')}
@@ -1087,6 +1108,7 @@ const Detail = Styled.div`
       padding: 0 10px;
       height: 30px;
       font-weight: bold;
+      margin-top: 10px;
     }
     .c{
       clear: both;
@@ -1130,6 +1152,11 @@ const Detail = Styled.div`
         text-overflow:ellipsis;
       }
     }
+  }
+  .qualityText{
+    color: ${AppStyle.color.sub};
+    font-weight: bold;
+    font-size: 20px;
   }
 `
 

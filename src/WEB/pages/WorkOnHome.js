@@ -4,6 +4,7 @@ import Styled from 'styled-components'
 import AppStyle from '../../config/style' 
 import moment from 'moment'
 import _ from 'lodash'
+import store from 'store'
 
 import Layout from '../layouts'
 
@@ -14,12 +15,13 @@ import { PushFCM } from '../../api/notification'
 import { getedWork } from '../functions/work'
 
 import Table from '../components/Table'
-import { message, Popconfirm } from 'antd'
+import { message, Popconfirm, Rate } from 'antd'
 
 class WorkOnHome extends Component {
 
   state = {
     workingList: [],
+    worksList: store.get('works'),
   }
 
   async componentDidMount() {
@@ -59,9 +61,7 @@ class WorkOnHome extends Component {
 
 
   render() {
-    const { workingList } = this.state
-
-    console.log(workingList)
+    const { workingList, worksList } = this.state
 
     const workingColumns = [
       {
@@ -69,104 +69,131 @@ class WorkOnHome extends Component {
         dataIndex: 'work_name',
         key: 'work_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{item.work_name}</span>,
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>
+          <img src={_.get(_.find(worksList,(o)=>o.work_id==item.work_id),'image')} className='work_image'/>
+          {' '+item.work_name}
+          </span>,
         sorter: (a, b) => a.work_name - b.work_name,
       },
       {
-        title: 'ชื่อผู้ทำงาน',
+        title: 'ผู้รับงาน',
         dataIndex: 'employee',
         key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
+            <img src={text.profileImage} className='employee_image'/>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+          </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
-      },
-      {
-        title: 'เวลาทำงานต่อชิ้น',
-        dataIndex: 'useWorktime',
-        key: 'useWorktime',
-        className: 'align-right',
-        render: (text, item) => <div>{secToText(text)}</div>,
-        sorter: (a, b) => a.worktime - b.worktime,
-      },
+      }, 
+      // {
+      //   title: 'ดาว',
+      //   dataIndex: 'employee',
+      //   key: 'star',
+      //   className: 'click',
+      //   render: (text, item) => 
+      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={2} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      // },
       {
         title: 'ศักยภาพการทำงาน',
-        dataIndex: 'qualityWorking',
-        key: 'qualityWorking',
-        className: 'align-right',
-        render: (text, item) => <div>{text&&text+'%'}</div>,
-        sorter: (a, b) => +a.qualityWorking - +b.qualityWorking,
+        dataIndex: 'useWorktime',
+        key: 'useWorktime',
+        render: (text, item) => 
+          <div>{item.qualityWorking&&
+            <span title={item.qualityWorking&&item.qualityWorking+'%'} style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> {
+              item.qualityWorking>=150?'เร็วมาก'
+              :item.qualityWorking>=100?'เร็ว'
+              :item.qualityWorking>=75?'ปกติ'
+              :item.qualityWorking<75&&'ช้า'
+            }</span>}
+            {item.qualityWorking&& ` (${secToText(text)} ต่อชิ้น)`}
+          
+          </div>,
+        sorter: (a, b) => a.worktime - b.worktime,
       },
+
       {
-        title: 'งานทั้งหมด(ชิ้น)',
+        title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
+        render: (text, item) => 
+          <div>
+            {item.total_piece-item.finished_piece <= 0&&<span style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> เสร็จครบแล้ว </span>}
+            <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
+          </div>,
         sorter: (a, b) => a.total_piece - b.total_piece,
       },
+
+      // {
+      //   title: 'ทำไม่เสร็จ(ชิ้น)',
+      //   key: 'fail_piece',
+      //   className: 'align-right',
+      //   render: (text, item) => (
+      //     <div>
+      //     {item.total_piece-item.finished_piece > 0
+      //       ?`${item.total_piece-item.finished_piece}`
+      //       :'เสร็จครบ'
+      //     }
+      //     </div>
+      //   ),
+      //   sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
+      // },
       {
-        title: 'ทำเสร็จ(ชิ้น)',
-        dataIndex: 'finished_piece',
-        key: 'finished_piece',
-        className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
-        sorter: (a, b) => a.finished_piece - b.finished_piece,
-      },
-      {
-        title: 'ทำไม่เสร็จ(ชิ้น)',
-        key: 'fail_piece',
-        className: 'align-right',
-        render: (text, item) => (
-          <div>
-          {item.total_piece-item.finished_piece > 0
-            ?`${item.total_piece-item.finished_piece}`
-            :'เสร็จครบ'
-          }
-          </div>
-        ),
-        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
-      },
-      {
-        title: 'สถาณะงาน',
-        key: 'status',
-        className: 'align-right',
-        render: (text, item) => (
-          <div>{
-            item.success
-              ?item.total_piece-item.finished_piece==0
-                ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
-                :<span style={{color: AppStyle.color.main}}>ไม่ครบ</span>
-              :item.endAt<new Date
-                ?<span style={{color: AppStyle.color.main}}>กำลังส่งงาน</span>
-                :'กำลังทำงาน'
-          }</div>
-        ),
-        sorter: (a, b) => a.endAt - b.endAt,
-      },
-      {
-        title: 'เริ่มงานวันที่',
+        title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
         className: 'align-right',
         render: (text, item) => 
           <div>
             {text&&
-              moment(text).locale('en').format('DD/MM/YY')}
+              moment(text).locale('en').format('DD/MM/YY')+' - '+moment(item.endAt).locale('en').format('DD/MM/YY')}
           </div>,
         sorter: (a, b) => a.startAt - b.startAt,
       }, 
-      {
-        title: 'เสร็จงานวันที่',
-        dataIndex: 'endAt',
-        key: 'endAt',
-        className: 'align-right',
-        render: (text, item) => 
-          <div>
-            {text&&
-              moment(text).locale('en').format('DD/MM/YY')}
-          </div>,
-        sorter: (a, b) => a.endAt - b.endAt,
-      },
+      // {
+      //   title: 'เริ่มงานวันที่',
+      //   dataIndex: 'startAt',
+      //   key: 'startAt',
+      //   className: 'align-right',
+      //   render: (text, item) => 
+      //     <div>
+      //       {text&&
+      //         moment(text).locale('en').format('DD/MM/YY')}
+      //     </div>,
+      //   sorter: (a, b) => a.startAt - b.startAt,
+      // }, 
+      // {
+      //   title: 'เสร็จงานวันที่',
+      //   dataIndex: 'endAt',
+      //   key: 'endAt',
+      //   className: 'align-right',
+      //   render: (text, item) => 
+      //     <div>
+      //       {text&&
+      //         moment(text).locale('en').format('DD/MM/YY')}
+      //     </div>,
+      //   sorter: (a, b) => a.endAt - b.endAt,
+      // },
+      // {
+      //   title: 'สถานะ',
+      //   key: 'status',
+      //   className: 'align-right',
+      //   render: (text, item) => (
+      //     <div>{
+      //       item.success
+      //         ?item.total_piece-item.finished_piece==0
+      //           ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
+      //           :<span style={{color: AppStyle.color.main}}>ไม่ครบ</span>
+      //         :item.endAt<new Date
+      //           ?<span style={{color: AppStyle.color.main}}>กำลังส่งงาน</span>
+      //           :'กำลังทำงาน'
+      //     }</div>
+      //   ),
+      //   sorter: (a, b) => a.endAt - b.endAt,
+      // },
       {
         title: 'รับงานคืน',
         key: 'action',
@@ -179,15 +206,15 @@ class WorkOnHome extends Component {
         ,
         sorter: (a, b) => a.startAt - b.startAt,
       },
-      // {
-      //   title: 'ลบ',
-      //   key: 'delete',
-      //   render: (text, item) => (
-      //     <Popconfirm title="ยืนยันลบ?" onConfirm={ () => db.collection('working').doc(item.working_id).delete()}>
-      //       <div className='click'> ลบงาน </div>
-      //     </Popconfirm>
-      //   ),
-      // },
+      {
+        title: 'ลบ',
+        key: 'delete',
+        render: (text, item) => (
+          <Popconfirm title="ยืนยันลบ?" onConfirm={ () => db.collection('working').doc(item.working_id).delete()}>
+            <div className='click'> ลบงาน </div>
+          </Popconfirm>
+        ),
+      },
     ];
 
     const subWorkingColumns = [
@@ -255,11 +282,7 @@ class WorkOnHome extends Component {
 export default WorkOnHome;
 
 const Style = Styled.div`
-  .click{
-    cursor: pointer;
-    ${AppStyle.font.hilight}
-    
-  }
+  
   .btn{
     background: ${AppStyle.color.main};
     color: ${AppStyle.color.white};
@@ -269,7 +292,26 @@ const Style = Styled.div`
     padding: 5px;
     cursor: pointer;
   }
+  .click{
+    cursor: pointer;
+  }
   .align-right{
     text-align: right;
+  }
+  .align-center{
+    text-align: center;
+  }
+  .work_image{
+    width: 50px;
+    height: 50px;
+    margin: -7px 0;
+    object-fit: cover;
+  }
+  .employee_image{
+    width: 32px;
+    height: 32px;
+    margin: -7px 0;
+    object-fit: cover;
+    border-radius: 100%;
   }
 `

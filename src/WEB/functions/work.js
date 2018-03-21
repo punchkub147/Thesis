@@ -20,6 +20,7 @@ export const sendWork = async (data) => {
 
   db.collection('works').doc(data.work_id).get()
   .then(async snapshot => {
+    const user = store.get('employer')
     const work = snapshot.data()
     let employee = {}
     await db.collection('employee').doc(data.employee_id).get()
@@ -74,6 +75,14 @@ export const sendWork = async (data) => {
 export const cancelWork = (data) => {
   db.collection('needWork').doc(data.needWork_id).delete()
 
+  db.collection('works').doc(data.work_id).get()
+  .then(async snapshot => {
+    const work = snapshot.data()
+    db.collection('works').doc(snapshot.id).update({
+      needWork: work.needWork?work.needWork-1:0,
+    })
+  })
+
   const title = 'บริษัทเสนองานรอบใหม่ให้กับคุณ'
   const message = `บริษัทได้เสนองาน ${data.work_name} รอบใหม่ให้กับคุณ ขออภัยในความไม่สะดวก`
   const type = 'send'
@@ -115,8 +124,8 @@ export const getedWork = async (data) => {
   db.collection('employee').doc(data.employee_id).get()
   .then(doc => {
     const updateEmployee = status
-      ?{workSuccess: doc.data().workSuccess?doc.data().workSuccess+1:1}
-      :{workFail: doc.data().workFail?doc.data().workFail+1:1}
+      ?{workSuccess: doc.data().workSuccess?doc.data().workSuccess+1:1, working: doc.data().working?doc.data().working-1:0}
+      :{workFail: doc.data().workFail?doc.data().workFail+1:1, working: doc.data().working?doc.data().working-1:0}
     db.collection('employee').doc(doc.id).update(updateEmployee) 
   })
 

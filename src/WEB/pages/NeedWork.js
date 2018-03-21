@@ -5,6 +5,7 @@ import AppStyle from '../../config/style'
 import Config from '../../config' 
 import _ from 'lodash'
 import moment from 'moment'
+import store from 'store'
 
 import Layout from '../layouts'
 
@@ -17,12 +18,13 @@ import { secToText } from '../../functions/moment'
 import Table from '../components/Table'
 import { phoneFormatter } from '../../functions/index';
 
-import { message, Popconfirm } from 'antd'
+import { message, Popconfirm, Rate } from 'antd'
 
 class NeedWork extends Component {
 
   state = {
     needWorkList: [],
+    worksList: store.get('works'),
     loading: false,
     re: false,
   }
@@ -163,7 +165,9 @@ class NeedWork extends Component {
   }
 
   render() {
-    const { needWorkList } = this.state
+    const { needWorkList, worksList } = this.state
+
+    
 
     const needWorkColumns = [
       {
@@ -171,48 +175,77 @@ class NeedWork extends Component {
         dataIndex: 'work_name',
         key: 'work_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{item.work_name}</span>,
+        render: (text, item) =>
+          <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>
+            <img src={_.get(_.find(worksList,(o)=>o.work_id==item.work_id),'image')} className='work_image'/>
+            {' '+item.work_name}
+          </span>,
+        sorter: (a, b) => a.work_name - b.work_name,
       },
       {
-        title: 'ชื่อผู้รับงาน',
+        title: 'ผู้รับงาน',
         dataIndex: 'employee',
         key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
+            <img src={text.profileImage} className='employee_image'/>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+          </span>,
+        sorter: (a, b) => a.employee.fname - b.employee.fname,
       },  
+      // {
+      //   title: 'ดาว',
+      //   dataIndex: 'employee',
+      //   key: 'star',
+      //   className: 'click',
+      //   render: (text, item) => 
+      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={2} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      // },
+      // {
+      //   title: `ที่อยู่ เขต/แขวง`,
+      //   dataIndex: 'employee',
+      //   key: 'address',
+      //   render: (text, item) => 
+      //     <span>{
+      //       item.employee.area + " " + item.employee.district
+      //     }</span>,
+      // },
       {
-        title: 'เคยทำงานสำเร็จ',
-        dataIndex: 'workSuccess',
-        key: 'workSuccess',
-        className: 'align-right',
-      }, 
-      {
-        title: 'เคยทำงานไม่สำเร็จ',
-        dataIndex: 'workFail',
-        key: 'workFail',
-        className: 'align-right',
-      }, 
-      {
-        title: 'เวลาว่างทำงาน',
+        title: 'จำนวนที่สามารถรับได้(ชุด)',
         dataIndex: 'timeCanWork',
         key: 'timeCanWork',
+        className: 'align-center',
         render: (text, item) => 
-          <div>{text &&
-            text>=item.piece*item.worktime
-            ?secToText(text)+' (ว่าง)'
-            :secToText(text)+' (ไม่ว่าง)'}
+          <div title={secToText(text)}>{text &&
+            text>=item.work.piece*item.work.worktime
+            ?`${Math.floor(text/(item.work.piece*item.work.worktime))}`
+            :`ไม่ว่างสำหรับทำงาน`}
           </div>,
+        sorter: (a, b) => a.timeCanWork - b.timeCanWork,
       }, 
       {
-        title: 'รอบวันที่',
+        title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
         className: 'align-right',
         render: (text, item) => 
           <div>
             {text&&
-              moment(text).locale('en').format('DD/MM/YY HH:mm')}
+              moment(text).locale('en').format('DD/MM/YY')+' - '+moment(item.endAt).locale('en').format('DD/MM/YY')}
           </div>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      }, 
+      {
+        title: 'ขอเมื่อ',
+        dataIndex: 'createAt',
+        key: 'createAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {moment(text).locale('en').format('DD/MM/YY')}
+          </div>,
+        sorter: (a, b) => a.createAt - b.createAt,
       }, 
       {
         title: 'ส่งงาน',
@@ -222,7 +255,7 @@ class NeedWork extends Component {
             ?<Popconfirm title="ยืนยันการส่งงาน" onConfirm={() => this.sendWork(item)}>
               <div className='btn primary' style={{background: AppStyle.color.sub}}> ส่งงาน </div>
             </Popconfirm>
-            :<div className='btn primary' style={{background: AppStyle.color.gray}}> ส่งงาน </div>
+            :<div className='btn primary' style={{background: AppStyle.color.gray}}> ส่งงาน </div>,
       },
       {
         title: 'เสนอรอบใหม่',
@@ -252,10 +285,12 @@ export default NeedWork;
 const Style = Styled.div`
   .click{
     cursor: pointer;
-    ${AppStyle.font.hilight}
   }
   .align-right{
     text-align: right;
+  }
+  .align-center{
+    text-align: center;
   }
   .btn{
     background: ${AppStyle.color.main};
@@ -268,5 +303,23 @@ const Style = Styled.div`
   }
   .primary{
     background: ${AppStyle.color.sub};
+  }
+
+  .work_image{
+    width: 50px;
+    height: 50px;
+    margin: -7px 0;
+    object-fit: cover;
+  }
+  .employee_image{
+    width: 32px;
+    height: 32px;
+    margin: -7px 0;
+    object-fit: cover;
+    border-radius: 100%;
+  }
+
+  .ant-rate-star{
+    margin-right: 2px;
   }
 `

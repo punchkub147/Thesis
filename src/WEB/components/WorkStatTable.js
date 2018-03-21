@@ -23,7 +23,7 @@ import Loading from '../../components/Loading'
 import Send from '../../img/send.png'
 import Alarm from '../../img/alarm.png'
 
-import { DatePicker, Menu, Icon, message, Popconfirm, Modal } from 'antd'
+import { DatePicker, Menu, Icon, message, Popconfirm, Modal, Rate } from 'antd'
 
 import EmployeeData from './EmployeeData';
 
@@ -287,53 +287,70 @@ export default class extends Component {
     }
 
     const needWorkColumns = [
-      // {
-      //   title: 'ชื่องาน',
-      //   dataIndex: 'work_name',
-      //   key: 'work_name',
-      //   className: 'click',
-      //   render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{item.work_name}</span>,
-      // },
       {
-        title: 'ชื่อผู้รับงาน',
+        title: 'ผู้รับงาน',
         dataIndex: 'employee',
         key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
+            <img src={text.profileImage} className='employee_image'/>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+          </span>,
+        sorter: (a, b) => a.employee.fname - b.employee.fname,
       },  
+      // {
+      //   title: 'ดาว',
+      //   dataIndex: 'employee',
+      //   key: 'star',
+      //   className: 'click',
+      //   render: (text, item) => 
+      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={2} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      // },
+      // {
+      //   title: `ที่อยู่ เขต/แขวง`,
+      //   dataIndex: 'employee',
+      //   key: 'address',
+      //   render: (text, item) => 
+      //     <span>{
+      //       item.employee.area + " " + item.employee.district
+      //     }</span>,
+      // },
       {
-        title: 'เคยทำงานสำเร็จ',
-        dataIndex: 'workSuccess',
-        key: 'workSuccess',
-        className: 'align-right',
-      }, 
-      {
-        title: 'เคยทำงานไม่สำเร็จ',
-        dataIndex: 'workFail',
-        key: 'workFail',
-        className: 'align-right',
-      }, 
-      {
-        title: 'เวลาว่างทำงาน',
+        title: 'จำนวนที่สามารถรับได้(ชุด)',
         dataIndex: 'timeCanWork',
         key: 'timeCanWork',
+        className: 'align-center',
         render: (text, item) => 
-          <div>{text &&
-            text>=item.piece*item.worktime
-            ?secToText(text)+' (ว่าง)'
-            :secToText(text)+' (ไม่ว่าง)'}
+          <div title={secToText(text)}>{text &&
+            text>=item.work.piece*item.work.worktime
+            ?`${Math.floor(text/(item.work.piece*item.work.worktime))}`
+            :`ไม่ว่างสำหรับทำงาน`}
           </div>,
+        sorter: (a, b) => a.timeCanWork - b.timeCanWork,
       }, 
       {
-        title: 'รอบวันที่',
+        title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
         className: 'align-right',
         render: (text, item) => 
           <div>
             {text&&
-              moment(text).locale('en').format('DD/MM/YY HH:mm')}
+              moment(text).locale('en').format('DD/MM/YY')+' - '+moment(item.endAt).locale('en').format('DD/MM/YY')}
           </div>,
+        sorter: (a, b) => a.startAt - b.startAt,
+      }, 
+      {
+        title: 'ขอเมื่อ',
+        dataIndex: 'createAt',
+        key: 'createAt',
+        className: 'align-right',
+        render: (text, item) => 
+          <div>
+            {moment(text).locale('en').format('DD/MM/YY')}
+          </div>,
+        sorter: (a, b) => a.createAt - b.createAt,
       }, 
       {
         title: 'ส่งงาน',
@@ -343,7 +360,7 @@ export default class extends Component {
             ?<Popconfirm title="ยืนยันการส่งงาน" onConfirm={() => this.sendWork(item)}>
               <div className='btn primary' style={{background: AppStyle.color.sub}}> ส่งงาน </div>
             </Popconfirm>
-            :<div className='btn primary' style={{background: AppStyle.color.gray}}> ส่งงาน </div>
+            :<div className='btn primary' style={{background: AppStyle.color.gray}}> ส่งงาน </div>,
       },
       {
         title: 'เสนอรอบใหม่',
@@ -354,119 +371,137 @@ export default class extends Component {
           </Popconfirm>
         ),
       }
-    ];   
+    ];     
 
     const workingColumns = [
-      // {
-      //   title: 'ชื่องาน',
-      //   dataIndex: 'work_name',
-      //   key: 'work_name',
-      //   className: 'click',
-      //   render: (text, item) => <span onClick={() => browserHistory.push(`/web/work/${item.work_id}`)}>{item.work_name}</span>,
-      //   sorter: (a, b) => a.work_name - b.work_name,
-      // },
       {
-        title: 'ชื่อผู้ทำงาน',
+        title: 'ผู้รับงาน',
         dataIndex: 'employee',
         key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
+            <img src={text.profileImage} className='employee_image'/>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+          </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
-      },
-      {
-        title: 'เวลาทำงานต่อชิ้น',
-        dataIndex: 'useWorktime',
-        key: 'useWorktime',
-        className: 'align-right',
-        render: (text, item) => <div>{secToText(text)}</div>,
-        sorter: (a, b) => a.worktime - b.worktime,
-      },
+      }, 
+      // {
+      //   title: 'ดาว',
+      //   dataIndex: 'employee',
+      //   key: 'star',
+      //   className: 'click',
+      //   render: (text, item) => 
+      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={2} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      // },
       {
         title: 'ศักยภาพการทำงาน',
-        dataIndex: 'qualityWorking',
-        key: 'qualityWorking',
-        className: 'align-right',
-        render: (text, item) => <div>{text&&text+'%'}</div>,
-        sorter: (a, b) => +a.qualityWorking - +b.qualityWorking,
+        dataIndex: 'useWorktime',
+        key: 'useWorktime',
+        render: (text, item) => 
+          <div>{item.qualityWorking&&
+            <span title={item.qualityWorking&&item.qualityWorking+'%'} style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> {
+              item.qualityWorking>=150?'เร็วมาก'
+              :item.qualityWorking>=100?'เร็ว'
+              :item.qualityWorking>=75?'ปกติ'
+              :item.qualityWorking<75&&'ช้า'
+            }</span>}
+            {item.qualityWorking&& ` (${secToText(text)} ต่อชิ้น)`}
+          
+          </div>,
+        sorter: (a, b) => a.worktime - b.worktime,
       },
+
       {
-        title: 'งานทั้งหมด(ชิ้น)',
+        title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
+        render: (text, item) => 
+          <div>
+            {item.total_piece-item.finished_piece <= 0&&<span style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> เสร็จครบแล้ว</span>}
+            <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
+          </div>,
         sorter: (a, b) => a.total_piece - b.total_piece,
       },
+
+      // {
+      //   title: 'ทำไม่เสร็จ(ชิ้น)',
+      //   key: 'fail_piece',
+      //   className: 'align-right',
+      //   render: (text, item) => (
+      //     <div>
+      //     {item.total_piece-item.finished_piece > 0
+      //       ?`${item.total_piece-item.finished_piece}`
+      //       :'เสร็จครบ'
+      //     }
+      //     </div>
+      //   ),
+      //   sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
+      // },
       {
-        title: 'ทำเสร็จ(ชิ้น)',
-        dataIndex: 'finished_piece',
-        key: 'finished_piece',
-        className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
-        sorter: (a, b) => a.finished_piece - b.finished_piece,
-      },
-      {
-        title: 'ทำไม่เสร็จ(ชิ้น)',
-        key: 'fail_piece',
-        className: 'align-right',
-        render: (text, item) => (
-          <div>
-          {item.total_piece-item.finished_piece > 0
-            ?`${item.total_piece-item.finished_piece}`
-            :'เสร็จครบ'
-          }
-          </div>
-        ),
-        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
-      },
-      {
-        title: 'สถาณะงาน',
-        className: 'align-right',
-        render: (text, item) => (
-          <div>{
-            item.success
-              ?item.total_piece-item.finished_piece==0
-                ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
-                :<span style={{color: AppStyle.color.main}}>ไม่ครบ</span>
-              :item.endAt<new Date
-                ?<span style={{color: AppStyle.color.main}}>กำลังส่งงาน</span>
-                :'กำลังทำงาน'
-          }</div>
-        ),
-        sorter: (a, b) => a.endAt - b.endAt,
-      },
-      {
-        title: 'เริ่มงานวันที่',
+        title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
         className: 'align-right',
         render: (text, item) => 
           <div>
             {text&&
-              moment(text).locale('en').format('DD/MM/YY')}
+              moment(text).locale('en').format('DD/MM/YY')+' - '+moment(item.endAt).locale('en').format('DD/MM/YY')}
           </div>,
         sorter: (a, b) => a.startAt - b.startAt,
       }, 
-      {
-        title: 'เสร็จงานวันที่',
-        dataIndex: 'endAt',
-        key: 'endAt',
-        className: 'align-right',
-        render: (text, item) => 
-          <div>
-            {text&&
-              moment(text).locale('en').format('DD/MM/YY')}
-          </div>,
-        sorter: (a, b) => a.endAt - b.endAt,
-      },
+      // {
+      //   title: 'เริ่มงานวันที่',
+      //   dataIndex: 'startAt',
+      //   key: 'startAt',
+      //   className: 'align-right',
+      //   render: (text, item) => 
+      //     <div>
+      //       {text&&
+      //         moment(text).locale('en').format('DD/MM/YY')}
+      //     </div>,
+      //   sorter: (a, b) => a.startAt - b.startAt,
+      // }, 
+      // {
+      //   title: 'เสร็จงานวันที่',
+      //   dataIndex: 'endAt',
+      //   key: 'endAt',
+      //   className: 'align-right',
+      //   render: (text, item) => 
+      //     <div>
+      //       {text&&
+      //         moment(text).locale('en').format('DD/MM/YY')}
+      //     </div>,
+      //   sorter: (a, b) => a.endAt - b.endAt,
+      // },
+      // {
+      //   title: 'สถานะ',
+      //   key: 'status',
+      //   className: 'align-right',
+      //   render: (text, item) => (
+      //     <div>{
+      //       item.success
+      //         ?item.total_piece-item.finished_piece==0
+      //           ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
+      //           :<span style={{color: AppStyle.color.main}}>ไม่ครบ</span>
+      //         :item.endAt<new Date
+      //           ?<span style={{color: AppStyle.color.main}}>กำลังส่งงาน</span>
+      //           :'กำลังทำงาน'
+      //     }</div>
+      //   ),
+      //   sorter: (a, b) => a.endAt - b.endAt,
+      // },
       {
         title: 'รับงานคืน',
         key: 'action',
-        render: (text, item) => (
-          <Popconfirm title="ยืนยันรับงาน?" onConfirm={ () => getedWork(item)}>
-            <div className='btn' style={{background: item.endAt < new Date ?AppStyle.color.sub:AppStyle.color.gray}}> รับงาน </div>
+        render: (text, item) => 
+          item.endAt < new Date
+          ?<Popconfirm title="ยืนยันรับงาน?" onConfirm={ () => getedWork(item)}>
+            <div className='btn' style={{background: AppStyle.color.sub}}> รับงาน </div>
           </Popconfirm>
-        ),
+          :<div className='btn' style={{background: AppStyle.color.gray}}> รับงาน </div>
+        ,
         sorter: (a, b) => a.startAt - b.startAt,
       },
       // {
@@ -481,73 +516,59 @@ export default class extends Component {
     ];
 
     const workSuccessColumns = [
+      // {
+      //   title: 'รหัสงาน',
+      //   dataIndex: 'working_id',
+      //   key: 'working_id',
+      //   className: '',
+      //   render: (text, item) => <span>{text}</span>,
+      //   sorter: (a, b) => a.working_id - b.working_id,
+      // },
       {
-        title: 'รหัสงาน',
-        dataIndex: 'working_id',
-        key: 'working_id',
-        className: '',
-        render: (text, item) => <span>{text}</span>,
-        sorter: (a, b) => a.working_id - b.working_id,
-      },
-      {
-        title: 'ชื่อผู้ทำงาน',
+        title: 'ผู้รับงาน',
         dataIndex: 'employee',
         key: 'employee_name',
         className: 'click',
-        render: (text, item) => <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)}>{text.tname+text.fname+' '+text.lname}</span>,
+        render: (text, item) => 
+          <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
+            <img src={text.profileImage} className='employee_image'/>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+          </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
-      },
+      }, 
       {
-        title: 'เวลาทำงานต่อชิ้น',
+        title: 'ศักยภาพการทำงาน',
         dataIndex: 'useWorktime',
         key: 'useWorktime',
-        className: 'align-right',
-        render: (text, item) => <div>{secToText(text)}</div>,
+        render: (text, item) => 
+          <div>{item.qualityWorking&&
+            <span title={item.qualityWorking&&item.qualityWorking+'%'} style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> {
+              item.qualityWorking>=150?'เร็วมาก'
+              :item.qualityWorking>=100?'เร็ว'
+              :item.qualityWorking>=75?'ปกติ'
+              :item.qualityWorking<75&&'ช้า'
+            }</span>}
+            {item.qualityWorking&& ` (${secToText(text)}ต่อชิ้น)`}
+          
+          </div>,
         sorter: (a, b) => a.worktime - b.worktime,
       },
       {
-        title: 'ศักยภาพการทำงาน',
-        dataIndex: 'qualityWorking',
-        key: 'qualityWorking',
-        className: 'align-right',
-        render: (text, item) => <div>{text&&text+'%'}</div>,
-        sorter: (a, b) => +a.qualityWorking - +b.qualityWorking,
-      },
-      {
-        title: 'งานทั้งหมด(ชิ้น)',
+        title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
         className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
-        sorter: (a, b) => a.total_piece - b.total_piece,
-      },
-      {
-        title: 'ทำเสร็จ(ชิ้น)',
-        dataIndex: 'finished_piece',
-        key: 'finished_piece',
-        className: 'align-right',
-        render: (text, item) => <div>{text?text:0}</div>,
-        sorter: (a, b) => a.finished_piece - b.finished_piece,
-      },
-      {
-        title: 'ทำไม่เสร็จ(ชิ้น)',
-        key: 'fail_piece',
-        className: 'align-right',
-        render: (text, item) => (
+        render: (text, item) => 
           <div>
-          {item.total_piece-item.finished_piece > 0
-            ?`${item.total_piece-item.finished_piece}`
-            :'เสร็จครบ'
-          }
-          </div>
-        ),
-        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
+            <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
+          </div>,
+        sorter: (a, b) => a.total_piece - b.total_piece,
       },
       {
         title: 'สถาณะงาน',
         className: 'align-right',
         render: (text, item) => (
-          <div>{
+          <div style={{fontWeight: 'bold'}}>{
             item.success
               ?item.total_piece-item.finished_piece==0
                 ?<span style={{color: AppStyle.color.sub}}>เสร็จครบ</span>
@@ -557,32 +578,20 @@ export default class extends Component {
                 :'กำลังทำงาน'
           }</div>
         ),
-        sorter: (a, b) => a.endAt - b.endAt,
+        sorter: (a, b) => (a.total_piece-a.finished_piece) - (b.total_piece-b.finished_piece),
       },
       {
-        title: 'เริ่มงานวันที่',
+        title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
         className: 'align-right',
         render: (text, item) => 
           <div>
             {text&&
-              moment(text).locale('en').format('DD/MM/YY')}
+              moment(text).locale('en').format('DD/MM/YY')+' - '+moment(item.endAt).locale('en').format('DD/MM/YY')}
           </div>,
         sorter: (a, b) => a.startAt - b.startAt,
       }, 
-      {
-        title: 'เสร็จงานวันที่',
-        dataIndex: 'endAt',
-        key: 'endAt',
-        className: 'align-right',
-        render: (text, item) => 
-          <div>
-            {text&&
-              moment(text).locale('en').format('DD/MM/YY')}
-          </div>,
-        sorter: (a, b) => a.endAt - b.endAt,
-      },
     ];
 
     const subWorkingColumns = [
@@ -774,7 +783,7 @@ export default class extends Component {
 
 const Style = Styled.div`
   .click{
-    ${AppStyle.font.hilight}
+    cursor: pointer;
   }
 
   .round{
@@ -840,7 +849,28 @@ const Style = Styled.div`
   .primary{
     background: ${AppStyle.color.sub};
   }
+  
+  .work_image{
+    width: 50px;
+    height: 50px;
+    margin: -7px 0;
+    object-fit: cover;
+  }
+  .employee_image{
+    width: 32px;
+    height: 32px;
+    margin: -7px 0;
+    object-fit: cover;
+    border-radius: 100%;
+  }
 
+  .align-right{
+    text-align: right;
+  }
+
+  .align-center{
+    text-align: center;
+  }
 
   .ant-menu{
     background: ${AppStyle.color.bg};

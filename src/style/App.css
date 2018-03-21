@@ -19,6 +19,13 @@
   font-weight: normal;
   font-style: normal;
 }
+@font-face {
+  font-family: 'SILPAKORN70NEW';
+  src: url('font/SILPAKORN70NEW.woff2') format('woff2'),
+      url('font/SILPAKORN70NEW.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
 
 body{
   /* background: #dea93e;

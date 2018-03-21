@@ -159,7 +159,7 @@ class FormEditWork extends Component {
       },
       {
         name: 'อีเมลล์',
-        input: <input type="email" placeholder="" onChange={ e => this.handleInput(e, 'e-mail')} value={_.get(data,'email')} required/>,
+        input: <input type="email" placeholder="" onChange={ e => this.handleInput(e, 'email')} value={_.get(data,'email')} required/>,
       },
 
       ///สถานที่

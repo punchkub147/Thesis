@@ -77,38 +77,40 @@ export default class extends Component {
 
         <div className=''>
 
-          <div className='row'>
-            <div className='col-sm-12 col-md-4'>
+          <div className='row' style={{padding: '0 10px'}}>
+            <div className='col-sm-12 col-md-4' style={{padding: '0 5px'}}>
               <div className='image'>
                 <img src={work.image}/>
               </div>
             </div>
-            <div className='col-sm-12 col-md-8'>
+            <div className='col-sm-12 col-md-8' style={{padding: '0 5px'}}>
               <div className='card'>
-                <Link to={`/web/editwork/${work.work_id}`}>
-                  <div className='edit-work'> แก้ไข </div>
-                </Link>
+                {work.employer_id==user.uid&&work.employer&&
+                  <Link to={`/web/editwork/${work.work_id}`}>
+                    <div className='edit-work'><Icon type='edit'/> แก้ไข </div>
+                  </Link>
+                }
                 <div className='name'>{work.name}</div>
-                <div className='detail'>รายละเอียด : {work.detail}</div>
-                <div className='detail'>เงื่อนไข : {work.condition}</div>
-                <div className='detail'>อุปรกรณ์การทำงาน : {work.tool}</div>
+                <div className='detail'><div className='name-line'>รายละเอียด</div> <div>{work.detail}</div></div>
+                <div className='detail'><div className='name-line'>เงื่อนไข</div> <div>{work.condition}</div></div>
+                <div className='detail'><div className='name-line'>อุปรกรณ์ทำงาน</div> <div>{work.tool}</div></div>
               </div>
 
-              <div className='row'>
+              <div className='row' style={{padding: '0 10px'}}>
 
-                <div className='col-xs-12 col-md-6'>
+                <div className='col-xs-12 col-md-6' style={{padding: '0 5px'}}>
                   <div className='card'>
-                    <div className="">
-                      ค่ามัดจำ {work.cost} บาท
+                    <div className="card-line">
+                      <div className='name-line'>ค่ามัดจำ</div> <div className='con-line'>{work.cost} บาท</div>
                     </div>
-                    <div className="">
-                      จำนวน {work.piece} ชิ้น
+                    <div className="card-line">
+                      <div className='name-line'>จำนวน</div> <div className='con-line'>{work.piece} ชิ้น</div>
                     </div>
-                    <div className="">
-                      ค่าจ้างชิ้นละ {work.price} บาท
+                    <div className="card-line">
+                      <div className='name-line'>ค่าจ้างชิ้นละ</div> <div className='con-line'>{work.price} บาท</div>
                     </div>
-                    <div className="">
-                      จำนวนงาน เหลือ {work.pack} ชุด
+                    <div className="card-line">
+                      <div className='name-line'>จำนวนงาน</div> <div className='con-line'>เหลือ {work.pack} ชุด</div>
                     </div>
                     
                     <div style={{clear: 'both'}}></div>
@@ -116,29 +118,30 @@ export default class extends Component {
                 </div>
 
               
-                <div className='col-xs-12 col-md-6'>
+                <div className='col-xs-12 col-md-6' style={{padding: '0 5px'}}>
                   <div className="card">
-                    <div className="">
-                      วิธีส่งงาน {work.sendBy}
+                    <div className="card-line">
+                      <span className='name-line'>วิธีส่งงาน</span> <span className='con-line'>{work.sendBy}</span>
                     </div>
-                    <div className="">
-                      <div className='text'>วันที่เริ่มงาน {moment(work.startAt).format('DD/MM/YY')}</div>
+                    <div className="card-line">
+                      <div className='text'><span className='name-line'>วันที่เริ่มงาน</span><span className='con-line'> {moment(work.startAt).format('DD/MM/YY')}</span></div>
                     </div>
-                    <div className="">
-                      <div className='text'>วันที่เสร็จงาน {moment(work.endAt).format('DD/MM/YY')}</div>
+                    <div className="card-line">
+                      <div className='text'><span className='name-line'>วันที่เสร็จงาน</span><span className='con-line'> {moment(work.endAt).format('DD/MM/YY')}</span></div>
                     </div>
-                    <div className="">
-                      ใช้เวลาทำชิ้นละ {secToText(work.worktime)}
+                    <div className="card-line">
+                      <span className='name-line'>ใช้เวลาทำชิ้นละ</span><span className='con-line'> {secToText(work.worktime)}</span>
                     </div>
                     <div style={{clear: 'both'}}></div>
                   </div>
               </div>
               {work.employer_id!==user.uid&&work.employer&&
-                <div className='col-xs-12 col-md-12'>
+                <div className='col-xs-12 col-md-12' style={{padding: '0 5px'}}>
                   <div className='card employer'>
                     <img src={work.employer.imageProfile} className='imageProfile'/>
                     <div className='detail'>
                       <div className='name'>{work.employer.name}</div>
+                      <div className=''>{phoneFormatter(work.employer.phone)}</div>
                       <div className=''>
                         {work.employer.homeNo&&`${work.employer.homeNo} `}
                         {work.employer.road&&`ถ. ${work.employer.road} `}
@@ -169,9 +172,11 @@ export default class extends Component {
 }
 
 const Style = Styled.div`
+  font-size: 21px;
+
   .image{
     width: 100%;
-    height: 240px;
+    height: 320px;
     float: left;
     margin-bottom: 10px;
     ${AppStyle.shadow.lv1}
@@ -190,7 +195,7 @@ const Style = Styled.div`
     ${AppStyle.font.hilight}
   }
   .detail{
-    ${AppStyle.font.read2}
+    
   }
 
   .edit-work{
@@ -203,10 +208,8 @@ const Style = Styled.div`
    //${AppStyle.shadow.lv1}
  }
 
-
   .click{
     cursor: pointer;
-    ${AppStyle.font.hilight}
   }
   .align-right{
     text-align: right;
@@ -274,5 +277,19 @@ const Style = Styled.div`
         ${AppStyle.font.read1}
       }
     }
+  }
+
+
+  ////////
+  .card-line{
+    clear: both;
+  }
+  .name-line{
+    float: left;
+    width: 100px;
+    font-weight: bold;
+  }
+  .con-line{
+    float: left;
   }
 `

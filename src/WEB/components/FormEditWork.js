@@ -319,6 +319,7 @@ const Style = Styled.div`
 .groupInput{
   .name{
     line-height: 40px;
+    font-weight: bold;
   }
 }
 

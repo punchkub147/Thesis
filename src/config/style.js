@@ -1,3 +1,4 @@
+const fontFamily2 = 'SILPAKORN70NEW'
 const fontFamily = 'SILPAKORN70yr'
 
 const color2 = { //Mood lady hobby retro
@@ -65,16 +66,16 @@ const AppStyle = {
       font-size: 20px;
     `,
     main: `
-      font-family: ${fontFamily};
+      font-family: ${fontFamily2};
       font-weight: normal; 
       color: ${color.text};
-      font-size: 18px;
+      font-size: 22px;
     `,
     menu: `
-      font-family: ${fontFamily};
+      font-family: ${fontFamily2};
       font-weight: normal; 
       color: ${color.text};
-      font-size: 18px;
+      font-size: 22px;
     `,
     read1: `
       font-family: 'TH Sarabun New';
@@ -98,10 +99,10 @@ const AppStyle = {
       font-size: 20px;
     `,
     button: `
-      font-family: ${fontFamily};
+      font-family: ${fontFamily2};
       font-weight: normal; 
       color: ${color.white};
-      font-size: 20px;
+      font-size: 24px;
     `,
   },
 

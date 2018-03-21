@@ -279,6 +279,11 @@ class FormProfile extends Component {
                   </select>
                 </div>
               </div>
+
+              <input type="text" 
+                value={user['tool']} 
+                placeholder="อุปกรณ์ทำงาน"
+                onChange={e => this.handleChangeProfile(e, 'tool')}/>
           
               <div>สถานที่รับงาน</div>
 

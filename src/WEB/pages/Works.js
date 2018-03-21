@@ -87,6 +87,7 @@ class Works extends Component {
       worksList = _.filter(worksList, (o) => o.endAt>new Date)
       worksList = _.orderBy(worksList, ['endAt'], ['asc']);
     }
+    console.log(worksList)
 
     const columns = [
       {
@@ -94,13 +95,18 @@ class Works extends Component {
         dataIndex: 'name',
         key: 'name',
         className: 'name',
-        render: (text, item) => <Link to={`/web/work/${item.work_id}`}>{text}</Link>,
+        render: (text, item) => 
+          <Link to={`/web/work/${item.work_id}`}>
+            <img src={item.image} className='work_image'/>
+            {' '+text}
+          </Link>,
+        sorter: (a, b) => a.name - b.name,
       }, 
       {
-        title: 'จำนวนชุดที่เหลือ',
+        title: 'จำนวนงานที่ประกาศ(ชุด)',
         dataIndex: 'pack',
         key: 'pack',
-        className: 'align-right',
+        className: 'align-center',
         sorter: (a, b) => a.pack - b.pack,
         render: (text, item) => <span>{item.pack}</span>,
       },
@@ -108,7 +114,7 @@ class Works extends Component {
         title: 'ขอรับงาน',
         dataIndex: 'needWork',
         key: 'needWork',
-        className: 'align-right',
+        className: 'align-center',
         render: (text, item) => <span>{text>0&&text}</span>,
         sorter: (a, b) => a.needWork - b.needWork,
       },
@@ -116,7 +122,7 @@ class Works extends Component {
         title: 'กำลังทำอยู่',
         dataIndex: 'working',
         key: 'working',
-        className: 'align-right',
+        className: 'align-center',
         render: (text, item) => <span>{text>0&&text}</span>,
         sorter: (a, b) => a.working - b.working,
       },
@@ -124,7 +130,7 @@ class Works extends Component {
         title: 'เสร็จแล้ว',
         dataIndex: 'success',
         key: 'success',
-        className: 'align-right',
+        className: 'align-center',
         render: (text, item) => <span>{text>0&&text}</span>,
         sorter: (a, b) => a.success - b.success,
       }, 
@@ -136,7 +142,7 @@ class Works extends Component {
         render: (text, item) => 
           <span>
           {moment(text)>new Date
-            ?moment(text).fromNow()
+            ?moment(text).format('DD/MM/YY')
             :'กำลังทำงาน'
           }
           </span>,
@@ -147,7 +153,7 @@ class Works extends Component {
         dataIndex: 'endAt',
         key: 'endAt',
         className: 'align-right',
-        render: (text, item) => <span>{moment(text).fromNow()}</span>,
+        render: (text, item) => <span>{moment(text).format('DD/MM/YY')}</span>,
         sorter: (a, b) => a.endAt - b.endAt,
       },
     ];
@@ -230,6 +236,9 @@ class Works extends Component {
 export default Works;
 
 const Style = Styled.div`
+  .click{
+    cursor: pointer;
+  }
   .table-items{
     margin-top: 20px;
     .item{
@@ -242,7 +251,9 @@ const Style = Styled.div`
       background: ${AppStyle.color.main};
     }
   }
-
+  .align-center{
+    text-align: center;
+  }
   .align-right{
     text-align: right;
   }
@@ -274,6 +285,13 @@ const Style = Styled.div`
     .addwork{
 
     }
+  }
+
+  .work_image{
+    width: 50px;
+    height: 50px;
+    margin: -7px 0;
+    object-fit: cover;
   }
 
 

@@ -30,13 +30,19 @@ class Login extends Component {
       data: {},
     },
     user: store.get('employee'),
-    abilities: store.get('abilities')
+    abilities: store.get('abilities'),
+
+    needWork: [],
+    needStartAt: '',
+    needEndAt: '',
+    loading: false
   }
 
   async componentDidMount() {
     window.scrollTo(0, 0)
     const work_id = this.props.routeParams.id
     const _this = this
+    const { user } = this.state
 
     if(!work_id)browserHistory.push('/search')
     auth.onAuthStateChanged(user => {
@@ -49,9 +55,11 @@ class Login extends Component {
 
     db.collection('works').doc(work_id)
     .onSnapshot(async work => {
+      
       let nextRound = _.find(work.data().round, function(o) { return o.startAt > new Date; })
       if(!nextRound)nextRound = _.find(work.data().round, function(o) { return o.startAt < new Date; })
       
+
 
       db.collection('employer').doc(work.data().employer_id)
       .onSnapshot(async employer => {
@@ -66,8 +74,14 @@ class Login extends Component {
           employer: {
             employer_id: employer.id,
             data: employer.data()
-          }
+          },
         })
+        if(this.state.needStartAt == ''){
+          this.setState({
+            needStartAt: nextRound.startAt,
+            needEndAt: nextRound.endAt,
+          })
+        }
       });
     });
 
@@ -80,20 +94,38 @@ class Login extends Component {
       this.setState({abilities})
       store.set('abilities',abilities)
     })
+
+          
+    db.collection('needWork').where('employee_id', '==', user.uid).onSnapshot(snap => {
+      let needWork = []
+      snap.forEach(need => {
+        if(need.data().work_id == work_id){
+          needWork.push(need.data())
+        }
+      })
+      this.setState({needWork})
+    })
   }
 
-  handleNeedWork = async (e) => {
+  handleNeedWork = async (e, canRequest, needworked) => {
     e.preventDefault();
-    const { user, work, employer } = this.state
+    const { user, work, employer, needStartAt, needEndAt } = this.state
     
     if(user.uid){
+
+      if(canRequest-needworked<=0){
+        message.info('เวลาทำงานไม่เพียงพอ แนะนำให้เพิ่มเวลาทำงาน');
+        return
+      }
+
       const needWork = {
         employer_id: employer.employer_id,
   
         work_id: work.work_id,
+        work: work.data,
         work_name: work.data.name,
-        startAt: work.data.startAt,
-        endAt: work.data.endAt,
+        startAt: needStartAt,
+        endAt: needEndAt,
   
         employee_id: user.uid,
 
@@ -106,6 +138,7 @@ class Login extends Component {
         deviceToken: user.data.deviceToken,
         createAt: new Date,
       }
+      this.setState({loading: true})
 
       await db.collection('works').doc(work.work_id).update({
         needWork: work.data.needWork?work.data.needWork+1:1
@@ -115,19 +148,29 @@ class Login extends Component {
       .then(data => {
         message.info('รับงานเรียบร้อย');
       })
+      this.setState({loading: false})
     }else{
       message.info('กรุณาเข้าสู่ระบบ');
     }
   }
 
+  handleNeedRound = (e) => {
+    const { round } = this.state.work.data
+    const r = round[e.target.value]
+    this.setState({
+      needStartAt: r.startAt,
+      needEndAt: r.endAt
+    })
+  }
+
   render() {
-    const { work, employer, user } = this.state
+    const { work, employer, user, needStartAt, needEndAt, needWork, loading } = this.state
     const { data } = work
-    const countAllDay = -moment(data.startAt).diff(data.endAt, 'days')+1
+    const countAllDay = -moment(needStartAt).diff(needEndAt, 'days')+1
 
     let worktimeBetween = 0
     for(let i = 0; i< countAllDay; i++){
-      const day = moment(data.startAt).add(i, 'days').locale('en')//วัน
+      const day = moment(needStartAt).add(i, 'days').locale('en')//วัน
       if(user.data.workTime){
         let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
         if(user.data.holiday&&user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
@@ -137,6 +180,9 @@ class Login extends Component {
       
     }
     const canRequest = Math.floor(worktimeBetween/(data.piece*data.worktime))
+
+    let needworked = _.filter(needWork, ['startAt', needStartAt]).length;
+    console.log(needWork,needStartAt,_.filter(needWork, ['startAt', needStartAt]))
 
     const MainDetail = (
       <div className="row card">
@@ -181,9 +227,12 @@ class Login extends Component {
           <div className="col-12">
             <div className='card-title'>รายละเอียดการจัดส่ง</div>
             <div className='card-read'>
-              วิธีการจัดส่ง {data.sendBy}<br/>
+              วิธีการจัดส่งโดย {data.sendBy}
+              {/*
               วันที่เริ่มงาน {data.startAt&& moment(data.startAt).format('DD/MM/YY')}<br/>
               วันที่เสร็จงาน {data.endAt&& moment(data.endAt).format('DD/MM/YY')}<br/>
+              */}
+
             </div>
           </div>
         
@@ -210,23 +259,48 @@ class Login extends Component {
     const TimeDetail = (
       <div className="row card">
         <div className="col-12">
-          <div className='card-title'>รายละเอียดการเวลาการทำงาน</div>
+          <div className='card-title'>รายละเอียดเวลาการทำงาน</div>
+          
+          <div className='card-read'>
+            เลือกวันที่เริ่มงาน - วันที่เสร็จงาน
+            <select onChange={(e) => this.handleNeedRound(e)}>
+            {_.map(data.round, (round, key) => 
+              moment(round.startAt) > moment() &&
+                <option value={key}>
+                  {moment(round.startAt).format('DD/MM/YY') + ' - ' + moment(round.endAt).format('DD/MM/YY')}
+                </option>
+            )}
+            </select>
+          </div>
         </div>
-        <div className="col-6 cost">
+
+        {/*<div className="col-6 cost">
           มีเวลทำ {countAllDay} วัน
-        </div>
+          </div>*/}
+
         <div className="col-6">
         {canRequest>0
-          ?`สามารถรับได้ ${canRequest} ชุด`
+          ?`คุณสามารถรับได้ ${canRequest} ชุด`
           :'เวลาว่างไม่พอทำงาน'
         }
         </div>
+        <div className="col-6" style={{'text-align': 'right'}}>
+          รับไปแล้ว {needworked} ชุด
+        </div>
+        {/*
         <div className="col-6 cost">
           คุณมีเวลา {secToText(worktimeBetween)}
         </div>
         <div className="col-6">
           เวลาต่อชุด {secToText(data.piece*data.worktime)}
         </div>
+        
+
+        <div className="col-12" style={{textAlign: 'center', fontWeight: 'bold'}}>
+          คุณรับไปแล้ว {needworked} ชุด
+        </div>
+              
+        */}
 
       </div>
     )
@@ -255,10 +329,10 @@ class Login extends Component {
           </div>
           <div className='address'>
             {employer.data.homeNo&&`${employer.data.homeNo} `}
-            {employer.data.road&&`ถ. ${employer.data.road} `}
-            {employer.data.area&&`ข. ${employer.data.area} `}
-            {employer.data.district&&`ข. ${employer.data.district} `}
-            {employer.data.province&&`จ. ${employer.data.province} `}
+            {employer.data.road&&`ถนน ${employer.data.road} `}
+            {employer.data.area&&`ตำบล${employer.data.area} `}
+            {employer.data.district&&`อำเภอ${employer.data.district} `}
+            {employer.data.province&&`${employer.data.province} `}
             {employer.data.postcode&&`${employer.data.postcode} `}
           </div>
         </div>
@@ -278,17 +352,19 @@ class Login extends Component {
         <div className="container">
         
           {MainDetail}
+          {TimeDetail}
           {EmployerDetail}
           {SendDetail}
+          
           {SubDetail}
           {ConditionDetail}
           {ToolsDetail}
-          {TimeDetail}
+          
           
 
         </div>
 
-        <BottomButton onClick={e => this.handleNeedWork(e)}>รับงาน</BottomButton>
+        <BottomButton onClick={e => this.handleNeedWork(e, canRequest, needworked)} disabled={loading}>รับงาน</BottomButton>
       </Style>
     );
   }
@@ -415,6 +491,10 @@ const Style = Styled.div`
     }
   }
 
+  select{
+    background: transparent;
+    padding: 0;
+  }
 
   .card-title{
     ${AppStyle.font.read1}

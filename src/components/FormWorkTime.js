@@ -227,10 +227,10 @@ class FormWorkTime extends Component {
           
             <div className="row justify-content-center text">
               <div className="" style={{marginRight: 45, marginLeft: -28}}>
-                วันที่ทำงาน
+                วันทำงาน
               </div>
               <div className="">
-                ชั่วโมงทำงาน
+                ชั่วโมง : นาที
               </div>
             </div>
 
@@ -266,7 +266,7 @@ class FormWorkTime extends Component {
                 <div onClick={this.handleSelectAllHoliday} 
                   className='selectAllHoliday'>หยุดทั้งหมด</div>
                 {_.map(jsonHoliday, day => 
-                  moment(day.date,'DD/MM/YY')>new Date&&
+                  moment(day.date,'DD/MM/YY').endOf('days')>=new Date&&
                   <div className='holiday' onClick={() => this.handleSelectHoliday(day.date)}>
                     <div className='date'>{day.date} {day.name}</div>
                     <div className='right'>

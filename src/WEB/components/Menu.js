@@ -97,7 +97,7 @@ export default class extends Component {
               <div className='profile'>
                 <img src={user.data.imageProfile?user.data.imageProfile:defaultImage} alt=''/>
                 <div className='name'>{user.data.name}</div>
-                <div className='edit'>แก้ไขโปรไฟล์</div>
+                <div className='edit'><Icon type='edit'/> แก้ไขโปรไฟล์</div>
               </div>
             </Link>
 
