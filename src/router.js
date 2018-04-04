@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Router, browserHistory, Route } from 'react-router';
 
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register/index'
 import Register2 from './pages/Register/Step2'
@@ -19,6 +20,7 @@ import EditTools from './pages/EditTools'
 import StopWatch from './pages/StopWatch'
 import Employer from './pages/Employer'
 import WorkList from './pages/WorkList'
+import WorkList2 from './pages/WorkList2'
 
 import WebAddWork from './WEB/pages/AddWork' 
 import WebEditWork from './WEB/pages/EditWork'
@@ -43,12 +45,12 @@ class AppRouter extends Component {
     const routes = [
       { path: '/',
         exact: true,
-        page: Login,
+        page: Landing,
         title: "เข้าสู่ระบบ",
       },
       { path: '/index.html',
         exact: true,
-        page: Login,
+        page: Landing,
         title: "เข้าสู่ระบบ",
       },
       { path: '/login',
@@ -141,7 +143,12 @@ class AppRouter extends Component {
         page: WorkList,
         title: "งานแนะนำ",
       },
-      
+      { path: '/worklist2/:id',
+        exact: false,
+        page: WorkList2,
+        title: "งานแนะนำ",
+      },
+        
 
       /////////////////////////////// WEB ////////////////////////////////////
 
@@ -163,7 +170,7 @@ class AppRouter extends Component {
       { path: '/web/works',
         exact: false,
         page: WebWorks,
-        title: "งานทั้งหมด",
+        title: "งานที่ประกาศ",
       },
       { path: '/web/work/:id',
         exact: false,
@@ -173,12 +180,12 @@ class AppRouter extends Component {
       { path: '/web/workonhome',
         exact: false,
         page: WebWorkOnHome,
-        title: "งานที่มอบหมาย",
+        title: "งานที่กำลังทำ",
       },
       { path: '/web/needwork',
         exact: false,
         page: WebNeedWork,
-        title: "คำร้องขอรับงาน",
+        title: "คำขอรับงาน",
       },
       { path: '/web/addwork',
         exact: false,
@@ -208,7 +215,7 @@ class AppRouter extends Component {
       { path: '/web/dashboard',
         exact: false,
         page: WebDashboard,
-        title: "สถิติ",
+        title: "หน้าหลัก",
       },
       
       ///////////////////////////// ADMIN //////////////////

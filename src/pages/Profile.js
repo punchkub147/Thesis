@@ -109,19 +109,14 @@ class Profile extends Component {
                   </div>
                   <div className="col-10 text">
                   {/*
-                    เลขที่บ้าน {data.homeNo&&`${data.homeNo}`}
-                    ถนน {data.road?data.road:'-'}{' '}
-                    เขต {data.area?data.area:'-'}{' '}
-                    แขวง {data.district?data.district:'-'}{' '}
-                    จังหวัด {data.province?data.province:'-'}{' '}
-                    รหัสไปษณีย์ {data.postcode?data.postcode:'-'}{' '}
-                  */}
                     {data.homeNo&&`${data.homeNo} `}
                     {data.road&&`ถ. ${data.road} `}
                     {data.area&&`ข. ${data.area} `}
                     {data.district&&`ข. ${data.district} `}
                     {data.province&&`จ. ${data.province} `}
                     {data.postcode&&`${data.postcode} `}
+                  */}
+                  {_.get(data,'address.address')}
                   </div>
                 </div>
               </div>
@@ -139,7 +134,7 @@ class Profile extends Component {
                       )
                       :'ทั่วไป'
                     }
-                    <div className='card-title'>อุปกรณ์ที่มี</div>
+                    <br/><div className='card-title'>อุปกรณ์ที่มี</div>
                     <div >{data.tool?data.tool:'ไม่ระบุ'}</div>
                   </div>
                 </div>

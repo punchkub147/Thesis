@@ -9,7 +9,7 @@ import { phoneFormatter } from '../../functions/index';
 
 import Layout from '../layouts'
 
-import { auth, db } from '../../api/firebase'
+import { auth, db, getUser } from '../../api/firebase'
 import { PushFCM } from '../../api/notification'
 
 import { sendWork, cancelWork, getedWork } from '../functions/work'
@@ -37,6 +37,11 @@ export default class extends Component {
     window.scrollTo(0, 0)
     const { user } = this.state
 
+    await getUser('employer', user => {
+      store.set('employer',user)
+      this.setState({user})
+    })
+
     await db.collection('works').where('employer_id', '==', user.uid)
     .onSnapshot(snap => { 
       let works = []
@@ -54,15 +59,17 @@ export default class extends Component {
       snap.forEach(doc => {
         const finished_piece = doc.data().finished_piece?doc.data().finished_piece:0
         const total_piece = doc.data().total_piece?doc.data().total_piece:0
-        
+        const qualityWorking = doc.data().do_piece&&(doc.data().worktime/(_.sumBy(doc.data().do_piece, 'worktime')/_.sumBy(doc.data().do_piece, 'piece'))*100).toFixed(0)
+
         const data = Object.assign(doc.data(),{
           working_id: doc.id,
           finished_piece,
           total_piece,
-          qualityWorking: doc.data().do_piece&&(doc.data().worktime/(_.sumBy(doc.data().do_piece, 'worktime')/_.sumBy(doc.data().do_piece, 'piece'))*100).toFixed(0)
+          qualityWorking: qualityWorking?qualityWorking:0
         })
+        working.push(_.assign(data))
         if(doc.data().success){
-          working.push(_.assign(data))
+          
           expenditure += finished_piece*doc.data().price
 
           workSuccessList.push(_.assign(data))
@@ -194,9 +201,17 @@ export default class extends Component {
         render: (text, item) => 
           <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
             <img src={text.profileImage} className='employee_image'/>
-            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}></span>
           </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
+      },
+      {
+        title: 'ดาว',
+        dataIndex: 'employee',
+        key: 'star',
+        className: 'click',
+        render: (text, item) => 
+        <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
       }, 
       {
         title: 'ศักยภาพการทำงาน',
@@ -210,7 +225,7 @@ export default class extends Component {
               :item.qualityWorking>=75?'ปกติ'
               :item.qualityWorking<75&&'ช้า'
             }</span>}
-            {item.qualityWorking&& ` (${secToText(text)}ต่อชิ้น)`}
+            {item.qualityWorking&& <span style={{color: '#888'}}>{` (${secToText(text)}ต่อชิ้น)`}</span>}
           
           </div>,
         sorter: (a, b) => a.qualityWorking - b.qualityWorking,
@@ -219,7 +234,7 @@ export default class extends Component {
         title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
@@ -227,8 +242,19 @@ export default class extends Component {
         sorter: (a, b) => a.total_piece - b.total_piece,
       },
       {
+        title: 'ค่าจ้าง',
+        dataIndex: 'price',
+        key: 'getPrice',
+        className: '',
+        render: (text, item) => 
+          <div>
+            {item.finished_piece*item.price}
+          </div>,
+        sorter: (a, b) => a.finished_piece - b.finished_piece,
+      }, 
+      {
         title: 'สถาณะงาน',
-        className: 'align-right',
+        className: '',
         render: (text, item) => (
           <div style={{fontWeight: 'bold'}}>{
             item.success
@@ -246,7 +272,7 @@ export default class extends Component {
         title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {text&&
@@ -254,17 +280,7 @@ export default class extends Component {
           </div>,
         sorter: (a, b) => a.startAt - b.startAt,
       }, 
-      {
-        title: 'ค่าจ้าง',
-        dataIndex: 'price',
-        key: 'price',
-        className: 'align-right',
-        render: (text, item) => 
-          <div>
-            {item.finished_piece*item.price}
-          </div>,
-        sorter: (a, b) => a.startAt - b.startAt,
-      }, 
+
       // {
       //   title: 'ลบ',
       //   key: 'delete',
@@ -280,7 +296,7 @@ export default class extends Component {
         title: 'จำนวนชิ้นที่ทำ',
         dataIndex: 'piece',
         key: 'piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{text}</span>,
         sorter: (a, b) => a.piece - b.piece,
       },
@@ -288,7 +304,7 @@ export default class extends Component {
         title: 'ใช้เวลาต่อชิ้น',
         dataIndex: 'worktimeOnePiece',
         key: 'worktimeOnePiece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{secToText(item.worktime/item.piece)}</span>,
         sorter: (a, b) => a.worktime - b.worktime,
       },
@@ -296,7 +312,7 @@ export default class extends Component {
         title: 'ใช้เวลาทั้งหมด',
         dataIndex: 'worktime',
         key: 'worktime',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{secToText(text)}</span>,
         sorter: (a, b) => a.worktime - b.worktime,
       },
@@ -304,7 +320,7 @@ export default class extends Component {
         title: 'เวลาที่เริ่มทำ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
         sorter: (a, b) => a.startAt - b.startAt,
       },
@@ -312,7 +328,7 @@ export default class extends Component {
         title: 'เวลาที่บันทึก',
         dataIndex: 'endAt',
         key: 'endAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
         sorter: (a, b) => a.endAt - b.endAt,
       },
@@ -320,6 +336,8 @@ export default class extends Component {
     ];
 
     const chartOptions = []
+
+    console.log('TRQWTR',_.filter(working,work => !work.success))
 
     return (
       <Style>
@@ -334,27 +352,13 @@ export default class extends Component {
                   <div className='detail'>
                     <div className='title'>งานที่ประกาศ</div>
                     <div className='line'/>
-                    <div className='title'>จำนวน {works.length} งาน</div>
+                    <div className='title'><span style={{fontSize: 30}}>{works.length}</span> งาน</div>
                   </div>
                   <div style={{clear: 'both'}}/>
                 </div>
               </Link>
             </div>
-            <div className='col-xs-12 col-md-3 gutter'>
-              <Link to='/web/workonhome'>
-                <div className='card'>
-                  <div className='icon'>
-                    <Icon type={'schedule'} style={{fontSize: 48}} />
-                  </div>
-                  <div className='detail'>
-                    <div className='title'>งานที่มอบหมาย</div>
-                    <div className='line'/>
-                    <div className='title'>จำนวน {_.filter(working,work => !work.success).length} งาน</div>
-                  </div>
-                  <div style={{clear: 'both'}}/>
-                </div>
-              </Link>
-            </div>
+
             <div className='col-xs-12 col-md-3 gutter'>
               <Link to='/web/needwork'>
                 <div className='card'>
@@ -362,23 +366,38 @@ export default class extends Component {
                     <Icon type={'solution'} style={{fontSize: 48}} />
                   </div>
                   <div className='detail'>
-                    <div className='title'>คำร้องขอรับงาน</div>
+                    <div className='title'>คำขอรับงาน</div>
                     <div className='line'/>
-                    <div className='title'>จำนวน {needWork.length} งาน</div>
+                    <div className='title'><span style={{fontSize: 30}}>{needWork.length}</span> งาน</div>
                   </div>
                   <div style={{clear: 'both'}}/>
                 </div>
               </Link>
             </div>
             <div className='col-xs-12 col-md-3 gutter'>
+            <Link to='/web/workonhome'>
+              <div className='card'>
+                <div className='icon'>
+                  <Icon type={'schedule'} style={{fontSize: 48}} />
+                </div>
+                <div className='detail'>
+                  <div className='title'>งานที่กำลังทำ</div>
+                  <div className='line'/>
+                  <div className='title'><span style={{fontSize: 30}}>{_.filter(working,work => !work.success).length}</span> งาน</div>
+                </div>
+                <div style={{clear: 'both'}}/>
+              </div>
+            </Link>
+          </div>
+            <div className='col-xs-12 col-md-3 gutter'>
               <div className='card'>
                 <div className='icon'>
                   <Icon type={'flag'} style={{fontSize: 48}} />
                 </div>
                 <div className='detail'>
-                  <div className='title'>รายจ่าย</div>
+                  <div className='title'>รวมค่าจ้าง</div>
                   <div className='line'/>
-                  <div className='title'>รวม {expenditure} บาท</div>
+                  <div className='title'><span style={{fontSize: 30}}>{expenditure}</span> บาท</div>
                 </div>
                 <div style={{clear: 'both'}}/>
               </div>
@@ -496,7 +515,7 @@ const Style = Styled.div`
   .click{
     cursor: pointer;
   }
-  .align-right{
+  .{
     text-align: right;
   }
   .align-center{

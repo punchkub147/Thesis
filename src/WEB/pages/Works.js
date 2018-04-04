@@ -55,7 +55,7 @@ class Works extends Component {
           work_id: doc.id,
 
           startAt: _.get(nextRound,'startAt')?_.get(nextRound,'startAt'):doc.data().startAt?doc.data().startAt:new Date,
-          endAt: endRound.endAt?endRound.endAt:doc.data().endAt,
+          endAt: endRound.endAt?endRound.endAt:doc.data().endAt?doc.data().endAt:new Date,
         }))
 
         //db.collection('works').doc(doc.id).update({employer})
@@ -106,7 +106,7 @@ class Works extends Component {
         title: 'จำนวนงานที่ประกาศ(ชุด)',
         dataIndex: 'pack',
         key: 'pack',
-        className: 'align-center',
+        className: '',
         sorter: (a, b) => a.pack - b.pack,
         render: (text, item) => <span>{item.pack}</span>,
       },
@@ -114,7 +114,7 @@ class Works extends Component {
         title: 'ขอรับงาน',
         dataIndex: 'needWork',
         key: 'needWork',
-        className: 'align-center',
+        className: '',
         render: (text, item) => <span>{text>0&&text}</span>,
         sorter: (a, b) => a.needWork - b.needWork,
       },
@@ -122,7 +122,7 @@ class Works extends Component {
         title: 'กำลังทำอยู่',
         dataIndex: 'working',
         key: 'working',
-        className: 'align-center',
+        className: '',
         render: (text, item) => <span>{text>0&&text}</span>,
         sorter: (a, b) => a.working - b.working,
       },
@@ -130,7 +130,7 @@ class Works extends Component {
         title: 'เสร็จแล้ว',
         dataIndex: 'success',
         key: 'success',
-        className: 'align-center',
+        className: '',
         render: (text, item) => <span>{text>0&&text}</span>,
         sorter: (a, b) => a.success - b.success,
       }, 
@@ -138,7 +138,7 @@ class Works extends Component {
         title: 'วันที่ส่ง',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <span>
           {moment(text)>new Date
@@ -152,7 +152,7 @@ class Works extends Component {
         title: 'วันที่รับ',
         dataIndex: 'endAt',
         key: 'endAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY')}</span>,
         sorter: (a, b) => a.endAt - b.endAt,
       },
@@ -163,21 +163,21 @@ class Works extends Component {
         title: 'วันที่สร้าง',
         dataIndex: 'createAt',
         key: 'createAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <div>{text&&moment(text).format('DD/MM/YY HH:mm')}</div>,
         sorter: (a, b) => a.createAt - b.createAt,
       },
       {
         title: 'ส่งงานเมื่อ',
         dataIndex: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <div>{text&&moment(text).format('DD/MM/YY HH:mm')}</div>,
         sorter: (a, b) => a.startAt - b.startAt,
       }, 
       {
         title: 'รับงานเมื่อ',
         dataIndex: 'endAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <div>{text&&moment(text).format('DD/MM/YY HH:mm')}</div>,
         sorter: (a, b) => a.endAt - b.endAt,
       }, 
@@ -218,13 +218,6 @@ class Works extends Component {
           <Table 
             columns={columns} 
             dataSource={searchName?searchNameList:worksList}
-            expandedRowRender={record => 
-              <Table 
-                columns={subColumns} 
-                dataSource={[record]}
-                size='middle'
-              />
-            }
           />
           
         </Layout>
@@ -251,10 +244,10 @@ const Style = Styled.div`
       background: ${AppStyle.color.main};
     }
   }
-  .align-center{
+  .{
     text-align: center;
   }
-  .align-right{
+  .{
     text-align: right;
   }
   .main{

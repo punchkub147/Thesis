@@ -104,13 +104,13 @@ export default class extends Component {
                       <div className='name-line'>ค่ามัดจำ</div> <div className='con-line'>{work.cost} บาท</div>
                     </div>
                     <div className="card-line">
-                      <div className='name-line'>จำนวน</div> <div className='con-line'>{work.piece} ชิ้น</div>
+                      <div className='name-line'>จำนวนชิ้น</div> <div className='con-line'>{work.piece} ชิ้น</div>
                     </div>
                     <div className="card-line">
-                      <div className='name-line'>ค่าจ้างชิ้นละ</div> <div className='con-line'>{work.price} บาท</div>
+                      <div className='name-line'>ค่าจ้าง</div> <div className='con-line'>ชิ้นละ {work.price} บาท <span style={{color: '#888'}}>(รวม {work.price*work.piece} บาท)</span></div>
                     </div>
                     <div className="card-line">
-                      <div className='name-line'>จำนวนงาน</div> <div className='con-line'>เหลือ {work.pack} ชุด</div>
+                      <div className='name-line'>ชุดที่ประกาศ</div> <div className='con-line'>{work.pack} ชุด</div>
                     </div>
                     
                     <div style={{clear: 'both'}}></div>

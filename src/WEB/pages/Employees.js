@@ -16,7 +16,7 @@ import { secToText } from '../../functions/moment'
 
 import { phoneFormatter } from '../../functions'
 
-import { Modal, Button, Rate } from 'antd';
+import { Modal, Button, Rate, Icon } from 'antd';
 
 
 export default class extends Component {
@@ -26,6 +26,8 @@ export default class extends Component {
     employees: [],
     modalVisible: false,
     selectEmployee: '',
+
+    searchName: '',
   }
 
   async componentDidMount() {
@@ -64,7 +66,7 @@ export default class extends Component {
 
   }
   render() {
-    const { employees, selectEmployee } = this.state
+    const { employees, selectEmployee, searchName } = this.state
     const columns = [
       {
         title: 'ผู้ทำงาน',
@@ -78,6 +80,14 @@ export default class extends Component {
           </span>,
         sorter: (a, b) => a.fname - b.fname,
       },
+      // {
+      //   title: 'ดาว',
+      //   dataIndex: 'employee',
+      //   key: 'star',
+      //   className: 'click',
+      //   render: (text, item) => 
+      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      // },
       {
         title: `เบอรโทรศัพท์`,
         dataIndex: 'phone',
@@ -114,13 +124,27 @@ export default class extends Component {
     ];
     console.log('FFFFFF',employees)
 
+    let searchNameList = []
+    if(searchName){
+      _.map(employees, (data) => 
+        data.fname.search(searchName)!=-1 &&
+          searchNameList.push(data)
+      )
+    }
+
     return (
       <Style>
         <Layout {...this.props}>
+
+          <div className='search'>
+            <input type='text' placeholder='ค้นหาชื่อ' onChange={(e) => this.setState({searchName: e.target.value})}/>
+            <Icon type="search" className='icon' style={{fontSize: 18}}/>
+          </div>
+          <div style={{clear: 'both'}}/>
              
           <Table 
             columns={columns} 
-            dataSource={employees}
+            dataSource={searchName?searchNameList:employees}
             expandedRowRender={data => 
               <span>
                 ที่อยู่{' '}
@@ -165,5 +189,21 @@ const Style = Styled.div`
   }  
   .click{
     cursor: pointer;
+  }
+
+  .search{
+    position: relative;
+    width: 200px; 
+    float: right;
+    margin-top: -50px;
+    input{
+      margin: 0;
+      margin-top: 7px;
+    }
+    .icon{
+      position: absolute;
+      right: 10px;
+      top: 17px;
+    }
   }
 `

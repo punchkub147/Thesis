@@ -12,9 +12,14 @@ import { db, getUser, updateAt, storage } from '../api/firebase'
 
 import BottomButton from '../components/BottomButton';
 import Button from '../components/Button';
+import Loading from '../components/Loading';
 
 import defaultImage from '../img/profile2.png'
 import { amphoes, changwats, tambons } from '../config/address'
+
+import GoogleMapReact from 'google-map-react';
+
+const googleMapKey = 'AIzaSyAGgqj7GgCTwlAHwQ_tDivR6qCLn8ldkJU'
 
 
 const isEmpty = (data) => {
@@ -56,6 +61,8 @@ class FormProfile extends Component {
     },
     image64: '',
     uploading: false,
+
+    loading: false
   }
 
   async componentDidMount() {
@@ -69,6 +76,47 @@ class FormProfile extends Component {
     this.setState({
       image64: this.state.user.data.profileImage
     })
+
+
+  }
+
+  getLocation = () => {
+    if (navigator.geolocation) {
+      
+        this.setState({loading: true})
+        navigator.geolocation.getCurrentPosition(pos => {
+          let crd = pos.coords;
+          var url = 'http://maps.googleapis.com/maps/api/geocode/json?latlng='+crd.latitude+','+crd.longitude+'&sensor=true';
+          fetch(url)
+          .then(res => res.json())
+          .then(json => {
+            if(json.status=='OK'){
+
+              const { user } = this.state
+              const { data } = user
+              this.setState({
+                user: {
+                  ...user,
+                  data: {
+                    ...data,
+                    address:{
+                      ...data.address,
+                      lat: crd.latitude,
+                      lng: crd.longitude,
+                      address: _.get(json,'results[0].formatted_address'),
+                    }
+                  }
+                }
+              })
+            }
+
+          })
+        })
+        this.setState({loading: false})
+        
+    } else {
+        console.log('no location')
+    }
   }
 
   handleProfile = async (e) => {
@@ -102,6 +150,9 @@ class FormProfile extends Component {
 
     await updateAt('employee', user.uid, user.data)
     browserHistory.push(this.props.push)
+
+
+
 
   }
 
@@ -184,6 +235,8 @@ class FormProfile extends Component {
 
     const filterAmphoes = 'พระ'
     const autoAmphoes = _.filter(amphoes.th.amphoes, amphoes => amphoes.name.search(filterAmphoes)!=-1 && amphoes)
+
+    console.log(user.address)
 
     return (
       <Style>
@@ -285,8 +338,19 @@ class FormProfile extends Component {
                 placeholder="อุปกรณ์ทำงาน"
                 onChange={e => this.handleChangeProfile(e, 'tool')}/>
           
-              <div>สถานที่รับงาน</div>
+              <div className='title-card'>สถานที่รับงาน</div>
 
+              <Loading loading={this.state.loading}>
+                <div onClick={() => this.getLocation()}
+                  className='addressButton'
+                >
+                  กดเพื่อใช้ตำแหน่งปัจจุบัน 
+                  <Icon type='environment'/>
+                </div>
+                {_.get(user,'address.address')}
+              </Loading>
+
+              {/*
               <div className="row row-haft">
                 <div className="col-6 haft">
                   <input type="text" 
@@ -329,6 +393,9 @@ class FormProfile extends Component {
                     onChange={e => this.handleChangeProfile(e, 'postcode')}/>
                 </div>
               </div>
+
+              */}
+
 
               <Button className='btn-fall' type="submit" onSubmit={this.handleProfile} disabled={uploading}>ต่อไป</Button>
             </form>
@@ -401,5 +468,22 @@ button{
   height: 180px;
   width: 100%;
   overflow: scroll;
+}
+
+.title-card{
+  font-weight: bold;
+}
+
+.addressButton{
+  background: ${AppStyle.color.sub};
+  color: ${AppStyle.color.white};
+  text-align: center;
+  padding: 5px;
+  width: 100%;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.addressButton:active{
+  opacity: 0.8;
 }
 `

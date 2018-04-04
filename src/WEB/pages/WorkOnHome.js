@@ -9,7 +9,7 @@ import store from 'store'
 import Layout from '../layouts'
 
 import { secToText } from '../../functions/moment'
-import { auth, db } from '../../api/firebase'
+import { auth, db, getUser } from '../../api/firebase'
 import { PushFCM } from '../../api/notification'
 
 import { getedWork } from '../functions/work'
@@ -25,6 +25,12 @@ class WorkOnHome extends Component {
   }
 
   async componentDidMount() {
+
+    await getUser('employer', user => {
+      store.set('employer',user)
+      this.setState({user})
+    })
+
     await auth.onAuthStateChanged(user => {
       if(user){
         this.setState({user})
@@ -40,11 +46,15 @@ class WorkOnHome extends Component {
     .onSnapshot(async querySnapshot => {
       let workingList = []
       let workSuccessList = []
+
+      
       await querySnapshot.forEach(function(doc) {
+        const qualityWorking = doc.data().do_piece&&(doc.data().worktime/(_.sumBy(doc.data().do_piece, 'worktime')/_.sumBy(doc.data().do_piece, 'piece'))*100).toFixed(0)
+
         const data = Object.assign(doc.data(),{
           working_id: doc.id,
           finished_piece: _.sumBy(doc.data().do_piece, work => work.piece),
-          qualityWorking: doc.data().do_piece&&(doc.data().worktime/(_.sumBy(doc.data().do_piece, 'worktime')/_.sumBy(doc.data().do_piece, 'piece'))*100).toFixed(0)
+          qualityWorking: qualityWorking?qualityWorking:0
         })
         !doc.data().success
           ?workingList.push(data)
@@ -84,18 +94,18 @@ class WorkOnHome extends Component {
         render: (text, item) => 
           <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
             <img src={text.profileImage} className='employee_image'/>
-            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}></span>
           </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
       }, 
-      // {
-      //   title: 'ดาว',
-      //   dataIndex: 'employee',
-      //   key: 'star',
-      //   className: 'click',
-      //   render: (text, item) => 
-      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={2} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
-      // },
+      {
+        title: 'ดาว',
+        dataIndex: 'employee',
+        key: 'star',
+        className: 'click',
+        render: (text, item) => 
+        <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      },
       {
         title: 'ศักยภาพการทำงาน',
         dataIndex: 'useWorktime',
@@ -108,7 +118,7 @@ class WorkOnHome extends Component {
               :item.qualityWorking>=75?'ปกติ'
               :item.qualityWorking<75&&'ช้า'
             }</span>}
-            {item.qualityWorking&& ` (${secToText(text)} ต่อชิ้น)`}
+            <span style={{color: '#888'}}>{item.qualityWorking&& ` (${secToText(text)} ต่อชิ้น)`}</span>
           
           </div>,
         sorter: (a, b) => a.worktime - b.worktime,
@@ -118,7 +128,7 @@ class WorkOnHome extends Component {
         title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {item.total_piece-item.finished_piece <= 0&&<span style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> เสร็จครบแล้ว </span>}
@@ -126,11 +136,21 @@ class WorkOnHome extends Component {
           </div>,
         sorter: (a, b) => a.total_piece - b.total_piece,
       },
-
+      {
+        title: 'ค่าจ้าง',
+        dataIndex: 'price',
+        key: 'price',
+        className: '',
+        render: (text, item) => 
+          <div>
+            {item.finished_piece*item.price}
+          </div>,
+        sorter: (a, b) => a.finished_piece - b.finished_piece,
+      }, 
       // {
       //   title: 'ทำไม่เสร็จ(ชิ้น)',
       //   key: 'fail_piece',
-      //   className: 'align-right',
+      //   className: '',
       //   render: (text, item) => (
       //     <div>
       //     {item.total_piece-item.finished_piece > 0
@@ -145,7 +165,7 @@ class WorkOnHome extends Component {
         title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {text&&
@@ -157,7 +177,7 @@ class WorkOnHome extends Component {
       //   title: 'เริ่มงานวันที่',
       //   dataIndex: 'startAt',
       //   key: 'startAt',
-      //   className: 'align-right',
+      //   className: '',
       //   render: (text, item) => 
       //     <div>
       //       {text&&
@@ -169,7 +189,7 @@ class WorkOnHome extends Component {
       //   title: 'เสร็จงานวันที่',
       //   dataIndex: 'endAt',
       //   key: 'endAt',
-      //   className: 'align-right',
+      //   className: '',
       //   render: (text, item) => 
       //     <div>
       //       {text&&
@@ -180,7 +200,7 @@ class WorkOnHome extends Component {
       // {
       //   title: 'สถานะ',
       //   key: 'status',
-      //   className: 'align-right',
+      //   className: '',
       //   render: (text, item) => (
       //     <div>{
       //       item.success
@@ -206,15 +226,15 @@ class WorkOnHome extends Component {
         ,
         sorter: (a, b) => a.startAt - b.startAt,
       },
-      {
-        title: 'ลบ',
-        key: 'delete',
-        render: (text, item) => (
-          <Popconfirm title="ยืนยันลบ?" onConfirm={ () => db.collection('working').doc(item.working_id).delete()}>
-            <div className='click'> ลบงาน </div>
-          </Popconfirm>
-        ),
-      },
+      // {
+      //   title: 'ลบ',
+      //   key: 'delete',
+      //   render: (text, item) => (
+      //     <Popconfirm title="ยืนยันลบ?" onConfirm={ () => db.collection('working').doc(item.working_id).delete()}>
+      //       <div className='click'> ลบงาน </div>
+      //     </Popconfirm>
+      //   ),
+      // },
     ];
 
     const subWorkingColumns = [
@@ -222,7 +242,7 @@ class WorkOnHome extends Component {
         title: 'จำนวนชิ้นที่ทำ',
         dataIndex: 'piece',
         key: 'piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{text}</span>,
         sorter: (a, b) => a.piece - b.piece,
       },
@@ -230,7 +250,7 @@ class WorkOnHome extends Component {
         title: 'ใช้เวลาต่อชิ้น',
         dataIndex: 'worktimeOnePiece',
         key: 'worktimeOnePiece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{secToText(item.worktime/item.piece)}</span>,
         sorter: (a, b) => a.worktime - b.worktime,
       },
@@ -238,7 +258,7 @@ class WorkOnHome extends Component {
         title: 'ใช้เวลาทั้งหมด',
         dataIndex: 'worktime',
         key: 'worktime',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{secToText(text)}</span>,
         sorter: (a, b) => a.worktime - b.worktime,
       },
@@ -246,7 +266,7 @@ class WorkOnHome extends Component {
         title: 'เวลาที่เริ่มทำ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
         sorter: (a, b) => a.startAt - b.startAt,
       },
@@ -254,7 +274,7 @@ class WorkOnHome extends Component {
         title: 'เวลาที่บันทึก',
         dataIndex: 'endAt',
         key: 'endAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
         sorter: (a, b) => a.endAt - b.endAt,
       },
@@ -295,7 +315,7 @@ const Style = Styled.div`
   .click{
     cursor: pointer;
   }
-  .align-right{
+  .{
     text-align: right;
   }
   .align-center{

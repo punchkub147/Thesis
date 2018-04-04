@@ -295,18 +295,18 @@ export default class extends Component {
         render: (text, item) => 
           <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
             <img src={text.profileImage} className='employee_image'/>
-            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}></span>
           </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
-      },  
-      // {
-      //   title: 'ดาว',
-      //   dataIndex: 'employee',
-      //   key: 'star',
-      //   className: 'click',
-      //   render: (text, item) => 
-      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={2} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
-      // },
+      }, 
+      {
+        title: 'ดาว',
+        dataIndex: 'employee',
+        key: 'star',
+        className: 'click',
+        render: (text, item) => 
+        <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      },
       // {
       //   title: `ที่อยู่ เขต/แขวง`,
       //   dataIndex: 'employee',
@@ -333,7 +333,7 @@ export default class extends Component {
         title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {text&&
@@ -345,7 +345,7 @@ export default class extends Component {
         title: 'ขอเมื่อ',
         dataIndex: 'createAt',
         key: 'createAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {moment(text).locale('en').format('DD/MM/YY')}
@@ -382,18 +382,18 @@ export default class extends Component {
         render: (text, item) => 
           <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
             <img src={text.profileImage} className='employee_image'/>
-            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}></span>
           </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
       }, 
-      // {
-      //   title: 'ดาว',
-      //   dataIndex: 'employee',
-      //   key: 'star',
-      //   className: 'click',
-      //   render: (text, item) => 
-      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={2} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
-      // },
+      {
+        title: 'ดาว',
+        dataIndex: 'employee',
+        key: 'star',
+        className: 'click',
+        render: (text, item) => 
+        <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      },
       {
         title: 'ศักยภาพการทำงาน',
         dataIndex: 'useWorktime',
@@ -416,7 +416,7 @@ export default class extends Component {
         title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {item.total_piece-item.finished_piece <= 0&&<span style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> เสร็จครบแล้ว</span>}
@@ -428,7 +428,7 @@ export default class extends Component {
       // {
       //   title: 'ทำไม่เสร็จ(ชิ้น)',
       //   key: 'fail_piece',
-      //   className: 'align-right',
+      //   className: '',
       //   render: (text, item) => (
       //     <div>
       //     {item.total_piece-item.finished_piece > 0
@@ -443,7 +443,7 @@ export default class extends Component {
         title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {text&&
@@ -455,7 +455,7 @@ export default class extends Component {
       //   title: 'เริ่มงานวันที่',
       //   dataIndex: 'startAt',
       //   key: 'startAt',
-      //   className: 'align-right',
+      //   className: '',
       //   render: (text, item) => 
       //     <div>
       //       {text&&
@@ -467,7 +467,7 @@ export default class extends Component {
       //   title: 'เสร็จงานวันที่',
       //   dataIndex: 'endAt',
       //   key: 'endAt',
-      //   className: 'align-right',
+      //   className: '',
       //   render: (text, item) => 
       //     <div>
       //       {text&&
@@ -478,7 +478,7 @@ export default class extends Component {
       // {
       //   title: 'สถานะ',
       //   key: 'status',
-      //   className: 'align-right',
+      //   className: '',
       //   render: (text, item) => (
       //     <div>{
       //       item.success
@@ -532,10 +532,18 @@ export default class extends Component {
         render: (text, item) => 
           <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
             <img src={text.profileImage} className='employee_image'/>
-            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}></span>
           </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
       }, 
+      {
+        title: 'ดาว',
+        dataIndex: 'employee',
+        key: 'star',
+        className: 'click',
+        render: (text, item) => 
+        <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      },
       {
         title: 'ศักยภาพการทำงาน',
         dataIndex: 'useWorktime',
@@ -557,7 +565,7 @@ export default class extends Component {
         title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
@@ -566,7 +574,7 @@ export default class extends Component {
       },
       {
         title: 'สถาณะงาน',
-        className: 'align-right',
+        className: '',
         render: (text, item) => (
           <div style={{fontWeight: 'bold'}}>{
             item.success
@@ -584,7 +592,7 @@ export default class extends Component {
         title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {text&&
@@ -599,7 +607,7 @@ export default class extends Component {
         title: 'จำนวนชิ้นที่ทำ',
         dataIndex: 'piece',
         key: 'piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{text}</span>,
         sorter: (a, b) => a.piece - b.piece,
       },
@@ -607,7 +615,7 @@ export default class extends Component {
         title: 'ใช้เวลา',
         dataIndex: 'worktime',
         key: 'worktime',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{secToText(text)}</span>,
         sorter: (a, b) => a.worktime - b.worktime,
       },
@@ -615,7 +623,7 @@ export default class extends Component {
         title: 'เวลาที่เริ่มทำ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
         sorter: (a, b) => a.startAt - b.startAt,
       },
@@ -623,7 +631,7 @@ export default class extends Component {
         title: 'เวลาที่บันทึก',
         dataIndex: 'endAt',
         key: 'endAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
         sorter: (a, b) => a.endAt - b.endAt,
       },
@@ -657,7 +665,7 @@ export default class extends Component {
     const Round = (
       <div className="col-12 card" style={{clear: 'both'}}>
         {_.map(work.round, (round,key) =>
-          //round.endAt>=new Date&&
+          round.endAt>=new Date&&
           <label className='round' onClick={() => this.selectingRound(round.startAt)}>
             <div className={`card ${selectRound == round.startAt&&'hilight'}`}>
               {round.startAt<=new Date&&round.endAt>=new Date
@@ -724,6 +732,7 @@ export default class extends Component {
             onClick={(e) => this.setState({menuTable: e.key})}
             selectedKeys={[this.state.menuTable]}
             mode="horizontal"
+            style={{marginTop: -10}}
           >
             <Menu.Item key="needWorkList">
               <Icon type="solution" style={{fontSize: 18}}/>{`คำร้องขอรับงาน (${needWorkList.length})`}
@@ -864,13 +873,13 @@ const Style = Styled.div`
     border-radius: 100%;
   }
 
-  .align-right{
-    text-align: right;
-  }
+  // .{
+  //   text-align: right;
+  // }
 
-  .align-center{
-    text-align: center;
-  }
+  // .align-center{
+  //   text-align: center;
+  // }
 
   .ant-menu{
     background: ${AppStyle.color.bg};

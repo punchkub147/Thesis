@@ -95,22 +95,27 @@ class Login extends Component {
       store.set('abilities',abilities)
     })
 
-          
-    db.collection('needWork').where('employee_id', '==', user.uid).onSnapshot(snap => {
-      let needWork = []
-      snap.forEach(need => {
-        if(need.data().work_id == work_id){
-          needWork.push(need.data())
-        }
+    if(user){
+      db.collection('needWork').where('employee_id', '==', user.uid).onSnapshot(snap => {
+        let needWork = []
+        snap.forEach(need => {
+          if(need.data().work_id == work_id){
+            needWork.push(need.data())
+          }
+        })
+        this.setState({needWork})
       })
-      this.setState({needWork})
-    })
+    }
+
   }
 
   handleNeedWork = async (e, canRequest, needworked) => {
     e.preventDefault();
     const { user, work, employer, needStartAt, needEndAt } = this.state
-    
+    if(!user){
+      message.info('กรุณาเข้าสู่ระบบ');
+      return
+    }
     if(user.uid){
 
       if(canRequest-needworked<=0){
@@ -169,16 +174,20 @@ class Login extends Component {
     const countAllDay = -moment(needStartAt).diff(needEndAt, 'days')+1
 
     let worktimeBetween = 0
-    for(let i = 0; i< countAllDay; i++){
-      const day = moment(needStartAt).add(i, 'days').locale('en')//วัน
-      if(user.data.workTime){
-        let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
-        if(user.data.holiday&&user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
-  
-        worktimeBetween += dayWorkTime
+
+    if(user){
+      for(let i = 0; i< countAllDay; i++){
+        const day = moment(needStartAt).add(i, 'days').locale('en')//วัน
+        if(user.data.workTime){
+          let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
+          if(user.data.holiday&&user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
+    
+          worktimeBetween += dayWorkTime
+        }
+        
       }
-      
     }
+
     const canRequest = Math.floor(worktimeBetween/(data.piece*data.worktime))
 
     let needworked = _.filter(needWork, ['startAt', needStartAt]).length;

@@ -9,7 +9,7 @@ import store from 'store'
 
 import Layout from '../layouts'
 
-import { auth, db, sendNoti } from '../../api/firebase'
+import { auth, db, sendNoti, getUser } from '../../api/firebase'
 import { PushFCM } from '../../api/notification'
 
 import { sendWork, cancelWork } from '../functions/work'
@@ -30,6 +30,12 @@ class NeedWork extends Component {
   }
 
   async componentDidMount() {
+
+    await getUser('employer', user => {
+      store.set('employer',user)
+      this.setState({user})
+    })
+
     await auth.onAuthStateChanged(user => {
       if(user){
         this.setState({user})
@@ -190,18 +196,18 @@ class NeedWork extends Component {
         render: (text, item) => 
           <span onClick={() => browserHistory.push(`/web/employee/${item.employee_id}`)} style={{position: 'relative'}}>
             <img src={text.profileImage} className='employee_image'/>
-            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></span>
+            {' '+text.tname+text.fname+' '+text.lname} <span title={`ทำงานเสร็จ ${text.workSuccess} : ไม่เสร็จ ${text.workFail}`}></span>
           </span>,
         sorter: (a, b) => a.employee.fname - b.employee.fname,
       },  
-      // {
-      //   title: 'ดาว',
-      //   dataIndex: 'employee',
-      //   key: 'star',
-      //   className: 'click',
-      //   render: (text, item) => 
-      //   <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={2} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
-      // },
+      {
+        title: 'ดาว',
+        dataIndex: 'employee',
+        key: 'star',
+        className: 'click',
+        render: (text, item) => 
+        <div title={`เคยทำงาน เสร็จ ${text.workSuccess} ไม่เสร็จ ${text.workFail}`}><Rate disabled defaultValue={3+Math.floor(text.workSuccess/text.workFail)} style={{color: AppStyle.color.main, fontSize: 10}}/></div>,
+      },
       // {
       //   title: `ที่อยู่ เขต/แขวง`,
       //   dataIndex: 'employee',
@@ -215,7 +221,7 @@ class NeedWork extends Component {
         title: 'จำนวนที่สามารถรับได้(ชุด)',
         dataIndex: 'timeCanWork',
         key: 'timeCanWork',
-        className: 'align-center',
+        className: '',
         render: (text, item) => 
           <div title={secToText(text)}>{text &&
             text>=item.work.piece*item.work.worktime
@@ -228,7 +234,7 @@ class NeedWork extends Component {
         title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {text&&
@@ -240,7 +246,7 @@ class NeedWork extends Component {
         title: 'ขอเมื่อ',
         dataIndex: 'createAt',
         key: 'createAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {moment(text).locale('en').format('DD/MM/YY')}
@@ -286,10 +292,10 @@ const Style = Styled.div`
   .click{
     cursor: pointer;
   }
-  .align-right{
+  .{
     text-align: right;
   }
-  .align-center{
+  .{
     text-align: center;
   }
   .btn{

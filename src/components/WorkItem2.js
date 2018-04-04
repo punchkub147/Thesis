@@ -3,10 +3,15 @@ import { Link, browserHistory } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style'
 import moment from 'moment'
+import _ from 'lodash'
+
+import store from 'store'
 
 import { secToText } from '../functions/moment'
+import { distance } from '../functions'
 
 import best from '../img/best.png'
+
 
 class WorkItem extends Component {
 
@@ -28,7 +33,7 @@ class WorkItem extends Component {
               <div className='price'>{data.piece} ชิ้น {data.price*data.piece}.-</div>
               <div className='startAt'>วันที่เริ่มงาน {moment(data.startAt).format('DD/MM/YY')}</div>
               <div className='line'/>
-              <div className='location'>{data.employer.name} {data.employer.area} {data.employer.province}</div>
+              <div className='location'>({data.distance} กม.) {data.employer.name} {data.employer.area} {data.employer.province}</div>
             </div>
             <div style={{clear: 'both'}}/>
           </div>

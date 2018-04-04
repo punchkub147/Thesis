@@ -10,7 +10,7 @@ import store from 'store'
 import { auth, db, storage, getUser } from '../../api/firebase'
 import { timeToSec } from '../../functions/moment'
 
-import { message } from 'antd'
+import { message, Icon } from 'antd'
 import Button from '../../components/Button';
 import Loading from '../../components/Loading';
 
@@ -41,6 +41,45 @@ class FormEditWork extends Component {
             image64: doc.data().imageProfile
           })
       })
+    }
+  }
+
+  getLocation = () => {
+    console.log('dastasd')
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          let crd = pos.coords;
+          console.log('crd',crd)
+          var url = 'http://maps.googleapis.com/maps/api/geocode/json?latlng='+crd.latitude+','+crd.longitude+'&sensor=true';
+          fetch(url)
+          .then(res => res.json())
+          .then(json => {
+            console.log('json',json)
+            if(json.status=='OK'){
+              console.log(json)
+              const { user } = this.state
+              const { data } = user
+              this.setState({
+                user: {
+                  ...user,
+                  data: {
+                    ...data,
+                    address:{
+                      ...data.address,
+                      lat: crd.latitude,
+                      lng: crd.longitude,
+                      address: _.get(json,'results[0].formatted_address'),
+                    }
+                  }
+                }
+              })
+            }
+
+          })
+
+        })
+    } else {
+        console.log('no location')
     }
   }
 
@@ -134,6 +173,8 @@ class FormEditWork extends Component {
   render() {
     const { image64, user } = this.state
     const { data } = user
+
+    console.log('statetesdata',data)
     
     const inputs = [
       {
@@ -165,31 +206,43 @@ class FormEditWork extends Component {
       ///สถานที่
       {
         name: 'สถานที่ตั้ง',
-      },
-      {
-        name: 'บ้านเลขที่',
-        input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'homeNo')} value={_.get(data,'homeNo')} required/>,
-      },
-      {
-        name: 'ถนน',
-        input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'road')} value={_.get(data,'road')} required/>,
-      },
-      {
-        name: 'เขต',
-        input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'area')} value={_.get(data,'area')} required/>,
-      },
-      {
-        name: 'แขวง',
-        input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'district')} value={_.get(data,'district')} required/>,
-      },
-      {
-        name: 'จังหวัด',
-        input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'province')} value={_.get(data,'province')} required/>,
-      },
-      {
-        name: 'รหัสไปรษณีย์',
-        input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'postCode')} value={_.get(data,'postCode')} required/>,
-      },
+        input: <div>
+                <div onClick={() => this.getLocation()}
+                  className='addressButton'
+                >
+                  กดเพื่อใช้ตำแหน่งปัจจุบัน 
+                  <Icon type='environment'/>
+                </div>
+                {_.get(data,'address.address')}
+              </div>
+      }
+      // {
+      //   name: 'สถานที่ตั้ง',
+      // },
+      // {
+      //   name: 'บ้านเลขที่',
+      //   input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'homeNo')} value={_.get(data,'homeNo')} required/>,
+      // },
+      // {
+      //   name: 'ถนน',
+      //   input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'road')} value={_.get(data,'road')} required/>,
+      // },
+      // {
+      //   name: 'เขต',
+      //   input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'area')} value={_.get(data,'area')} required/>,
+      // },
+      // {
+      //   name: 'แขวง',
+      //   input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'district')} value={_.get(data,'district')} required/>,
+      // },
+      // {
+      //   name: 'จังหวัด',
+      //   input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'province')} value={_.get(data,'province')} required/>,
+      // },
+      // {
+      //   name: 'รหัสไปรษณีย์',
+      //   input: <input type="text" placeholder="" onChange={ e => this.handleInput(e, 'postCode')} value={_.get(data,'postCode')} required/>,
+      // },
 
     ]
 
@@ -251,5 +304,16 @@ const Style = Styled.div`
   }
 }
 
-
+.addressButton{
+  background: ${AppStyle.color.sub};
+  color: ${AppStyle.color.white};
+  text-align: center;
+  padding: 5px;
+  width: 100%;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.addressButton:active{
+  opacity: 0.8;
+}
 `

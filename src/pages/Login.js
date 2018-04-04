@@ -3,7 +3,8 @@ import { browserHistory, Link } from 'react-router';
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 
-import logo from '../img/logo3.png'
+import logo from '../img/logo6.png'
+import logo2 from '../img/logo3.png'
 import bg12 from '../img/bg12.jpg'
 import bg3 from '../img/bg3.jpg'
 
@@ -17,6 +18,7 @@ import { auth, db } from '../api/firebase'
 import { getToken } from '../api/notification'
 
 import { message, Icon } from 'antd';
+import ToolBar from '../layouts/ToolBar';
 
 class Login extends Component {
 
@@ -97,16 +99,29 @@ class Login extends Component {
     return (
       <Loading loading={this.state.loading}>  
       <Style>
+        <ToolBar 
+          title={'เข้าสู่ระบบ'}
+          left={() => browserHistory.goBack()} 
+        />
         <TopStyle/>
+
         <div className="container">
           <div className="row justify-content-md-center" style={{margin: '0 -10px'}}>
 
             <Content>
-                <div className="col-11 logo">
-                  <img alt='' src={logo}/>
-                </div>
-            
+              {/* 
+              <div className="col-11 logo">
+                <img alt='' src={logo2}/>
+              </div>
               
+              <div className="col-10 logo" style={{'margin-top': -20}}>
+                <img alt='' src={logo}/>
+                <div className='band'>โฮมเบสท์</div>
+                <div className='text'>หางานรับมาทำที่บ้าน</div>
+              </div>
+              */}
+              <br/><br/><br/><br/>
+
               <div className="wrap">
                 <form onSubmit={(e) => this.handleLogin(e)}>
                 
@@ -144,10 +159,10 @@ const Style = Styled.div`
   // transition: 1s;
   // background-image: url('${bg12}');
   // background-size: 50px 10px;
-  background-image: url('${bg3}');
-  background-position: center -230px;
-  background-attachment: fixed;
-  background-size: auto 150%;
+  // background-image: url('${bg3}');
+  // background-position: center -230px;
+  // background-attachment: fixed;
+  // background-size: auto 150%;
 
 
   min-height: 100vh;
@@ -174,8 +189,24 @@ const Style = Styled.div`
     animation-duration: 1s;
     margin: 0 auto;
 
+
     img{
       width: 100%;
+    }
+    .band{
+      ${AppStyle.font.tool};
+      color: ${AppStyle.color.black};
+      font-size: 40px;
+      text-align: center;
+      margin-top: -40px;
+    }
+    .text{
+      ${AppStyle.font.read1};
+      color: ${AppStyle.color.black};
+      font-size: 26px;
+      text-align: center;
+      margin-top: -10px;
+      margin-bottom: 20px;
     }
   }
 
@@ -191,4 +222,5 @@ const Style = Styled.div`
   .employer{
     margin-top: 10px;
   }
+
 `

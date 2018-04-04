@@ -24,6 +24,8 @@ import { browserHistory } from 'react-router/lib';
 
 import { getWorks } from '../functions' 
 
+import { Icon } from 'antd'
+
 
 class Search extends Component {
   
@@ -51,7 +53,7 @@ class Search extends Component {
     bestWorking = _.orderBy(bestWorking, ['value'], ['desc'])
     bestWorking = _.map(bestWorking, working => working.work_id)
     bestWorking = _.uniq(bestWorking);
-    bestWorking = _.chunk(bestWorking, 5)[0]
+    bestWorking = _.chunk(bestWorking, 3)[0]
     this.setState({bestWorking})
     // await db.collection('abilities')
     // .onSnapshot(snap => {
@@ -103,23 +105,28 @@ class Search extends Component {
       (user.data.abilities[work.ability] === true)&& 
         recommended.push(work)
     )
+    
       if(recommended.length === 0){
       _.map(works, work => 
         (!work.ability || work.ability === 'general')&& 
           recommended.push(work)
       )}
+
+    recommended = _.chunk(recommended, 3)[0]
     //////////////////////////////////////////////////
     let workmanship = []
     _.map(works, work => 
       (work.ability && work.ability !== 'general')&& 
         workmanship.push(work)
     )
+    workmanship = _.chunk(workmanship, 3)[0]
     //////////////////////////////////////////////////
     let general = []
     _.map(works, work => 
       (!work.ability || work.ability === 'general') && 
         general.push(work)
     )
+    general = _.chunk(general, 3)[0]
     //////////////////////////////////////////////////
     let bestWork = []
     _.map(works, work => {
@@ -156,6 +163,11 @@ class Search extends Component {
                     )}
                   </div>
                   }
+
+                  <div className='title'>งานทั่วไป</div>
+                  {_.map(general, (work, i) => 
+                    <WorkItem2 data={work} i={i}/>
+                  )}
                   
                 </Content>,
       },
@@ -180,7 +192,39 @@ class Search extends Component {
     return (
       <Layout route={this.props.route}>
         <Style>
-          <Tabbar tabs={tabs}/>
+          <Content>
+
+
+            <div className="recommended">งานที่คุณถนัด</div>
+            <Link to="/worklist2/recommended" className='seemore'>
+              <Icon type='right'/>
+            </Link>
+            {_.map(recommended, (work, i) =>
+              <WorkItem2 data={work}/>
+            )}
+
+            {bestWork.length>0 &&
+            <div>
+              <div className='title'>เคยทำแล้ว</div>
+              
+              <Link to="/worklist2/bestwork" className='seemore'>
+                <Icon type='right'/>
+              </Link>
+              {_.map(bestWork, (work, i) => 
+                <WorkItem2 data={work}/>
+              )}
+            </div>
+            }
+
+            <div className='title'>งานทั่วไป</div>
+            <Link to="/worklist2/general" className='seemore'>
+              <Icon type='right'/>
+            </Link>
+            {_.map(general, (work, i) => 
+              <WorkItem2 data={work} i={i}/>
+            )}
+            
+          </Content>
         </Style>
       </Layout>
     );
@@ -194,6 +238,7 @@ const Style = Styled.div`
     ${AppStyle.font.main}
     text-align: left;
     margin-bottom: 10px;
+    margin-top: 10px;
   }
   .edit{
     position: absolute;
@@ -202,6 +247,12 @@ const Style = Styled.div`
     img{
       width: 25px;
     }
+  }
+  .seemore{
+    float: right;
+    margin-top: -35px;
+    color: ${AppStyle.color.text};
+    font-size: 16px;
   }
   .title{
     ${AppStyle.font.main}

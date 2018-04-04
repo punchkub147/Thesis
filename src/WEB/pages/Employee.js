@@ -71,10 +71,11 @@ export default class extends Component {
       let workingList = []
       let workSuccessList = []
       await querySnapshot.forEach(function(doc) {
+        const qualityWorking = doc.data().do_piece&&(doc.data().worktime/(_.sumBy(doc.data().do_piece, 'worktime')/_.sumBy(doc.data().do_piece, 'piece'))*100).toFixed(0)
         const data = Object.assign(doc.data(),{
           working_id: doc.id,
           finished_piece: doc.data().finished_piece?doc.data().finished_piece:0,
-          qualityWorking: doc.data().do_piece&&(doc.data().worktime/(_.sumBy(doc.data().do_piece, 'worktime')/_.sumBy(doc.data().do_piece, 'piece'))*100).toFixed(0)
+          qualityWorking: qualityWorking?qualityWorking:0
         })
         doc.data().success
           ?workSuccessList.push(data)
@@ -131,7 +132,7 @@ export default class extends Component {
         title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {item.total_piece-item.finished_piece <= 0&&<span style={{color: AppStyle.color.sub, fontWeight: 'bold'}}> เสร็จครบแล้ว</span>}
@@ -142,7 +143,7 @@ export default class extends Component {
       {
         title: 'สถานะ',
         key: 'status',
-        className: 'align-right',
+        className: '',
         render: (text, item) => (
           <div>{
             item.success
@@ -160,7 +161,7 @@ export default class extends Component {
         title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {text&&
@@ -205,7 +206,7 @@ export default class extends Component {
         title: 'งานที่ทำเสร็จ / ทั้งหมด',
         dataIndex: 'total_piece',
         key: 'total_piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             <span>{item.finished_piece?item.finished_piece:0}</span> / <span>{item.total_piece?item.total_piece:0}</span> 
@@ -214,7 +215,7 @@ export default class extends Component {
       },
       {
         title: 'สถาณะงาน',
-        className: 'align-right',
+        className: '',
         render: (text, item) => (
           <div style={{fontWeight: 'bold'}}>{
             item.success
@@ -232,7 +233,7 @@ export default class extends Component {
         title: 'วันที่ส่ง - เสร็จ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => 
           <div>
             {text&&
@@ -248,7 +249,7 @@ export default class extends Component {
         title: 'จำนวนชิ้นที่ทำ',
         dataIndex: 'piece',
         key: 'piece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{text}</span>,
         sorter: (a, b) => a.piece - b.piece,
       },
@@ -256,7 +257,7 @@ export default class extends Component {
         title: 'ใช้เวลาต่อชิ้น',
         dataIndex: 'worktimeOnePiece',
         key: 'worktimeOnePiece',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{secToText(item.worktime/item.piece)}</span>,
         sorter: (a, b) => a.worktime - b.worktime,
       },
@@ -264,7 +265,7 @@ export default class extends Component {
         title: 'ใช้เวลาทั้งหมด',
         dataIndex: 'worktime',
         key: 'worktime',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{secToText(text)}</span>,
         sorter: (a, b) => a.worktime - b.worktime,
       },
@@ -272,7 +273,7 @@ export default class extends Component {
         title: 'เวลาที่เริ่มทำ',
         dataIndex: 'startAt',
         key: 'startAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
         sorter: (a, b) => a.startAt - b.startAt,
       },
@@ -280,7 +281,7 @@ export default class extends Component {
         title: 'เวลาที่บันทึก',
         dataIndex: 'endAt',
         key: 'endAt',
-        className: 'align-right',
+        className: '',
         render: (text, item) => <span>{moment(text).format('DD/MM/YY HH:mm')}</span>,
         sorter: (a, b) => a.endAt - b.endAt,
       },
@@ -363,7 +364,7 @@ export default class extends Component {
                       <div style={{float: 'left'}}>{_.get(data,'name') + ', '}</div>
                     )
                     :'ทั่วไป'
-                  }
+                  }<br/>
                   <div className='title-card'>อุปกรณ์ที่มี</div>
                   <div >{data.tool?data.tool:'ไม่ระบุ'}</div>
                 </div>
@@ -467,7 +468,7 @@ const Style = Styled.div`
     .click{
       cursor: pointer;
     }
-    .align-right{
+    .align-center{
       text-align: right;
     }
     .align-center{

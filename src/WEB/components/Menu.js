@@ -47,24 +47,25 @@ export default class extends Component {
     const menuList = [
       {
         path: '/web/dashboard',
-        name: 'สถิติ',
+        name: 'หน้าหลัก',
         icon: 'line-chart',
       },
       {
         path: '/web/works',
-        name: 'งานทั้งหมด',
+        name: 'งานที่ประกาศ',
         icon: 'shop',
       },
       {
-        path: '/web/workonhome',
-        name: 'งานที่มอบหมาย',
-        icon: 'schedule',
-      },
-      {
         path: '/web/needwork',
-        name: 'คำร้องขอรับงาน',
+        name: 'คำขอรับงาน',
         icon: 'solution',
       },
+      {
+        path: '/web/workonhome',
+        name: 'งานที่กำลังทำ',
+        icon: 'schedule',
+      },
+
       {
         path: '/web/employees',
         name: 'ลูกจ้าง',
@@ -96,8 +97,7 @@ export default class extends Component {
             <Link to={`/web/profile/${user.uid}`}>
               <div className='profile'>
                 <img src={user.data.imageProfile?user.data.imageProfile:defaultImage} alt=''/>
-                <div className='name'>{user.data.name}</div>
-                <div className='edit'><Icon type='edit'/> แก้ไขโปรไฟล์</div>
+                <div className='name'>{user.data.name} <Icon type='edit'/></div>
               </div>
             </Link>
 
