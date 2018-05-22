@@ -41,7 +41,7 @@ export const getWorks = async (callback) => {
   //.where('startAt' ,'>', new Date())
   .onSnapshot(async snapshot => {
     let works = []
-    snapshot.forEach(doc => {
+    snapshot.forEach(async doc => {
       if(doc.data().pack <= 0)return
       if(!doc.data().round)return
 
@@ -51,7 +51,7 @@ export const getWorks = async (callback) => {
 
       let d = 0
       if(user){
-        let d = distance(
+        d = distance(
           _.get(doc.data(),'employer.address.lat'),
           _.get(doc.data(),'employer.address.lng'),
           user.data.address.lat,
@@ -59,7 +59,6 @@ export const getWorks = async (callback) => {
           'K'
         )
       }
-      
       works.push(_.assign(doc.data(),
         { 
           _id: doc.id,
@@ -73,7 +72,6 @@ export const getWorks = async (callback) => {
     })
 
     works = _.orderBy(works, ['startAt', 'asc'], ['distance', 'asc']); //เรียงวันที่
-
     store.set('works', works)
     callback(works)
   })

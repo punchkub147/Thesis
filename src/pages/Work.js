@@ -14,7 +14,7 @@ import Back from '../img/back2.png'
 
 import { auth, db, getUser } from '../api/firebase'
 import { secToText } from '../functions/moment'
-import { phoneFormatter } from '../functions/'
+import { phoneFormatter, distance } from '../functions/'
 
 import { message } from 'antd';
 
@@ -63,17 +63,26 @@ class Login extends Component {
 
       db.collection('employer').doc(work.data().employer_id)
       .onSnapshot(async employer => {
+
         _this.setState({
           work: {
             work_id,
             data: Object.assign(work.data(), {
               startAt: nextRound.startAt,
-              endAt: nextRound.endAt
+              endAt: nextRound.endAt,
             }),
           },
           employer: {
             employer_id: employer.id,
-            data: employer.data()
+            data: Object.assign(employer.data(),{
+              distance: distance(
+                _.get(employer.data(),'address.lat'),
+                _.get(employer.data(),'address.lng'),
+                user.data.address.lat,
+                user.data.address.lng,
+                'K'
+              )
+            })
           },
         })
         if(this.state.needStartAt == ''){
@@ -337,12 +346,15 @@ class Login extends Component {
             {phoneFormatter(employer.data.phone)}
           </div>
           <div className='address'>
+            {/*
             {employer.data.homeNo&&`${employer.data.homeNo} `}
             {employer.data.road&&`ถนน ${employer.data.road} `}
             {employer.data.area&&`ตำบล${employer.data.area} `}
             {employer.data.district&&`อำเภอ${employer.data.district} `}
             {employer.data.province&&`${employer.data.province} `}
             {employer.data.postcode&&`${employer.data.postcode} `}
+            */}
+            ({_.get(employer.data,'distance')} กม.) {_.get(employer.data,'address.address')}
           </div>
         </div>
       </div>

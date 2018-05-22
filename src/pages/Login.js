@@ -101,7 +101,7 @@ class Login extends Component {
       <Style>
         <ToolBar 
           title={'เข้าสู่ระบบ'}
-          left={() => browserHistory.goBack()} 
+          left={() => browserHistory.push('/')} 
         />
         <TopStyle/>
 

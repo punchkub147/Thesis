@@ -58,7 +58,7 @@ class Profile extends Component {
     store.remove('notifications')
     store.clearAll()
     console.log(localStorage)
-    browserHistory.push('/login')
+    browserHistory.push('/')
   }
 
   render() {

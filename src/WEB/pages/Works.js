@@ -55,7 +55,7 @@ class Works extends Component {
           work_id: doc.id,
 
           startAt: _.get(nextRound,'startAt')?_.get(nextRound,'startAt'):doc.data().startAt?doc.data().startAt:new Date,
-          endAt: endRound.endAt?endRound.endAt:doc.data().endAt?doc.data().endAt:new Date,
+          endAt: _.get(endRound,'endAt')?_.get(endRound,'endAt'):doc.data().endAt?doc.data().endAt:new Date,
         }))
 
         //db.collection('works').doc(doc.id).update({employer})

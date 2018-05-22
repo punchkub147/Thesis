@@ -33,7 +33,7 @@ class WorkItem extends Component {
               <div className='price'>{data.piece} ชิ้น {data.price*data.piece}.-</div>
               <div className='startAt'>วันที่เริ่มงาน {moment(data.startAt).format('DD/MM/YY')}</div>
               <div className='line'/>
-              <div className='location'>({data.distance} กม.) {data.employer.name} {data.employer.area} {data.employer.province}</div>
+              <div className='location'>{`[${data.distance} กม.]`} {data.employer.name} {_.get(data.employer.address,'address')}</div>
             </div>
             <div style={{clear: 'both'}}/>
           </div>
@@ -108,6 +108,7 @@ const Style = Styled.div`
       white-space: nowrap; 
       text-overflow:ellipsis;
       line-height: 35px;
+      width: 100%;
     }
     .startAt{
       ${AppStyle.font.read2}
