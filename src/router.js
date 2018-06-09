@@ -239,14 +239,14 @@ class AppRouter extends Component {
     return (
       <Router history={browserHistory}>
         <div>
-          {routes.map(route =>
+          {routes.map(({path, title, exact, page, data}) =>
             <Route
-              key={route.path}
-              path={route.path}
-              title={route.title}
-              exact={route.exact}
-              component={route.page}
-              data={route.data}
+              key={path}
+              path={path}
+              title={title}
+              exact={exact}
+              component={page}
+              data={data}
             />
           )}
         </div>

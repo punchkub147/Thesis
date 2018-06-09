@@ -17,10 +17,10 @@ import TopStyle from '../components/TopStyle'
 import { auth, db } from '../api/firebase'
 import { getToken } from '../api/notification'
 
-import { message, Icon } from 'antd';
-import ToolBar from '../layouts/ToolBar';
+import { message, Icon } from 'antd'
+import ToolBar from '../layouts/ToolBar'
 
-class Login extends Component {
+export default class extends Component {
 
   state = {
     loading: false
@@ -149,29 +149,17 @@ class Login extends Component {
         </div>
       </Style>
       </Loading>
-    );
+    )
   }
 }
 
-export default Login;
-
 const Style = Styled.div`
-  // transition: 1s;
-  // background-image: url('${bg12}');
-  // background-size: 50px 10px;
-  // background-image: url('${bg3}');
-  // background-position: center -230px;
-  // background-attachment: fixed;
-  // background-size: auto 150%;
-
-
   min-height: 100vh;
-
+  box-sizing: border-box;
   .content{
     animation-name: fadeInUp;
     animation-duration: 0.3s;
   }
-
   .card{
     background: ${AppStyle.color.bg};
     padding: 10px;
@@ -180,16 +168,12 @@ const Style = Styled.div`
   .wrap{
     padding: 0 15px;
   }
-
   .logo{
     width: 100%;
     min-height: 300px;
-
     animation-name: jackInTheBox;
     animation-duration: 1s;
     margin: 0 auto;
-
-
     img{
       width: 100%;
     }
@@ -209,9 +193,6 @@ const Style = Styled.div`
       margin-bottom: 20px;
     }
   }
-
-  box-sizing: border-box;
-
   .register{
     width: 100%;
     text-align: center;
@@ -222,5 +203,4 @@ const Style = Styled.div`
   .employer{
     margin-top: 10px;
   }
-
 `

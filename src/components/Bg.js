@@ -4,19 +4,10 @@ import Styled from 'styled-components'
 import bg2 from '../img/bg2.jpg'
 import bgRotate from '../img/bgRotate.jpg'
 
-class Bg extends Component {
-
-  render() {
-    return (
-      <div>
-        {/*<img src={bgRotate}/>*/}
-        {this.props.children}
-      </div>
-    );
-  }
-}
-
-export default Bg;
+export default props => 
+  <div>
+    {props.children}
+  </div>
 
 const Style = Styled.div`
   // width: 100%;

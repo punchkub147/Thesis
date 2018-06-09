@@ -1,15 +1,11 @@
-import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import React, { Component } from 'react'
+import { browserHistory } from 'react-router'
 import Styled from 'styled-components'
 import AppStyle from '../config/style'
-
 import ToolBar from '../layouts/ToolBar'
+import {Bg, FormProfile} from '../components'
 
-import FormProfile from '../components/FormProfile';
-import Bg from '../components/Bg';
-
-
-class EditProfile extends Component {
+export default class extends Component {
   componentDidMount() {
     window.scrollTo(0, 0)
   }
@@ -19,8 +15,7 @@ class EditProfile extends Component {
         <Bg>
           <ToolBar 
             title='ข้อมูลส่วนตัว'
-            left={() => browserHistory.goBack()} 
-            //right={this.handleUpdateAbilities}
+            left={() => browserHistory.goBack()}
             />
           <div className="card">
             <FormProfile push='/profile' />
@@ -28,11 +23,9 @@ class EditProfile extends Component {
           <div style={{height: 50}}/>
         </Bg>
       </Style>
-    );
+    )
   }
 }
-
-export default EditProfile;
 
 const Style = Styled.div`
   // .animate{

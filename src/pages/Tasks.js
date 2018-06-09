@@ -1,54 +1,22 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router';
+import React, { Component } from 'react'
+import { Link } from 'react-router'
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 import moment from 'moment'
 import store from 'store'
-
 import holiday from '../config/holiday'
-
-import { Slider, Icon } from 'antd';
-
+import { Slider, Icon } from 'antd'
 import { getUser, db } from '../api/firebase'
-import { getWorks } from '../functions/'
-import { secToTime, secToText } from '../functions/moment'
+import { getWorks, quality } from '../functions'
+import { secToTime, secToText, setDayHilight } from '../functions/moment'
 import { getTasks, genNowWorking, genAllWorking, taskDoing } from '../functions/task'
-
 import Layout from '../layouts'
 import Tabbar from '../layouts/Tabs'
-
-import Content from '../components/Content'
-import Progress from '../components/Progress'
-import Button from '../components/Button'
-import Modal from '../components/Modal'
-
-import WorkItem from '../components/WorkItem2'
-
+import {Content, Progress, Button, Modal, WorkItem, WorkItem2} from '../components'
 import alarm2 from '../img/alarm2.png'
 
-const setDayHilight = (day, time) => {
-  
-  if(day === moment().locale('en').format('ddd').toLowerCase()) return 'today'
-  if(time>0) return 'workday'
-
-  return ''
-}
-
-const quality = (percent) => {
-  if(percent>=150){
-    return 'เร็วมาก'
-  }else if(percent>=100){
-    return 'เร็ว'
-  }else if(percent>=75){
-    return 'ปกติ'
-  }else if(percent<75){
-    return 'ช้า'
-  }
-}
-
-class Tasks extends Component {
-
+export default class extends Component {
   state = {
     user: store.get('employee'),
     tasks: store.get('tasks'),
@@ -56,21 +24,15 @@ class Tasks extends Component {
     totalTimeAllWork: 0,
     doing: 0,
     modalIsOpen: false,
-
     modalDoing: false,
-
     modalHoliday: false,
     nextHoliday: [],
-
     modalRecommend: false,
     recommend: '',
-
     showDetail: [],
     showAllDetail: [],
-
     works: store.get('works')
   }
-
   async componentDidMount() {
     window.scrollTo(0, 0)
     getUser('employee', user => {
@@ -78,66 +40,16 @@ class Tasks extends Component {
       store.set('employee',user)
     })
     const { user } = this.state
-    
     if(user.data.workTime){
       const limitWorkTimeToDay = user.data.workTime[moment().locale('en').format('ddd').toLowerCase()]
       this.setState({
         limitWorkTimeToDay,
       })
-    }else{
-      console.log('กรุณาระบุเวลาการทำงาน')
     }
     await this.setNextHoliday()
     await this.getWorking(user)
-
-    //await this.getWorks()
     getWorks(works => this.setState({works}))
   }
-
-  /*
-  getWorks = async () => {
-
-    await db.collection('abilities')
-    .onSnapshot(snap => {
-      const abilities = []
-      snap.forEach(doc => {
-        abilities[doc.id] = doc.data()
-      })
-      this.setState({abilities})
-      store.set('abilities',abilities)
-    })
-
-    await db.collection('works')
-    //.where('startAt' ,'>', new Date())
-    .onSnapshot(snapshot => {
-      let works = []
-      snapshot.forEach(doc => {
-        if(doc.data().pack <= 0)return
-        if(!doc.data().round)return
-
-        const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
-        if(!nextRound)return
-        
-        works.push(_.assign(doc.data(),
-          { 
-            _id: doc.id,
-            abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
-
-            startAt: nextRound.startAt,
-            endAt: nextRound.endAt,
-            workAllTime: doc.data().worktime*doc.data().piece
-          }
-        ))
-      })
-
-      works = _.orderBy(works, ['startAt'], ['asc']); //เรียงวันที่
-
-      this.setState({works})
-      store.set('works', works)
-    })
-  }
-  */
-
   getWorking = async (user) => {
     db.collection('working')
     .where('employee_id', '==', user.uid)
@@ -148,13 +60,10 @@ class Tasks extends Component {
         const data = doc.data()
         if(data.success)return //เสร็จแล้ว
         if(data.endAt <= new Date())return //ถ้าวันส่งน้อยกว่าวันนี้ให้ยกเลิก = ได้งานเฉพาะที่ต้องทำปัจจุบัน
-
         let finished_piece = _.sumBy(data.do_piece, (o) => o.piece)
         if(finished_piece===undefined)finished_piece=0 //debug
-
         let worktime = 0
         if(data.worktime!==undefined)worktime=data.worktime //debug
-
         tasks.push(Object.assign(data,{
           working_id: doc.id,
           worktime,
@@ -163,12 +72,10 @@ class Tasks extends Component {
         }))
       })
       tasks = _.orderBy(tasks, ['endAt'], ['asc']); //เรียงวันที่
-
       let totalTimeAllWork = 0 //เวลาที่ต้องทำทั้งหมดทุกงาน
       tasks.map(working => {
         totalTimeAllWork += (working.worktime)*(working.total_piece-working.finished_piece)
       })
-
       this.setState({
         tasks,
         totalTimeAllWork,
@@ -176,20 +83,16 @@ class Tasks extends Component {
       store.set('tasks', tasks)
     })
   }
-
   setNextHoliday = async () => {
     const { user } = this.state
     const today = moment().format('DD/MM/YY')
     let nextHoliday = []
-
-    
-    await _.map(holiday, holiday => {
+    await holiday.map(holiday => {
       moment(holiday.date, 'DD/MM/YY') > moment() &&
         (moment().diff(moment(holiday.date, 'DD/MM/YY'),'days') > -30) &&
           !_.get(user.data.holiday, holiday.date)&&
             nextHoliday.push(holiday)
     })
-
     if(nextHoliday.length > 0){
       this.setState({
         nextHoliday: nextHoliday[0],
@@ -197,10 +100,8 @@ class Tasks extends Component {
       })
     }
   }
-
   handleDo = async (e, work) => {
     e.preventDefault();
-    
     this.setState({
       modalIsOpen: false,
     })
@@ -214,25 +115,20 @@ class Tasks extends Component {
         recommend: work.work_id
       })
     }
-
     taskDoing(work, this.state.doing)
-
     this.setState({
       doing: 0,
     })
   }
-
   handleDelete = (id) => {
     db.collection('working').doc(id).delete()
   }
-
   handleOpenModal = (working) => {
     this.setState({
       modalIsOpen: true,
       doWork: working,
     })
   }
-
   handleHoliday = (date) => {
     const { user } = this.state
     let holiday = user.data.holiday?user.data.holiday:{}
@@ -242,35 +138,28 @@ class Tasks extends Component {
       modalHoliday: false
     })
   }
-
   showDetail = (working_id) => {
     let {showDetail} = this.state
-    console.log('FINDKETKEYK',_.indexOf(showDetail, working_id))
     if(_.indexOf(showDetail, working_id) == -1){
       showDetail.push(working_id)
     }else{
       _.pull(showDetail, working_id)
     }
-    
     this.setState({
       showDetail
     })
   }
-
   showAllDetail = (working_id) => {
     let {showAllDetail} = this.state
-    console.log('FINDKETKEYK',_.indexOf(showAllDetail, working_id))
     if(_.indexOf(showAllDetail, working_id) == -1){
       showAllDetail.push(working_id)
     }else{
       _.pull(showAllDetail, working_id)
     }
-    
     this.setState({
       showAllDetail
     })
   }
-
   handleStartDo = (working) => {
     let { do_piece } = working
     if(!do_piece){
@@ -278,25 +167,20 @@ class Tasks extends Component {
         startAt: new Date
       }]
     }else if(_.filter(do_piece, o => o.startAt&&!o.endAt ).length > 0){
-      console.log('กำลังทำอยู่',_.filter(do_piece, o => o.startAt&&!o.endAt ))
       return
     }else{
       do_piece.push({
         startAt: new Date
       })
     }
-
-    console.log('START', do_piece)
     db.collection('working').doc(working.working_id).update({do_piece})
   }
-
   handleOpenDoing = (working) => {
     this.setState({
       modalDoing: true,
       doWork: working,
     })
   }
-
   handleStopDo = async (e, working) => {
     e.preventDefault();
     this.setState({
@@ -316,7 +200,6 @@ class Tasks extends Component {
     ///////////////////////////////////////////
     const { doing } = this.state
     let { do_piece } = working
-    console.log('Before', do_piece)
     let doingAt = _.findIndex(do_piece, o => o.startAt&&!o.endAt )
     if(doingAt != -1 && doing!=0){
       do_piece[doingAt] = Object.assign(do_piece[doingAt], {
@@ -325,31 +208,23 @@ class Tasks extends Component {
         piece: doing,
         worktime: moment().diff(moment(do_piece[doingAt].startAt),'seconds')
       })
-      console.log('After', do_piece)
       await db.collection('working').doc(working.working_id).update({
         do_piece: do_piece,
         useWorktime: _.sumBy(do_piece, 'worktime')/_.sumBy(do_piece, 'piece'),
         finished_piece: _.sumBy(do_piece, 'piece')
       })
-    }else{
-      console.log('error')
     }
     /////////////////////////////////////////////
-    
     this.setState({
       doing: 0,
     })
   }
-
   render() {
     const { tasks, doWork, limitWorkTimeToDay, totalTimeAllWork, user, nextHoliday, works, showDetail, showAllDetail } = this.state
-
-
     const { nowWorking, limitTimeDayWork, totalTimeDayWork, overTimeDayWork } = genNowWorking(limitWorkTimeToDay, tasks, user)
-    
     const nowTask = (
       <div>
-      {_.map(nowWorking, (working,i) => 
+      {nowWorking.map((working,i) => 
         <NowTask fade={i*0.2}>
           <div className='row'>
             <div className='col-9'>
@@ -370,7 +245,6 @@ class Tasks extends Component {
                   </div>
                 </div>
               </div>
-              
               <div className='row'>
                 <div className='col-6'>
                   <div className="edittime">
@@ -385,13 +259,10 @@ class Tasks extends Component {
                 </div>
                 <div className='col-6'>
                   <div className="timing">
-                  เหลือเวลา {secToText(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}
-                    {/*<div style={{color: 'red'}}>{working.overPiece!==0&&secToTime(working.overPiece*working.worktime)}</div>
-                    */}
+                    เหลือเวลา {secToText(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}
                   </div>
                 </div>
               </div>
-              
             </div>
             {working.toDayFinishedPiece>=working.limitTodo+working.overPiece
               ?<div className="finish"><div className='border'>เสร็จ</div></div>
@@ -400,7 +271,6 @@ class Tasks extends Component {
                   <div className='do-text'>ทำ</div>
                 </div>
             }
-          
           </div>
 
           <div className='showDetail' onClick={() => this.showDetail(working.working_id)}>แสดงรายละเอียด</div>
@@ -418,28 +288,13 @@ class Tasks extends Component {
           }
         </NowTask>
       )}
-        {/*
-        <div className=''>
-          {'เวลางานที่ต้องทำทั้งหมดทุกงาน '+secToTime(totalTimeAllWork)}
-          <br/>
-          {'เวลาที่ต้องทำงานวันนี้ '+secToTime(totalTimeDayWork)}
-          <br/>
-          {'เวลาที่จำกัดวันนี้ '+secToTime(limitWorkTimeToDay)}
-          <br/>
-          {overTimeDayWork>0 &&
-            <span style={{color: 'red'}}>
-              {'เวลาที่เกินในวันนี้ '+secToTime(overTimeDayWork)+` +${(overTimeDayWork/limitWorkTimeToDay*100)}%`}
-            </span>
-          }
-        </div>
-        */}
       <div style={{width: '100%',height: '60px'}}></div>
       </div>
     )
 
     const nowTask2 = (
       <div>
-      {_.map(nowWorking, (working,i) => 
+      {nowWorking.map((working,i) => 
         <NowTask2 fade={i*0.2}>
           <div className='row'>
             <div className='col-9'>
@@ -458,7 +313,6 @@ class Tasks extends Component {
                 </div>
               </div>
             </div>
-
             {working.toDayFinishedPiece>=working.limitTodo+working.overPiece
               ?<div className="finish"><div className='border'>เสร็จ</div></div>
               :working.do_piece && (_.filter(working.do_piece, o => o.startAt&&!o.endAt ).length > 0)
@@ -471,9 +325,7 @@ class Tasks extends Component {
                   <div className='do-text'>เริ่ม</div>
                 </div>
             }
-          
           </div>
-
           <div className='row' style={{clear: 'both'}}>
             <div className='col'>
               <div className="progress">
@@ -481,8 +333,6 @@ class Tasks extends Component {
               </div>
             </div>
           </div>
-          
-
           <Detail>
           <div className='showDetail' 
             onClick={() => this.showDetail(working.working_id)}>
@@ -490,7 +340,6 @@ class Tasks extends Component {
           </div>
           {showDetail[_.indexOf(showDetail, working.working_id)] == working.working_id&&
             <div className='detail'>
-
               <div className='row'>
                 <div className='col-12'>
                   <div>
@@ -501,7 +350,6 @@ class Tasks extends Component {
                   <div>วันนี้ต้องทำงานอีก {secToText(working.timeTodo-(working.toDayFinishedPiece*working.worktime))}</div>*/}
                 </div>
               </div>
-
               <div className='c head'>
                 <div className='date'>วันที่</div>
                 <div className='startAt'>เวลา</div>
@@ -509,7 +357,7 @@ class Tasks extends Component {
                 <div className='do_piece'>จำนวน</div>
                 <div className='doingTime'>เฉลี่ยชิ้นละ</div>
               </div>
-              {_.map(working.do_piece, detail => 
+              {working.do_piece.map(detail => 
                 moment(detail.updateAt).format('DD/MM') == moment().format('DD/MM')&&
                 <div className='c'>
                   <div className='date'>{moment(detail.startAt).format('DD/MM')}</div>
@@ -533,7 +381,7 @@ class Tasks extends Component {
 
     const allTask = (
       <div>
-      {_.map(allWorking, (working, i) => 
+      {allWorking.map((working, i) => 
         <AllTask fade={i*0.2}>
           <div className='row'>
             <div className='col-12'>
@@ -566,8 +414,6 @@ class Tasks extends Component {
             </div>
             </div>
           </div>
-
-
           <Detail>
           <div className='showDetail' 
             onClick={() => this.showAllDetail(working.working_id)}>
@@ -591,7 +437,7 @@ class Tasks extends Component {
                 <div className='do_piece'>จำนวน</div>
                 <div className='doingTime'>เฉลี่ยชิ้นละ</div>
               </div>
-            {_.map(working.do_piece, detail => 
+            {working.do_piece.map(detail => 
               <div className='c'>
                 <div className='date'>{moment(detail.startAt).format('DD/MM')}</div>
                 <div className='startAt'>{moment(detail.startAt).format('HH:mm')}น.-{moment(detail.endAt).format('HH:mm')}น.</div>
@@ -610,7 +456,6 @@ class Tasks extends Component {
       <div style={{width: '100%',height: '60px'}}></div>
       </div>
     )
-
     const tabs = [
       {
         render: <Content>{nowTask2}</Content>,
@@ -621,20 +466,16 @@ class Tasks extends Component {
         name: 'งานทั้งหมด',
       },
     ]
-
     ///////////////////////
     let days = []
     let timeToEndMonth = 0
-    console.log(works)
     if(user.data.workTime){
       const countDay = -moment().diff(moment().endOf('month'),'days')
-      
       for(let i = 1; i<=countDay; i++){
         const day = moment().add(i, 'days').locale('en').format('ddd').toLowerCase()
         days.push(day)
         timeToEndMonth += user.data.workTime[day]
       }
-      console.log(days,timeToEndMonth)
     }
     let recommendWorks = []
     {_.map(works, (work, i) => 
@@ -642,12 +483,11 @@ class Tasks extends Component {
       moment(work.endAt) < moment().endOf('month') &&
         recommendWorks.push(work)
     )}
-
     const taskStat = (
       <div>
         <div className='message'>
           <div className='title'>คุณยังไม่มีงาน</div>
-          <div>มีเวลาถึงสิ้นเดือน {secToText(timeToEndMonth)}</div>
+          <div>มีเวลาว่าง {secToText(timeToEndMonth)} ถึงสิ้นเดือน</div>
         </div>
         {_.map(recommendWorks, (work, i) =>
           <WorkItem data={work} i={i}/>
@@ -657,19 +497,16 @@ class Tasks extends Component {
     )
     /////////////////////////////////////
     const doingStart = doWork&& _.get(_.filter(doWork.do_piece, o => o.startAt&&!o.endAt), '[0].startAt')
-    
     return (
       <div>
         <Layout route={this.props.route}>
           <Style>
-          
             {_.size(tasks) > 0
               ?<Tabbar tabs={tabs}/>
               :<Content>
                 {taskStat}
               </Content>
             }
-
             <Link to="/editworktime">
             <WorkDate>
               <Content>
@@ -697,7 +534,6 @@ class Tasks extends Component {
               </Content>
             </WorkDate>
             </Link>
-
             <Modal modalIsOpen={this.state.modalIsOpen} mini>
               <InsideModal>
                 <div className="modal-text">ทำงาน {this.state.doing} จาก {(_.get(doWork,'limitTodo')+_.get(doWork,'overPiece'))-_.get(doWork,'toDayFinishedPiece')} ชิ้น</div>
@@ -712,7 +548,6 @@ class Tasks extends Component {
                 </form>
               </InsideModal>
             </Modal>
-
             <Modal modalIsOpen={this.state.modalDoing} mini>
               <InsideModal>
                 <div className="modal-text">
@@ -732,15 +567,8 @@ class Tasks extends Component {
                 </form>
               </InsideModal>
             </Modal>
-
             <Modal modalIsOpen={this.state.modalHoliday} mini>
               <HolidayModal>
-                {/*_.map(nextHoliday, date =>
-                  <div>
-                    <div className='name'>{date.name}</div>
-                    <div className='countdown'>{moment(date.date,'DD/MM/YY').fromNow()}</div>
-                  </div>
-                )*/}
                 {nextHoliday&&
                 <div>
                   <div className='name'>{nextHoliday.name}</div>
@@ -749,13 +577,10 @@ class Tasks extends Component {
                 }
                 <div className='text'>คุณจะหยุดหรือไม่?</div>
                 <div style={{height: 10}}/>
-
                 <div className='btn cancel' onClick={() => this.setState({modalHoliday: false})}>ไม่หยุด</div>
                 <div className='btn submit' onClick={() => this.handleHoliday(nextHoliday.date)}>หยุด</div>
-              
               </HolidayModal>
             </Modal>
-
             <Modal modalIsOpen={this.state.modalRecommend} mini>
               <RecommendModal>
                 <div className='title'>ว้าว! ทำงานใกล้เสร็จแล้ว</div>
@@ -764,20 +589,12 @@ class Tasks extends Component {
                 <div className='cancel' onClick={() => this.setState({modalRecommend: false})}>ไม่สนใจ</div>
               </RecommendModal>
             </Modal>
-
           </Style>
         </Layout>
-
       </div>
     )
   }
 }
-
-//มีงานที่รับมา งานอยู่ที่ช่วงที่ต้องทำ งานเริ่มวันที่-สุดวันที่ วันที่ 1-7 = 7 วัน งาน100ชิ้น ชิ้นละ 3นาที รวมเป็น 300นาที
-// เวลางาน หาร จำนวนวันทำงาน => 300/7 
-// หักลบกับวันที่ต้องการหยุด หาชื่อวัน ของวันที่ต่างๆ เสาร์ อาทิตย์ จากวันทำงาน
-
-export default Tasks;
 
 const Style = Styled.div`
   .message{

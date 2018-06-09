@@ -1,46 +1,24 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
-
-import Layout from '../layouts'
-import Content from '../components/Content'
-
-import { browserHistory, Link } from 'react-router';
-
+import { browserHistory, Link } from 'react-router'
 import _ from 'lodash'
 import moment from 'moment'
 import store from 'store'
 import { db } from '../api/firebase'
-
+import Layout from '../layouts'
+import {Content} from '../components'
+import { overNumber } from '../functions'
 import back from '../img/back2.png'
-
-
 import best from '../img/best.png'
 
-const overNumber = (number) => {
-  number = number.toString()
-  if(number >= 1000000){
-    return `${number[0]}.${number[1]} ล.`
-  }else if(number >= 100000){
-    return `${number[0]}.${number[1]} ส.`
-  }else if(number >= 10000){
-    return `${number[0]}.${number[1]} ห.`
-  }else if(number >= 1000){
-    return `${number[0]}.${number[1]} พ`
-  }else{
-    return number
-  }
-}
-
-class Dashboard extends Component {
-
+export default class extends Component {
   state = {
     user: store.get('employee'),
     working: store.get('working'),
     page: 0,
     selectMonth: 0,
   }
-
   async componentDidMount() {
     window.scrollTo(0, 0)
     const { user } = this.state
@@ -56,7 +34,6 @@ class Dashboard extends Component {
         const finished_piece = doc.data().finished_piece?doc.data().finished_piece:0
         const total_price = finished_piece*doc.data().price
         const total_time = finished_piece*doc.data().worktime
-
         if(doc.data().endAt<new Date){
           if(doc.data().total_piece-doc.data().finished_piece <= 0){
             workSuccess+=1
@@ -64,15 +41,11 @@ class Dashboard extends Component {
             workFail+=1
           }
         }// count workSuccess & workFail
-
         let value = 0
         if(finished_piece!=0)
           value = Number((total_price)/((total_time)/60)).toFixed(1)
-          
         const idAndMonth = doc.data().work_id + moment(doc.data().endAt).format('MMM/YY')
-
         const sameid = _.findIndex(working, ['idAndMonth', idAndMonth])
-
         if(sameid == -1){
           working.push(Object.assign(doc.data(), {
             working_id: doc.id,
@@ -92,7 +65,7 @@ class Dashboard extends Component {
           working[sameid].finished_piece += finished_piece
           working[sameid].value = Number((working[sameid].total_price)/((working[sameid].total_time)/60)).toFixed(1)
         }
-
+        //Update insert employer to working 
         // db.collection('works').doc(doc.data().work_id).get()
         // .then(d => 
         //   db.collection('working').doc(doc.id).update({
@@ -102,18 +75,14 @@ class Dashboard extends Component {
         //   })
         // )
       })
-
-      /*db.collection('employee').doc(user.uid).update({
-        workSuccess,
-        workFail,
-      })*/ //อัพเดทงานเสร็จ/ไม่เสร็จ
-
-      const minMonth = _.minBy(working, work => work.endAt).endAt
+      //อัพเดทงานเสร็จ/ไม่เสร็จ
+      // db.collection('employee').doc(user.uid).update({
+      //   workSuccess,
+      //   workFail,
+      // })
+      const minMonth = _.get(_.minBy(working, work => work.endAt),'endAt')
       const countMonth = moment().diff(minMonth, 'months')
-      console.log('mininioth',minMonth,Math.floor(countMonth/5))
-      const maxMonth = _.maxBy(working, work => work.endAt).endAt
-
-
+      const maxMonth = _.get(_.maxBy(working, work => work.endAt),'endAt')
       this.setState({
         working,
         page: Math.floor(countMonth/5),
@@ -121,14 +90,7 @@ class Dashboard extends Component {
       })
       store.set('working', working)
     })
-
-    this.setGraph()
   }
-
-  setGraph = () => {
-
-  }
-
   backPage = () => {
     const { page } = this.state
     page > 0 &&
@@ -136,7 +98,6 @@ class Dashboard extends Component {
         page: page-1
       })
   }
-
   nextPage = (max) => {
     const { page } = this.state
     page < max-1 &&
@@ -144,24 +105,19 @@ class Dashboard extends Component {
         page: page+1
       })
   }
-
   selectMonth = (data,i) => {
     const { selectMonth } = this.state
     this.setState({
       selectMonth: selectMonth===data.date?0:data.date
     })
   }
-
   render() {
     let { working, page, selectMonth } = this.state
-    working = _.orderBy(working, ['endAt'], ['asc']); //เรียงวันที่
-    
-    console.log(this.state.page, this.state.selectMonth)
-
+    working = _.orderBy(working, ['endAt'], ['asc']) //เรียงวันที่
     let chartData = []
-    _.map(working, work => {
+    working.map( work => {
       const date = moment(work.endAt).format('MMM/YY')
-      const keyDate = _.findKey(chartData, {'date': date})
+      const keyDate = _.findKey(chartData, {date})
       if(!keyDate){
         chartData.push({
           date,
@@ -173,20 +129,10 @@ class Dashboard extends Component {
         chartData[keyDate].total += work.total_piece*work.price
       }
     })
-      
-    let chart = _.chunk(chartData, 5)
+    const chart = _.chunk(chartData, 5)
     const maxPrice = _.get(_.maxBy(chartData, 'total'), 'total')
-
-    let workMonth = []
-    {_.map(working, work => {
-      const date = moment(work.endAt).format('MMM/YY')
-      if(date === selectMonth){
-        workMonth.push(work)
-      }else if(selectMonth === 0){
-        workMonth.push(work)
-      }
-    })}
-    workMonth = _.orderBy(workMonth, ['value'], ['desc']); //เรียงความคุ้มค่า
+    const workMonth = working.filter( work => (moment(work.endAt).format('MMM/YY') === selectMonth || selectMonth === 0))
+                      .sort((a,b)=>b.value-a.value)
     
     return (
       <Layout route={this.props.route}>
@@ -199,6 +145,7 @@ class Dashboard extends Component {
               }
             </div>
             <div className='cardGraph'>
+              {!chart[page]&&<div className="title">คุณยังไม่เคยทำงาน</div>}
               {_.map(chart[page], (data, i) =>
                 <Bar 
                   data={data.price} 
@@ -220,9 +167,7 @@ class Dashboard extends Component {
               }
             </div>
           </div>
-
           <div className='statlist'>
-
             <Content>
               <List>
                 <div className='title'>
@@ -232,15 +177,11 @@ class Dashboard extends Component {
                   <div className='total'></div>
                 </div>
               </List>
-            {_.map(workMonth, (work,i) =>
+            {workMonth.map((work,i) =>
               <List fade={i>2?3:i}>
                 <div className='name'><Link to={`/work/${work.work_id}`}>{work.work_name}</Link></div>
                 <div className='piece'>
                   {work.finished_piece}/{work.total_piece}
-                  {/*(work.total_time)>60*60
-                    ?Math.floor(work.total_time/60/60) + ' ชม.'
-                    :Math.floor(work.total_time/60) + ' น.'
-                  */}
                 </div>
                 <div className='price'>{work.total_price}.-</div>
 
@@ -252,8 +193,6 @@ class Dashboard extends Component {
             )}
             </Content>
           </div>
-
-
           <div style={{width: '100%',height: '60px'}}></div>
           <Bottom>
             <div className='text'>รวม</div>
@@ -264,16 +203,13 @@ class Dashboard extends Component {
               }
             </div>
             <div className='price'>{_.sumBy(selectMonth!==0?workMonth:working, 'total_price')}.-</div>
-            
             <div className='total'></div>
           </Bottom>
         </Style>
       </Layout>
-    );
+    )
   }
 }
-
-export default Dashboard;
 
 const Style = Styled.div`
 
@@ -286,14 +222,15 @@ const Style = Styled.div`
   top: 100px;
   padding-top: 10px;
   padding-left: 10px;
-
   overflow: hidden;
-  // width: 260px;
-  // max-height: 300px;
-  // scroll-direction: horizontal;
-  // transform: rotate(-90deg);
-  // transform-origin: right top;
-  // transform:rotate(-90deg) translateY(-100px);
+  .title{
+    ${AppStyle.font.menu}
+    width: 100%;
+    text-align: center;
+    height: 100%;
+    line-height: 250px;
+    margin-left: -10px;
+  }
 }
 .statlist{
   width: 100%;
@@ -308,13 +245,7 @@ const Style = Styled.div`
   background: transparent;
 }
 `
-
 const Bar = Styled.div`
-
-  // transform: rotate(90deg);
-  // transform-origin: right top;
-
-
   width: 48px;
   height: 220px;
   //background: ${props => 220*(props.data/props.max*100)/100}px;
@@ -357,7 +288,6 @@ const Bottom = Styled.div`
   bottom: 0;
   width: 100%;
   height: 60px;
-  
   background: ${AppStyle.color.card};
   ${AppStyle.shadow.lv1}
   line-height: 20px;
@@ -388,12 +318,9 @@ const Bottom = Styled.div`
     line-height: 60px;
   }
 `
-
 const List = Styled.div`
-
   animation-name: fadeInUp; 
   animation-duration: ${props => (props.fade*0.2)}s;
-  
   position: relative;
   width: 100%;
   height: 40px;
@@ -401,7 +328,6 @@ const List = Styled.div`
   margin-bottom: 2px;
   background: ${AppStyle.color.card};
   padding: 0 10px;
-
   border-bottom: solid 1px ${AppStyle.color.bg2}; 
   .title{
     font-weight: bold;
@@ -412,7 +338,6 @@ const List = Styled.div`
     margin-top: -10px;
     padding: 0 20px;
   }
-
   .name{
     float: left;
     width: 40%;

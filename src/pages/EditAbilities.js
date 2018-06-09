@@ -1,14 +1,11 @@
-import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import React, { Component } from 'react'
+import { browserHistory } from 'react-router'
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
-
 import ToolBar from '../layouts/ToolBar'
+import {FormAbilities} from '../components'
 
-import FormAbilities from '../components/FormAbilities';
-
-
-class EditAbilities extends Component {
+export default class extends Component {
   componentDidMount() {
     window.scrollTo(0, 0)
   }
@@ -18,8 +15,7 @@ class EditAbilities extends Component {
         <div id="EditAbilities">
           <ToolBar 
             title='ความสามารถ'
-            left={() => browserHistory.goBack()} 
-            //right={this.handleUpdateAbilities}
+            left={() => browserHistory.goBack()}
           />
           <FormAbilities />
         </div>
@@ -27,8 +23,6 @@ class EditAbilities extends Component {
     );
   }
 }
-
-export default EditAbilities;
 
 const Style = Styled.div`
   #EditAbilities{

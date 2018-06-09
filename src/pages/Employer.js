@@ -4,7 +4,10 @@ import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 import store from 'store'
-
+import Layout from '../layouts'
+import {Content, WorkItem2, Button} from '../components'
+import { getUser, db, auth } from '../api/firebase'
+import { phoneFormatter, personIdFormatter } from '../functions'
 import phone from '../img/phone2.png'
 import profile from '../img/profile2.png'
 import address from '../img/address2.png'
@@ -12,27 +15,14 @@ import edit from '../img/edit.png'
 import Back from '../img/back2.png'
 import education from '../img/profile2.png'
 
-import Layout from '../layouts'
-import Content from '../components/Content'
-import WorkItem2 from '../components/WorkItem2'
-
-import { getUser, db, auth } from '../api/firebase'
-import Button from '../components/Button';
-
-
-import { phoneFormatter, personIdFormatter } from '../functions'
-
 export default class extends Component {
-
   state = {
     employer: {},
     works: [],
     abilities: store.get('abilities')
   }
-
   async componentDidMount() {
     window.scrollTo(0, 0)
-
     await db.collection('employer').doc(this.props.params.id).get()
     .then(snap => {
       if(snap.exists){
@@ -41,7 +31,6 @@ export default class extends Component {
         })
       }
     })
-
     await db.collection('abilities')
     .onSnapshot(snap => {
       const abilities = []
@@ -51,27 +40,22 @@ export default class extends Component {
       this.setState({abilities})
       store.set('abilities',abilities)
     })
-
     await db.collection('works').where('employer_id', '==', this.props.params.id).get()
     .then(snap => {
       let works = []
       snap.forEach(doc => {
         if(doc.data().pack <= 0)return
         if(!doc.data().round)return
-
         const nextRound = _.find(doc.data().round, function(o) { return o.startAt > new Date; })
         if(!nextRound)return
-        
-        works.push(_.assign(doc.data(),
-          { 
-            _id: doc.id,
-            abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
+        works.push(_.assign(doc.data(),{ 
+          _id: doc.id,
+          abilityName: _.get(this.state.abilities[doc.data().ability],'name'),
 
-            startAt: nextRound.startAt,
-            endAt: nextRound.endAt,
-            workAllTime: doc.data().worktime*doc.data().piece
-          }
-        ))
+          startAt: nextRound.startAt,
+          endAt: nextRound.endAt,
+          workAllTime: doc.data().worktime*doc.data().piece
+        }))
       })    
       this.setState({works})
     })
@@ -80,7 +64,6 @@ export default class extends Component {
 
   render() {
     const { employer, works } = this.state
-
     return (
       <Style>
         <div id='Employer'>
@@ -121,14 +104,10 @@ export default class extends Component {
               </div>
             </div>
           </div>
-
-
           <div>งานที่ประกาศ</div>
           {_.map(works, (work, i) => 
             <WorkItem2 data={work} i={i}/>
           )}
-
-
         </Content>
         </div>
       </Style>
@@ -166,7 +145,6 @@ const Style = Styled.div`
     .text{
       padding: 0;
       margin-top: 4px;
-
     }
   }
   .card{
@@ -184,9 +162,6 @@ const Style = Styled.div`
       width: 25px;
     }
   }
-
-
-
   .goBack{
     width: 25px;
     height: 25px;

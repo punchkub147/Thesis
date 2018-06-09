@@ -54,8 +54,8 @@ export const getWorks = async (callback) => {
         d = distance(
           _.get(doc.data(),'employer.address.lat'),
           _.get(doc.data(),'employer.address.lng'),
-          user.data.address.lat,
-          user.data.address.lng,
+          _.get(user,'data.address.lat'),
+          _.get(user,'data.address.lng'),
           'K'
         )
       }
@@ -76,9 +76,8 @@ export const getWorks = async (callback) => {
     callback(works)
   })
 }
-
-
 export const distance = (lat1, lon1, lat2, lon2, unit) => {
+  if(!lat1 || !lat2 || !lon1 || !lon2 || !unit)return 'x'
 	var radlat1 = Math.PI * lat1/180
 	var radlat2 = Math.PI * lat2/180
 	var theta = lon1-lon2
@@ -90,4 +89,29 @@ export const distance = (lat1, lon1, lat2, lon2, unit) => {
 	if (unit=="K") { dist = dist * 1.609344 }
 	if (unit=="N") { dist = dist * 0.8684 }
 	return Math.floor(dist)
+}
+export const overNumber = (number) => {
+  number = number.toString()
+  if(number >= 1000000){
+    return `${number[0]}.${number[1]} ล.`
+  }else if(number >= 100000){
+    return `${number[0]}.${number[1]} ส.`
+  }else if(number >= 10000){
+    return `${number[0]}.${number[1]} ห.`
+  }else if(number >= 1000){
+    return `${number[0]}.${number[1]} พ`
+  }else{
+    return number
+  }
+}
+export const quality = (percent) => {
+  if(percent>=150){
+    return 'เร็วมาก'
+  }else if(percent>=100){
+    return 'เร็ว'
+  }else if(percent>=75){
+    return 'ปกติ'
+  }else if(percent<75){
+    return 'ช้า'
+  }
 }

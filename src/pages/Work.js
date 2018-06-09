@@ -1,25 +1,20 @@
-import React, { Component } from 'react';
-import { browserHistory, Link } from 'react-router';
+import React, { Component } from 'react'
+import { browserHistory, Link } from 'react-router'
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
 import _ from 'lodash'
 import moment from 'moment'
 import store from 'store'
-
-import BottomButton from '../components/BottomButton'
-
-import Alarm from '../img/alarm.png'
-import Send from '../img/send.png'
-import Back from '../img/back2.png'
-
 import { auth, db, getUser } from '../api/firebase'
 import { secToText } from '../functions/moment'
 import { phoneFormatter, distance } from '../functions/'
+import { BottomButton } from '../components'
+import Alarm from '../img/alarm.png'
+import Send from '../img/send.png'
+import Back from '../img/back2.png'
+import { message } from 'antd'
 
-import { message } from 'antd';
-
-class Login extends Component {
-
+export default class extends Component {
   state = {
     work: {
       work_id: '',
@@ -56,8 +51,8 @@ class Login extends Component {
     db.collection('works').doc(work_id)
     .onSnapshot(async work => {
       
-      let nextRound = _.find(work.data().round, function(o) { return o.startAt > new Date; })
-      if(!nextRound)nextRound = _.find(work.data().round, function(o) { return o.startAt < new Date; })
+      let nextRound = _.find(work.data().round, function(o) { return o.startAt > new Date })
+      if(!nextRound)nextRound = _.find(work.data().round, function(o) { return o.startAt < new Date })
       
 
 
@@ -74,12 +69,12 @@ class Login extends Component {
           },
           employer: {
             employer_id: employer.id,
-            data: Object.assign(employer.data(),{
+            data: employer.data&&Object.assign(employer.data(),{
               distance: distance(
                 _.get(employer.data(),'address.lat'),
                 _.get(employer.data(),'address.lng'),
-                user.data.address.lat,
-                user.data.address.lng,
+                _.get(user,'data.address.lat'),
+                _.get(user,'data.address.lng'),
                 'K'
               )
             })
@@ -91,8 +86,8 @@ class Login extends Component {
             needEndAt: nextRound.endAt,
           })
         }
-      });
-    });
+      })
+    })
 
     db.collection('abilities')
     .onSnapshot(snap => {
@@ -119,16 +114,16 @@ class Login extends Component {
   }
 
   handleNeedWork = async (e, canRequest, needworked) => {
-    e.preventDefault();
+    e.preventDefault()
     const { user, work, employer, needStartAt, needEndAt } = this.state
     if(!user){
-      message.info('กรุณาเข้าสู่ระบบ');
+      message.info('กรุณาเข้าสู่ระบบ')
       return
     }
     if(user.uid){
 
       if(canRequest-needworked<=0){
-        message.info('เวลาทำงานไม่เพียงพอ แนะนำให้เพิ่มเวลาทำงาน');
+        message.info('เวลาทำงานไม่เพียงพอ แนะนำให้เพิ่มเวลาทำงาน')
         return
       }
 
@@ -160,11 +155,11 @@ class Login extends Component {
 
       await db.collection('needWork').add(_.pickBy(needWork, _.identity))
       .then(data => {
-        message.info('รับงานเรียบร้อย');
+        message.info('รับงานเรียบร้อย')
       })
       this.setState({loading: false})
     }else{
-      message.info('กรุณาเข้าสู่ระบบ');
+      message.info('กรุณาเข้าสู่ระบบ')
     }
   }
 
@@ -181,33 +176,23 @@ class Login extends Component {
     const { work, employer, user, needStartAt, needEndAt, needWork, loading } = this.state
     const { data } = work
     const countAllDay = -moment(needStartAt).diff(needEndAt, 'days')+1
-
-    let worktimeBetween = 0
-
-    if(user){
-      for(let i = 0; i< countAllDay; i++){
+    const worktimeBetween = _.range(countAllDay).reduce((time,i) => {
+      if(user){
         const day = moment(needStartAt).add(i, 'days').locale('en')//วัน
         if(user.data.workTime){
           let dayWorkTime = user.data.workTime[day.format('ddd').toLowerCase()]
           if(user.data.holiday&&user.data.holiday[day.format('DD/MM/YY')] === true)dayWorkTime = 0 //วันหยุด Holiday
-    
-          worktimeBetween += dayWorkTime
+          return time += dayWorkTime
         }
-        
       }
-    }
-
+    }, 0)
     const canRequest = Math.floor(worktimeBetween/(data.piece*data.worktime))
-
-    let needworked = _.filter(needWork, ['startAt', needStartAt]).length;
-    console.log(needWork,needStartAt,_.filter(needWork, ['startAt', needStartAt]))
-
+    const needworked = _.filter(needWork, ['startAt', needStartAt]).length
     const MainDetail = (
       <div className="row card">
         <div className="col-12 name">
           {data.name}
         </div>
-        
         <div className="col-6 pack">
         {data.cost&&data.cost>0
           ?`ค่ามัดจำ ${data.cost} บาท`
@@ -217,11 +202,6 @@ class Login extends Component {
         <div className="col-6 price">
           {data.piece} ชิ้น {data.price*data.piece} บาท
         </div>
-
-        {/*<div className="col-6 cost">
-          เหลือ {data.pack} ชุด
-        </div>*/}
-
       </div>
     )
     const SubDetail = (
@@ -246,39 +226,14 @@ class Login extends Component {
             <div className='card-title'>รายละเอียดการจัดส่ง</div>
             <div className='card-read'>
               วิธีการจัดส่งโดย {data.sendBy}
-              {/*
-              วันที่เริ่มงาน {data.startAt&& moment(data.startAt).format('DD/MM/YY')}<br/>
-              วันที่เสร็จงาน {data.endAt&& moment(data.endAt).format('DD/MM/YY')}<br/>
-              */}
-
             </div>
           </div>
-        
-        {/*
-        <div className="col-3 sendBy">
-          <img alt='' src={Send}/><br/>
-          {data.sendBy}
-        </div>
-        <div className="col-3 startAt">
-          <div className='text'>เริ่มส่ง</div>
-          {moment(data.startAt).format('DD/MM/YY')}
-        </div>
-        <div className="col-3 endAt">
-          <div className='text'>ส่งกลับ</div>
-          {moment(data.endAt).format('DD/MM/YY')}
-        </div>
-        <div className="col-3 workTime">
-          <img alt='' src={Alarm}/><br/>
-          {secToText(data.worktime)}
-        </div>
-        */}
       </div>
     )
     const TimeDetail = (
       <div className="row card">
         <div className="col-12">
           <div className='card-title'>รายละเอียดเวลาการทำงาน</div>
-          
           <div className='card-read'>
             เลือกวันที่เริ่มงาน - วันที่เสร็จงาน
             <select onChange={(e) => this.handleNeedRound(e)}>
@@ -291,11 +246,6 @@ class Login extends Component {
             </select>
           </div>
         </div>
-
-        {/*<div className="col-6 cost">
-          มีเวลทำ {countAllDay} วัน
-          </div>*/}
-
         <div className="col-6">
         {canRequest>0
           ?`คุณสามารถรับได้ ${canRequest} ชุด`
@@ -305,21 +255,6 @@ class Login extends Component {
         <div className="col-6" style={{'text-align': 'right'}}>
           รับไปแล้ว {needworked} ชุด
         </div>
-        {/*
-        <div className="col-6 cost">
-          คุณมีเวลา {secToText(worktimeBetween)}
-        </div>
-        <div className="col-6">
-          เวลาต่อชุด {secToText(data.piece*data.worktime)}
-        </div>
-        
-
-        <div className="col-12" style={{textAlign: 'center', fontWeight: 'bold'}}>
-          คุณรับไปแล้ว {needworked} ชุด
-        </div>
-              
-        */}
-
       </div>
     )
     const ToolsDetail = (
@@ -346,14 +281,6 @@ class Login extends Component {
             {phoneFormatter(employer.data.phone)}
           </div>
           <div className='address'>
-            {/*
-            {employer.data.homeNo&&`${employer.data.homeNo} `}
-            {employer.data.road&&`ถนน ${employer.data.road} `}
-            {employer.data.area&&`ตำบล${employer.data.area} `}
-            {employer.data.district&&`อำเภอ${employer.data.district} `}
-            {employer.data.province&&`${employer.data.province} `}
-            {employer.data.postcode&&`${employer.data.postcode} `}
-            */}
             ({_.get(employer.data,'distance')} กม.) {_.get(employer.data,'address.address')}
           </div>
         </div>
@@ -369,29 +296,20 @@ class Login extends Component {
         <div className="imageWork">          
           <img alt='' src={data.image}/>
         </div>
-        
         <div className="container">
-        
           {MainDetail}
           {TimeDetail}
           {EmployerDetail}
           {SendDetail}
-          
           {SubDetail}
           {ConditionDetail}
           {ToolsDetail}
-          
-          
-
         </div>
-
         <BottomButton onClick={e => this.handleNeedWork(e, canRequest, needworked)} disabled={loading}>รับงาน</BottomButton>
       </Style>
-    );
+    )
   }
 }
-
-export default Login;
 
 const Style = Styled.div`
   .imageWork{

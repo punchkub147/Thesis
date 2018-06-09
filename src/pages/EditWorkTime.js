@@ -1,16 +1,11 @@
-import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import React, { Component } from 'react'
+import { browserHistory } from 'react-router'
 import Styled from 'styled-components'
 import AppStyle from '../config/style' 
-
 import ToolBar from '../layouts/ToolBar'
+import {FormWorkTime, Bg, Card} from '../components'
 
-import FormWorkTime from '../components/FormWorkTime';
-import Bg from '../components/Bg';
-import Card from '../components/Card';
-
-
-class EditWorkTime extends Component {
+export default class extends Component {
   componentDidMount() {
     window.scrollTo(0, 0)
   }
@@ -29,11 +24,9 @@ class EditWorkTime extends Component {
           </Card>
         </Style>
       </Bg>
-    );
+    )
   }
 }
-
-export default EditWorkTime;
 
 const Style = Styled.div`
   // .animate{

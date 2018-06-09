@@ -29,10 +29,15 @@ export const secToText = (sec) => {
   }else{
     text = parseFloat(+sec).toFixed(0) + ' วินาที'
   }
-
   return text
 }
 
 export const decimal2 = (number) => {
   return parseFloat(+number).toFixed(2)
+}
+
+export const setDayHilight = (day, time) => {
+  if(day === moment().locale('en').format('ddd').toLowerCase()) return 'today'
+  if(time>0) return 'workday'
+  return ''
 }
