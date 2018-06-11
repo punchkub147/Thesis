@@ -17,7 +17,7 @@ import stat from '../img/dashboard.png'
 export default class extends Component {
   state = {
     user: store.get('employee'),
-    notiList: store.get('notifications'),
+    notiList: store.get('notifications')?store.get('notifications'):[],
   }
   componentDidMount() {
     window.scrollTo(0, 0)
